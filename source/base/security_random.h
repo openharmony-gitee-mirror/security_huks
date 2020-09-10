@@ -16,25 +16,10 @@
 #ifndef SECURITY_RANDOM_H
 #define SECURITY_RANDOM_H
 
-/*
- * 描述: 返回安全随机数, 其范围为[0,2^32)
- * 参数: unsigned int *securityRandom用于保存生成的安全随机数
- * 返回值: 成功返回0, 失败返回非0值
- */
 int HILINK_RND_Random(unsigned int *securityRandom);
 
-/*
- * 描述: 返回安全随机数, 其范围为[0, upperBound)
- * 参数: unsigned int *securityRandom用于保存生成的安全随机数
-         unsigned int upperBound为生成随机数的上限.upperBound必须>=2,否则会返回失败
- * 返回值: 成功返回0, 失败返回非0值
- */
 int HILINK_RND_UniformRandom(unsigned int *securityRandom, unsigned int upperBound);
 
-/*
- *  描述:    hilink_rand，返回随机数
- *  返回值: 0      无
- */
 int hilink_rand(void);
 
 #endif
