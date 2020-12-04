@@ -16,11 +16,9 @@
 import("//build/lite/config/component/lite_component.gni")
 
 lite_component("huks_sdk") {
-  if (ohos_kernel_type == "liteos_riscv") {
-    features = [ ]
+  if (ohos_kernel_type == "liteos_m") {
+    features = []
   } else {
-    features = [
-      "source:huks",
-    ]
+    features = [ "source:huks" ]
   }
 }
