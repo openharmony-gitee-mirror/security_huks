@@ -1,17 +1,36 @@
-# HUKS<a name="ZH-CN_TOPIC_0000001121676906"></a>
+# HUKS组件<a name="ZH-CN_TOPIC_0000001133264329"></a>
 
+-   [简介](#section19960105154710)
+-   [目录](#section11146193674920)
+-   [相关仓](#section1554141575016)
 
+## 简介<a name="section19960105154710"></a>
 
-## 1. 简介
-
-在分布式场景下，不同终端设备的硬件能力和运行系统环境都不尽相同。这些设备在分布式场景下均需要建立信任关系，最典型的应用即是HiChain可信互联，那么就需要这样一个统一的密钥管理服务来做到接口一致，密钥数据格式一致，同时提供业界标准的加解密算法实现。HUKS基于此来提供统一的密钥管理、加解密等能力。
+HUKS是通用密钥管理服务，向应用提供KeyStore及Crypto接口API，包括密钥管理及加解密等功能。
 
 HUKS模块整体分为北向接口，南向适配层，以及核心的功能模块：
 
-1. HUKS 北向接口：提供统一的对外API，用C语言实现，保持所有设备一致，主要包括密钥生成API、加解密API等；
-2. HUKS Core Module：依赖HAL层，提供核心功能，如加解密、签名验签、密钥存储等；
-3. HUKS HAL层：屏蔽底层硬件和OS的差异，定义HUKS需要的统一底层API，主要包括平台算法库、IO和LOG等。
+1.  HUKS 北向接口：提供统一的对外API，用C语言实现，保持所有设备一致，主要包括密钥生成API、加解密API等；
+2.  HUKS HAL层：屏蔽底层硬件和OS的差异，定义HUKS需要的统一底层API，主要包括平台算法库、IO和LOG等；
+3.  HUKS Core Module：依赖HAL层，提供核心功能，如加解密、签名验签、密钥存储等。
 
-## 2. 约束
+## 目录<a name="section11146193674920"></a>
 
-当前版本提供的源码及接口（API）为试验版本，后续版本可能存在较大变更，其它组件及应用应尽量避免使用该模块接口及功能，以免对业务造成影响。
+```
+base/security
+├── huks
+│   ├── frameworks
+│   │   └── huks_lite  HUKS代码实现
+│   └── interfaces
+│       └── innerkits
+│           └── huks_lite  HUKS提供接口
+```
+
+## 相关仓<a name="section1554141575016"></a>
+
+[安全子系统](https://gitee.com/openharmony/docs/blob/master/zh-cn/readme/%E5%AE%89%E5%85%A8%E5%AD%90%E7%B3%BB%E7%BB%9F.md)
+
+**security\_huks**
+
+[security\_deviceauth](https://gitee.com/openharmony/security_deviceauth/blob/master/README_zh.md)
+
