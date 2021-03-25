@@ -35,12 +35,6 @@ int32_t hks_bn_export(const mbedtls_mpi *bn, unsigned char *data, size_t size)
     return mbedtls_mpi_write_binary(bn, data, size);
 }
 
-int32_t hks_bn_write_string(const mbedtls_mpi *bn, int radix,
-    char *buf, size_t buf_len, size_t *o_len)
-{
-    return mbedtls_mpi_write_string(bn, radix, buf, buf_len, o_len);
-}
-
 int32_t hks_bn_mpi_exp_mod(mbedtls_mpi *x, const mbedtls_mpi *a,
     const mbedtls_mpi *e, const mbedtls_mpi *n)
 {

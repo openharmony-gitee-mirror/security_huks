@@ -163,32 +163,6 @@ int32_t hks_u8_buf_2_u32(const uint8_t *u8_buf, uint32_t u8_buf_len,
     uint32_t *u8_buf_offset, uint32_t *u32_var);
 
 /*
- * convert uint64 variable to uint8 buffer data.
- * parameter:
- *     u64_var       - [in]      - uint64 variable.
- *     u8_buf        - [out]     - uint8 buffer.
- *     u8_buf_len    - [in]      - uint8 buffer length.
- *     u8_buf_offset - [in/out]  - uint8 buffer offset.
- * return value:
- *     success or error code.
- */
-int32_t hks_u64_2_u8_buf(uint64_t u64_var, uint8_t *u8_buf, uint32_t u8_buf_len,
-    uint32_t *u8_buf_offset);
-
-/*
- * convert uint8 buffer data to uint64 variable.
- * parameter:
- *     u8_buf        - [in]      - uint8 buffer.
- *     u8_buf_len    - [in]      - uint8 buffer length.
- *     u8_buf_offset - [in/out]  - uint8 buffer offset.
- *     u64_var       - [out]     - uint64 variable.
- * return value:
- *     success or error code.
- */
-int32_t hks_u8_buf_2_u64(const uint8_t *u8_buf, uint32_t u8_buf_len,
-    uint32_t *u8_buf_offset, uint64_t *u64_var);
-
-/*
  * convert uint8 variable to uint8 buffer data.
  * parameter:
  *     u8_var        - [in]      - uint8 variable.
