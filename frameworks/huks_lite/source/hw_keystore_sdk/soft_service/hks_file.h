@@ -39,13 +39,6 @@ int32_t hks_file_write(const char *file_name, uint32_t offset,
 int32_t hks_file_size(const char *file_name, uint32_t *size);
 
 /*
- * cancel callbacks
- * parameter: none
- * return value: none
- */
-void hks_file_cancel_callbacks(void);
-
-/*
  * delete file safely
  * parameter:
  *     file_name - [in] - file name

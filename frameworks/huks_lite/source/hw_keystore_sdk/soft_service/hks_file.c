@@ -132,20 +132,6 @@ static int32_t hks_file_init_data(const char *file_name, uint32_t file_size,
 }
 
 /*
- * cancel callbacks
- * parameter: none
- * return value: none
- */
-void hks_file_cancel_callbacks(void)
-{
-    g_file_callbacks.file_size = NULL;
-    g_file_callbacks.read = NULL;
-    g_file_callbacks.write = NULL;
-
-    return;
-}
-
-/*
  * delete file safely
  * parameter:
  *     file_name - [in] - file name
