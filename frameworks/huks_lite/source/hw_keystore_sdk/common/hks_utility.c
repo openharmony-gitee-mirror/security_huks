@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifndef _CUT_AUTHENTICATE_
 
 #include "hks_utility.h"
 
@@ -548,3 +549,4 @@ int32_t hks_u8_buf_2_time(const uint8_t *u8_buf, uint32_t u8_buf_len,
 
     return HKS_STATUS_OK;
 }
+#endif

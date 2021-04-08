@@ -48,6 +48,9 @@ void hks_get_sdk_version(struct hks_blob *sdk_version)
 HKS_DLL_API_PUBLIC int32_t hks_generate_key(const struct hks_blob *key_alias,
     const struct hks_key_param *key_param)
 {
+#ifdef _CUT_AUTHENTICATE_
+    return HKS_ERROR_NOT_SUPPORTED;
+#else
     HKS_TRACE_IN;
     hks_if_status_error_return(hks_is_valid_auth_id(key_param));
     hks_if_status_error_return(hks_is_valid_alias(key_alias));
@@ -55,12 +58,16 @@ HKS_DLL_API_PUBLIC int32_t hks_generate_key(const struct hks_blob *key_alias,
     if (key_param->key_type != HKS_KEY_TYPE_EDDSA_KEYPAIR_ED25519)
         return HKS_ERROR_NOT_SUPPORTED;
     return hks_access_generate_key(key_alias, key_param);
+#endif
 }
 
 HKS_DLL_API_PUBLIC int32_t hks_generate_asymmetric_key(
     const struct hks_key_param *key_param, struct hks_blob *pri_key,
     struct hks_blob *pub_key)
 {
+#ifdef _CUT_AUTHENTICATE_
+    return HKS_ERROR_NOT_SUPPORTED;
+#else
     HKS_TRACE_IN;
     hks_if_true_return_error((key_param == NULL), HKS_ERROR_NULL_POINTER);
     if (key_param->key_type != HKS_KEY_TYPE_ECC_KEYPAIR_CURVE25519)
@@ -71,12 +78,16 @@ HKS_DLL_API_PUBLIC int32_t hks_generate_asymmetric_key(
         (pub_key->data == NULL))
         return HKS_ERROR_NULL_POINTER;
     return hks_access_generate_key_ex(key_param, pri_key, pub_key);
+#endif
 }
 
 HKS_DLL_API_PUBLIC int32_t hks_import_public_key(
     const struct hks_blob *key_alias,
     const struct hks_key_param *key_param, const struct hks_blob *key)
 {
+#ifdef _CUT_AUTHENTICATE_
+    return HKS_ERROR_NOT_SUPPORTED;
+#else
     HKS_TRACE_IN;
     hks_if_status_error_return(hks_is_valid_auth_id(key_param));
     int32_t status = hks_is_valid_alias(key_alias);
@@ -90,11 +101,15 @@ HKS_DLL_API_PUBLIC int32_t hks_import_public_key(
         return HKS_ERROR_INVALID_PUBLIC_KEY;
 
     return hks_access_import_key(key_alias, key_param, key);
+#endif
 }
 
 HKS_DLL_API_PUBLIC int32_t hks_export_public_key(
     const struct hks_blob *key_alias, struct hks_blob *key)
 {
+#ifdef _CUT_AUTHENTICATE_
+    return HKS_ERROR_NOT_SUPPORTED;
+#else
     int32_t status = hks_is_valid_alias(key_alias);
 
     if (status != HKS_STATUS_OK)
@@ -104,21 +119,29 @@ HKS_DLL_API_PUBLIC int32_t hks_export_public_key(
     if ((key->data == NULL) || (key->size < CRYPTO_PUBLIC_KEY_BYTES))
         return HKS_ERROR_BUF_TOO_SMALL;
     return hks_access_export_key(key_alias, key);
+#endif
 }
 
 HKS_DLL_API_PUBLIC int32_t hks_delete_key(const struct hks_blob *key_alias)
 {
+#ifdef _CUT_AUTHENTICATE_
+    return HKS_ERROR_NOT_SUPPORTED;
+#else
     /* to add log here track return value */
     int32_t status = hks_is_valid_alias(key_alias);
 
     if (status != HKS_STATUS_OK)
         return status;
     return hks_access_delete_key(key_alias);
+#endif
 }
 
 HKS_DLL_API_PUBLIC int32_t hks_get_key_param(const struct hks_blob *key_alias,
     struct hks_key_param *key_param)
 {
+#ifdef _CUT_AUTHENTICATE_
+    return HKS_ERROR_NOT_SUPPORTED;
+#else
     int32_t status = hks_is_valid_alias(key_alias);
 
     if (status != HKS_STATUS_OK)
@@ -126,6 +149,7 @@ HKS_DLL_API_PUBLIC int32_t hks_get_key_param(const struct hks_blob *key_alias,
     if (key_param == NULL)
         return HKS_ERROR_NULL_POINTER;
     return hks_access_get_key_param(key_alias, key_param);
+#endif
 }
 
 /*
@@ -134,12 +158,16 @@ HKS_DLL_API_PUBLIC int32_t hks_get_key_param(const struct hks_blob *key_alias,
  */
 HKS_DLL_API_PUBLIC int32_t hks_is_key_exist(const struct hks_blob *key_alias)
 {
+#ifdef _CUT_AUTHENTICATE_
+    return HKS_ERROR_NOT_SUPPORTED;
+#else
     int32_t status = hks_is_valid_alias(key_alias);
 
     if (status != HKS_STATUS_OK)
         return status;
     status = hks_access_is_key_exist(key_alias);
     return status;
+#endif
 }
 
 HKS_DLL_API_PUBLIC int32_t hks_asymmetric_sign(
@@ -147,6 +175,9 @@ HKS_DLL_API_PUBLIC int32_t hks_asymmetric_sign(
     const struct hks_key_param *key_param, const struct hks_blob *hash,
     struct hks_blob *signature)
 {
+#ifdef _CUT_AUTHENTICATE_
+    return HKS_ERROR_NOT_SUPPORTED;
+#else
     int32_t status = hks_is_valid_alias(key_alias);
 
     hks_if_status_error_return(status);
@@ -162,12 +193,16 @@ HKS_DLL_API_PUBLIC int32_t hks_asymmetric_sign(
         return HKS_ERROR_BUFFER_TOO_SMALL;
 
     return hks_access_sign(key_alias, key_param, hash, signature);
+#endif
 }
 
 HKS_DLL_API_PUBLIC int32_t hks_asymmetric_verify(const struct hks_blob *key,
     const struct hks_key_param *key_param, const struct hks_blob *hash,
     const struct hks_blob *signature)
 {
+#ifdef _CUT_AUTHENTICATE_
+    return HKS_ERROR_NOT_SUPPORTED;
+#else
     hks_if_true_return_error(((key == NULL) || (key_param == NULL) ||
         (hash == NULL) || (signature == NULL)), HKS_ERROR_NULL_POINTER);
 
@@ -194,6 +229,7 @@ HKS_DLL_API_PUBLIC int32_t hks_asymmetric_verify(const struct hks_blob *key,
     if ((signature->data == NULL) || (signature->size < HKS_SIGNATURE_MIN_SIZE))
         return HKS_ERROR_INVALID_ARGUMENT;
     return hks_access_verify(key, hash, signature);
+#endif
 }
 
 static int32_t hks_aead_encrypt_ree(const struct hks_blob *key,
@@ -301,6 +337,9 @@ HKS_DLL_API_PUBLIC int32_t hks_key_agreement(struct hks_blob *agreed_key,
     const uint32_t agreement_alg, const struct hks_blob *private_key,
     const struct hks_blob *peer_public_key)
 {
+#ifdef _CUT_AUTHENTICATE_
+    return HKS_ERROR_NOT_SUPPORTED;
+#else
     hks_if_true_return_error(((agreed_key == NULL) ||
         (private_key_param == NULL) || (private_key == NULL) ||
         (peer_public_key == NULL)), HKS_ERROR_NULL_POINTER);
@@ -327,6 +366,7 @@ HKS_DLL_API_PUBLIC int32_t hks_key_agreement(struct hks_blob *agreed_key,
         return HKS_ERROR_INVALID_PUBLIC_KEY;
     return hks_access_key_agreement(agreed_key,
         private_key_param, private_key, peer_public_key, agreement_alg);
+#endif
 }
 
 HKS_DLL_API_PUBLIC int32_t hks_generate_random(struct hks_blob *random)
@@ -350,9 +390,13 @@ HKS_DLL_API_PUBLIC int32_t hks_hmac(const struct hks_blob *key,
 HKS_DLL_API_PUBLIC int32_t hks_hash(const uint32_t alg,
     const struct hks_blob *src_data, struct hks_blob *hash)
 {
+#ifdef _CUT_AUTHENTICATE_
+    return HKS_ERROR_NOT_SUPPORTED;
+#else
     hks_if_true_return_error(((src_data == NULL) || (hash == NULL)),
         HKS_ERROR_NULL_POINTER);
     return hks_access_hash(alg, src_data, hash);
+#endif
 }
 
 HKS_DLL_API_PUBLIC int32_t hks_bn_exp_mod(struct hks_blob *x,
@@ -367,16 +411,24 @@ HKS_DLL_API_PUBLIC int32_t hks_bn_exp_mod(struct hks_blob *x,
 HKS_DLL_API_PUBLIC int32_t hks_register_file_callbacks(
     struct hks_file_callbacks *callbacks)
 {
+#ifdef _CUT_AUTHENTICATE_
+    return HKS_SUCCESS;
+#else
     if (callbacks == NULL)
         return HKS_ERROR_NULL_POINTER;
 
     return hks_service_register_file_callbacks(callbacks);
+#endif
 }
 
 HKS_DLL_API_PUBLIC int32_t hks_register_get_hardware_udid_callback(
     hks_get_hardware_udid_callback callback)
 {
+#ifdef _CUT_AUTHENTICATE_
+    return HKS_SUCCESS;
+#else
     return hks_service_register_get_hardware_udid_callback(callback);
+#endif
 }
 
 HKS_DLL_API_PUBLIC int32_t hks_register_log_interface(
@@ -392,23 +444,40 @@ HKS_DLL_API_PUBLIC int32_t hks_register_log_interface(
 HKS_DLL_API_PUBLIC int32_t hks_get_pub_key_alias_list(
     struct hks_blob *key_alias_list, uint32_t *list_count)
 {
+#ifdef _CUT_AUTHENTICATE_
+    return HKS_ERROR_NOT_SUPPORTED;
+#else
     if ((key_alias_list == NULL) || (list_count == NULL))
         return HKS_ERROR_NULL_POINTER;
 
     return hks_access_get_pub_key_alias_list(key_alias_list, list_count);
+#endif
 }
 
 HKS_DLL_API_PUBLIC int32_t hks_init(void)
 {
+#ifdef _CUT_AUTHENTICATE_
+    log_debug("call hks init success.");
+    return HKS_SUCCESS;
+#else
     return hks_access_init();
+#endif
 }
 
 HKS_DLL_API_PUBLIC void hks_destroy(void)
 {
+#ifdef _CUT_AUTHENTICATE_
+    return;
+#else
     hks_access_destroy();
+#endif
 }
 
 HKS_DLL_API_PUBLIC int32_t hks_refresh_key_info(void)
 {
+#ifdef _CUT_AUTHENTICATE_
+    return HKS_SUCCESS;
+#else
     return hks_access_refresh_key_info();
+#endif
 }

@@ -28,6 +28,7 @@ void hks_enter_secure_mode(struct sec_mod_msg *msg)
     __hks_handle_secure_call(msg);
 }
 
+#ifndef _CUT_AUTHENTICATE_
 int32_t hks_access_init(void)
 {
     int32_t status = hks_service_key_info_init();
@@ -121,6 +122,7 @@ int32_t hks_access_verify(const struct hks_blob *key_alias, const struct hks_blo
     hks_enter_secure_mode(&msg_box);
     return msg_box.status;
 }
+#endif
 
 int32_t hks_access_aead_encrypt(const struct hks_blob *key, const struct hks_key_param *key_param,
     const struct hks_crypt_param *crypt_param, const struct hks_blob *plain_text, struct hks_blob *cipher_text_with_tag)
@@ -162,6 +164,7 @@ int32_t hks_access_aead_decrypt(const struct hks_blob *key, const struct hks_key
     return msg_box.status;
 }
 
+#ifndef _CUT_AUTHENTICATE_
 int32_t hks_access_import_key(const struct hks_blob *key_alias, const struct hks_key_param *key_param,
     const struct hks_blob *key)
 {
@@ -232,6 +235,7 @@ int32_t hks_access_get_pub_key_alias_list(struct hks_blob *key_alias_list, uint3
 
     return status;
 }
+#endif
 
 int32_t hks_access_get_random(struct hks_blob *random)
 {
@@ -267,6 +271,7 @@ int32_t hks_access_hmac(const struct hks_blob *key,
     return msg_box.status;
 }
 
+#ifndef _CUT_AUTHENTICATE_
 int32_t hks_access_hash(uint32_t alg, const struct hks_blob *src_data,
     struct hks_blob *hash)
 {
@@ -304,6 +309,7 @@ int32_t hks_access_key_agreement(struct hks_blob *agreed_key, const struct hks_k
 
     return msg_box.status;
 }
+#endif
 
 int32_t hks_access_key_derivation(struct hks_blob *derived_key, const struct hks_blob *kdf_key,
     const struct hks_blob *salt, const struct hks_blob *label, const struct hks_key_param *key_params)
@@ -344,6 +350,7 @@ int32_t hks_access_bn_exp_mod(struct hks_blob *x, const struct hks_blob *a, cons
     return msg_box.status;
 }
 
+#ifndef _CUT_AUTHENTICATE_
 static void hks_handle_generate_key(struct sec_mod_msg *msg_box)
 {
     struct hks_generate_key_msg *msg = &msg_box->msg_data.generate_key_msg;
@@ -385,6 +392,7 @@ static void hks_handle_verify(struct sec_mod_msg *msg_box)
 
     msg_box->status = hks_service_asymmetric_verify(msg->key, msg->message, msg->signature);
 }
+#endif
 
 static void hks_handle_encrypt(struct sec_mod_msg *msg_box)
 {
@@ -409,6 +417,7 @@ static void hks_handle_get_random(struct sec_mod_msg *msg_box)
     msg_box->status = hks_service_get_random(msg->random);
 }
 
+#ifndef _CUT_AUTHENTICATE_
 static void hks_handle_key_agreement(struct sec_mod_msg *msg_box)
 {
     struct hks_key_agreement_msg *msg = &msg_box->msg_data.key_agreement_msg;
@@ -416,6 +425,7 @@ static void hks_handle_key_agreement(struct sec_mod_msg *msg_box)
     msg_box->status = hks_service_key_agreement(msg->agreed_key, msg->key_param,
         msg->priv_key, msg->pub_key, msg->agreement_alg);
 }
+#endif
 
 static void hks_handle_key_deviration(struct sec_mod_msg *msg_box)
 {
@@ -431,12 +441,14 @@ static void hks_handle_hmac(struct sec_mod_msg *msg_box)
     msg_box->status = hks_service_hmac_ex(msg->key, msg->alg, msg->src_data, msg->output);
 }
 
+#ifndef _CUT_AUTHENTICATE_
 static void hks_handle_hash(struct sec_mod_msg *msg_box)
 {
     struct hks_hash_msg *msg = &msg_box->msg_data.hash_msg;
 
     msg_box->status = hks_service_hash(msg->alg, msg->src_data, msg->hash);
 }
+#endif
 
 static void hks_handle_bn_exp_mod(struct sec_mod_msg *msg_box)
 {
@@ -446,6 +458,7 @@ static void hks_handle_bn_exp_mod(struct sec_mod_msg *msg_box)
 }
 
 hks_handle_func_p g_hks_handle_func[HKS_CMD_MAX] = {
+#ifndef _CUT_AUTHENTICATE_
     hks_handle_generate_key,
     hks_handle_generate_key_ex,
     hks_handle_sign,
@@ -460,6 +473,22 @@ hks_handle_func_p g_hks_handle_func[HKS_CMD_MAX] = {
     hks_handle_hmac,
     hks_handle_hash,
     hks_handle_bn_exp_mod,
+#else
+    NULL,
+    NULL,
+    NULL,
+    NULL,
+    hks_handle_encrypt,
+    hks_handle_decrypt,
+    NULL,
+    NULL,
+    hks_handle_get_random,
+    NULL,
+    hks_handle_key_deviration,
+    hks_handle_hmac,
+    NULL,
+    hks_handle_bn_exp_mod,
+#endif
 };
 
 static void __hks_handle_secure_call(struct sec_mod_msg *msg_box)

@@ -14,8 +14,9 @@
  */
 
 #include "hks_service.h"
-
+#ifndef _CUT_AUTHENTICATE_
 #include <ec_local.h>
+#endif
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/ecdh.h>
 #include <mbedtls/entropy.h>
@@ -34,8 +35,10 @@
 #define HKS_BN_MOD_SHIFT_DEC 4 /* bn mod Dec bit shift */
 #define HKS_BN_MOD_SHIFT_HEX 16 /* bn mod Hex bit shift */
 
+#ifndef _CUT_AUTHENTICATE_
 static int32_t hks_service_generate_x25519_key(struct hks_blob *pri_key,
     struct hks_blob *pub_key);
+#endif
 
 static int32_t hks_service_hmac(const struct hks_blob *key, uint32_t alg,
     const struct hks_blob *src_data, struct hks_blob *output);
@@ -55,6 +58,7 @@ static int32_t hks_service_aead_decrypt(const struct hks_blob *key,
     const struct hks_blob *cipher_text_with_tag,
     struct hks_blob *plain_text);
 
+#ifndef _CUT_AUTHENTICATE_
 static int32_t hks_mbedtls_hash(uint32_t alg, const unsigned char *input,
     size_t ilen, unsigned char *output);
 
@@ -186,6 +190,7 @@ int32_t hks_service_generate_asymmetric_key(
     hks_check_return_code(status, &status);
     return status;
 }
+#endif
 
 int32_t hks_service_aead_encrypt_ex(const struct hks_blob *key,
     const struct hks_key_param *key_param,
@@ -370,6 +375,7 @@ int32_t hks_service_key_derivation(struct hks_blob *derived_key,
     return status;
 }
 
+#ifndef _CUT_AUTHENTICATE_
 /*
  * private_key.data is generate by hks ,so must be big endian
  * peer_public_key.data are come from outside, make sure it's little endian
@@ -447,6 +453,7 @@ exit:
     hks_check_return_code(status, &status);
     return status;
 }
+#endif
 
 int32_t hks_service_get_random(struct hks_blob *random)
 {
@@ -493,6 +500,7 @@ static int32_t hks_service_hmac(const struct hks_blob *key, uint32_t alg,
     return mbedtls_to_hks_error(status);
 }
 
+#ifndef _CUT_AUTHENTICATE_
 /* an encapsulation function for mbedtls hash processing */
 static int32_t hks_mbedtls_hash(uint32_t alg, const unsigned char *input,
     size_t ilen, unsigned char *output)
@@ -609,6 +617,7 @@ exit:
     hks_check_return_code(res, &res);
     return res;
 }
+#endif
 
 static int32_t hks_service_bn_exp_mod_check(struct hks_blob *x,
     const struct hks_blob *a, const struct hks_blob *e,
@@ -666,6 +675,7 @@ error:
     return status;
 }
 
+#ifndef _CUT_AUTHENTICATE_
 int32_t hks_service_asymmetric_verify(const struct hks_blob *key_alias,
     const struct hks_blob *hash, const struct hks_blob *signature)
 {
@@ -827,6 +837,7 @@ int32_t hks_service_is_key_exist(const struct hks_blob *key_alias)
         return HKS_STATUS_OK;
     return HKS_ERROR_KEY_NOT_EXIST;
 }
+#endif
 
 int32_t hks_service_register_file_callbacks(
     const struct hks_file_callbacks *callbacks)
@@ -837,6 +848,7 @@ int32_t hks_service_register_file_callbacks(
     return hks_file_register_callbacks(callbacks);
 }
 
+#ifndef _CUT_AUTHENTICATE_
 int32_t hks_service_get_pub_key_alias_list(
     struct hks_blob *key_alias_list, uint32_t *list_count)
 {
@@ -881,3 +893,4 @@ int32_t hks_service_register_get_hardware_udid_callback(
 {
     return hks_reg_get_hardware_udid_callback(callback);
 }
+#endif

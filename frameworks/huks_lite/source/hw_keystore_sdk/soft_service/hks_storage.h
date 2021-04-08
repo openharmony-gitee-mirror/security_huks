@@ -16,6 +16,8 @@
 #ifndef HKS_STORAGE_H
 #define HKS_STORAGE_H
 
+#ifndef _CUT_AUTHENTICATE_
+
 #include "hks_types.h"
 
 #ifdef __cplusplus
@@ -88,5 +90,5 @@ void hks_storage_destroy(void);
 #ifdef __cplusplus
 }
 #endif
-
+#endif
 #endif /* HKS_STORAGE_H */
