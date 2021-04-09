@@ -16,6 +16,8 @@
 #ifndef HKS_RKC_H
 #define HKS_RKC_H
 
+#ifndef _CUT_AUTHENTICATE_
+
 #include "hks_types.h"
 
 #include "common/hks_utility.h"
@@ -322,5 +324,5 @@ int32_t hks_rkc_get_kek(const struct hks_blob *salt, struct hks_blob *kek);
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
-
+#endif
 #endif /* HKS_RKC_H */

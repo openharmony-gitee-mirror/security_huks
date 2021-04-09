@@ -41,7 +41,9 @@ const unsigned char g_hks_random_seed_custom[] = {
     0x48, 0x4B, 0x53
 };
 
+#ifndef _CUT_AUTHENTICATE_
 static hks_get_hardware_udid_callback g_hks_get_hardware_udid_callback;
+#endif
 
 /*
  * generate random number
@@ -93,6 +95,7 @@ exit:
     return ret;
 }
 
+#ifndef _CUT_AUTHENTICATE_
 /*
  * calculate SHA256
  * parameter:
@@ -328,6 +331,7 @@ void hks_key_param_destroy(struct hks_key_param *pram)
 
     pram->key_auth_id.data = NULL;
 }
+#endif
 
 void hks_check_return_code(int32_t s, int32_t *ret)
 {
@@ -550,6 +554,7 @@ int32_t hks_mbedtls_key_derivation(struct hks_blob *derived_key,
     return status;
 }
 
+#ifndef _CUT_AUTHENTICATE_
 int32_t hks_endian_swap(uint8_t *p_data, int32_t length)
 {
     if (p_data == NULL)
@@ -571,6 +576,7 @@ int32_t hks_endian_swap(uint8_t *p_data, int32_t length)
     }
     return HKS_SUCCESS;
 }
+#endif
 
 struct mbedtls_to_hks_err_code {
     int32_t mbedtls_code;
@@ -689,6 +695,7 @@ int32_t mbedtls_to_hks_error(int ret)
     return HKS_FAILURE;
 }
 
+#ifndef _CUT_AUTHENTICATE_
 /*
  * XOR operation
  * parameter:
@@ -778,4 +785,5 @@ void crypto_hash_sha512(unsigned char *out, const unsigned char *in, const int l
     mbedtls_sha512_update(&ctx, in, len);
     mbedtls_sha512_finish(&ctx, out);
 }
+#endif
 

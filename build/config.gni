@@ -11,14 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
-import("//base/security/huks/build/config.gni")
+declare_args() {
+  # for HUKS can compile on liteos_m
+  disable_huks_binary = false
 
-group("huks_sdk") {
-  if ((ohos_kernel_type == "liteos_m") && (diable_huks_binary == false)) {
-    deps = []
-  } else {
-    deps = [ "source:huks" ]
-  }
+  # cut abilities for authentication
+  disable_authenticate = false
 }

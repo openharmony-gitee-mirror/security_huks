@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+#ifndef _CUT_AUTHENTICATE_
 #include "hks_storage.h"
 
 #include <stdlib.h>
@@ -1330,3 +1330,4 @@ void hks_storage_destroy(void)
     (void)status; /* hilink compile will replace log with {} */
     hks_free_ptr(g_storage_image_buffer);
 }
+#endif

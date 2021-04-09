@@ -39,6 +39,7 @@ int32_t hks_file_register_callbacks(const struct hks_file_callbacks *callbacks)
     return HKS_STATUS_OK;
 }
 
+#ifndef _CUT_AUTHENTICATE_
 int32_t hks_file_read(const char *file_name, uint32_t offset, uint8_t *buf,
     uint32_t buf_len, int32_t *len)
 {
@@ -165,4 +166,5 @@ void hks_file_del_s(const char *file_name)
 
     return;
 }
+#endif
 
