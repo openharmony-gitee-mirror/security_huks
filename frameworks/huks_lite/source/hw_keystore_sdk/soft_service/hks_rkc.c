@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+#ifndef _CUT_AUTHENTICATE_
 #include "hks_rkc.h"
 
 #include <mbedtls/pkcs5.h>
@@ -1759,3 +1759,4 @@ int32_t hks_rkc_get_kek(const struct hks_blob *salt, struct hks_blob *kek)
 
     return rc;
 }
+#endif
