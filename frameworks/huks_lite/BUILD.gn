@@ -16,7 +16,7 @@
 import("//base/security/huks/build/config.gni")
 
 group("huks_sdk") {
-  if ((ohos_kernel_type == "liteos_m") && (diable_huks_binary == false)) {
+  if ((ohos_kernel_type == "liteos_m") && (disable_huks_binary == false)) {
     deps = []
   } else {
     deps = [ "source:huks" ]
