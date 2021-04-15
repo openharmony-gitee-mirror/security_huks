@@ -59,8 +59,8 @@ if (ohos_kernel_type == "liteos_m") {
     public_configs = [ ":public_huks_config" ]
     configs += [ ":soft_huks_config" ]
     deps = [
-      "//build/lite/config/component/openssl:openssl_shared",
-      "//third_party/mbedtls:mbedtls_shared",
+      "//build/lite/config/component/openssl:openssl_static",
+      "//third_party/mbedtls:mbedtls_static",
     ]
   }
 } else {
