@@ -1,4 +1,4 @@
-# HUKS<a name="EN-US_TOPIC_0000001148528849"></a>
+﻿# HUKS<a name="EN-US_TOPIC_0000001148528849"></a>
 
 -   [Introduction](#section11660541593)
 -   [Directory Structure](#section161941989596)
@@ -19,19 +19,17 @@ HUKS consists of the following modules:
 
 ```
 base/security/huks/
-├ frameworks                       # Framework code, which is used by interfaces and services
-│   └ huks_standard                # HUKS module in a standard system
-|   └ huks_lite                    # L0 and L1 code implementation
-├ interfaces                       # APIs
-│   └ innerkits
-│       └ huks_standard
-│       └ huks_lite
-└ services
-    └ huks_standard
+├── frameworks                       # Framework code, which is used by interfaces and services
+│   └── huks_standard                # HUKS module in a standard system
+|   └── huks_lite                    # L0 and L1 code implementation
+├── interfaces                       # APIs
+│   └── innerkits
+│       └── huks_standard
+│       └── huks_lite
+└── services
+    └── huks_standard
 ```
 
 ## Repositories Involved<a name="section1371113476307"></a>
 
 **base/security/huks**
-
-
