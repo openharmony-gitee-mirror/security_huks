@@ -1,4 +1,4 @@
-# HUKS组件<a name="ZH-CN_TOPIC_0000001148528849"></a>
+﻿# HUKS组件<a name="ZH-CN_TOPIC_0000001148528849"></a>
 
 -   [简介](#section11660541593)
 -   [目录](#section161941989596)
@@ -19,19 +19,18 @@ HUKS模块可以分为如下三大部分：
 
 ```
 base/security/huks/
-├ frameworks                       # 框架代码, 作为基础功能目录, 被interfaces和services使用.
-│   └ huks_standard                # huks标准模块, 即表示L2的HUKS模块
-|   └ huks_lite                    # huks L0和L1代码实现
-├ interfaces                       # 接口API代码
-│   └ innerkits
-│       └ huks_standard
-│       └ huks_lite
-└ services
-    └ huks_standard
+├── frameworks                       # 框架代码, 作为基础功能目录, 被interfaces和services使用.
+│   └── huks_standard                # huks标准模块, 即表示L2的HUKS模块
+|   └── huks_lite                    # huks L0和L1代码实现
+├── interfaces                       # 接口API代码
+│   └── innerkits
+│       └── huks_standard
+│       └── huks_lite
+└── services
+    └── huks_standard
 ```
 
 ## 相关仓<a name="section1371113476307"></a>
 
 **base/security/huks**
-
 
