@@ -1,36 +1,37 @@
-# HUKS组件<a name="ZH-CN_TOPIC_0000001133264329"></a>
+# HUKS组件<a name="ZH-CN_TOPIC_0000001148528849"></a>
 
--   [简介](#section19960105154710)
--   [目录](#section11146193674920)
--   [相关仓](#section1554141575016)
+-   [简介](#section11660541593)
+-   [目录](#section161941989596)
+-   [相关仓](#section1371113476307)
 
-## 简介<a name="section19960105154710"></a>
+## 简介<a name="section11660541593"></a>
 
-HUKS是通用密钥管理服务，向应用提供KeyStore及Crypto接口API，包括密钥管理及加解密等功能。
+HUKS（Harmony Universal KeyStore，鸿蒙通用密钥库系统）向应用提供密钥库能力，包括密钥管理及密钥的密码学操作等功能。HUKS所管理的密钥可以由应用导入或者由应用调用HUKS接口生成。
 
-HUKS模块整体分为北向接口，南向适配层，以及核心的功能模块：
+HUKS模块可以分为如下三大部分：
 
-1.  HUKS 北向接口：提供统一的对外API，用C语言实现，保持所有设备一致，主要包括密钥生成API、加解密API等；
-2.  HUKS HAL层：屏蔽底层硬件和OS的差异，定义HUKS需要的统一底层API，主要包括平台算法库、IO和LOG等；
-3.  HUKS Core Module：依赖HAL层，提供核心功能，如加解密、签名验签、密钥存储等。
+-   HUKS SDK层：提供HUKS API供应用调用。
 
-## 目录<a name="section11146193674920"></a>
+-   HUKS Service层：实现HUKS密钥管理、存储等功能。
+-   HUKS Engine层：HUKS核心模块，负责密钥生成以及加解密等工作。对于L2设备，该部分模块在商用场景下必须在安全环境下运行，包括TEE或者具备安全能力的芯片等。由于安全环境需要特定硬件支持，因此在开源代码中为模拟实现。
+
+## 目录<a name="section161941989596"></a>
 
 ```
-base/security
-├── huks
-│   ├── frameworks
-│   │   └── huks_lite  HUKS代码实现
-│   └── interfaces
-│       └── innerkits
-│           └── huks_lite  HUKS提供接口
+base/security/huks/
+├ frameworks                       # 框架代码, 作为基础功能目录, 被interfaces和services使用.
+│   └ huks_standard                # huks标准模块, 即表示L2的HUKS模块
+|   └ huks_lite                    # huks L0和L1代码实现
+├ interfaces                       # 接口API代码
+│   └ innerkits
+│       └ huks_standard
+│       └ huks_lite
+└ services
+    └ huks_standard
 ```
 
-## 相关仓<a name="section1554141575016"></a>
+## 相关仓<a name="section1371113476307"></a>
 
-[安全子系统](https://gitee.com/openharmony/docs/blob/master/zh-cn/readme/%E5%AE%89%E5%85%A8%E5%AD%90%E7%B3%BB%E7%BB%9F.md)
+**base/security/huks**
 
-**security\_huks**
-
-[security\_deviceauth](https://gitee.com/openharmony/security_deviceauth/blob/master/README_zh.md)
 
