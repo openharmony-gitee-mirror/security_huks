@@ -18,4 +18,31 @@ declare_args() {
 
   # cut abilities for authentication
   disable_authenticate = false
+
+  # whether HUKS use mbedlts engine
+  use_mbedlts = false
+    
+  # mbedlts path when HUKS using mbedlts engine
+  mbedlts_path = "//third_party/mbedlts//include"
+  
+  # whether use nmi access
+  use_nmi_access = false
+  
+  # whether use lite storage
+  use_lite_storage = false
+  
+  # whether use nmi engine demo
+  use_nmi_engine_demo = false
+  
+  # whether use secure enviroment nmi
+  use_secure_enviroment_nmi = false
+  
+  # whether use hardware root key
+  use_hardware_root_key = false
+  
+  # whether use hks hal engine config file
+  hks_hal_engine_config_file = ""
+  
+  # whether compile huks 2.0
+  enable_huks_new = false
 }
