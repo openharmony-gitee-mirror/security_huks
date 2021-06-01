@@ -1,4 +1,4 @@
-﻿# HUKS<a name="EN-US_TOPIC_0000001148528849"></a>
+# HUKS<a name="EN-US_TOPIC_0000001148528849"></a>
 
 -   [Introduction](#section11660541593)
 -   [Directory Structure](#section161941989596)

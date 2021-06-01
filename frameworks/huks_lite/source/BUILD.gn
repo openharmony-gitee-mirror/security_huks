@@ -25,11 +25,14 @@ config("soft_huks_config") {
     "//base/security/huks/interfaces/innerkits/huks_lite",
   ]
 
-if ((ohos_kernel_type == "liteos_m") && (disable_authenticate == true)) {
-  defines = [ "_FORTIFY_SOURCE = 2", "_CUT_AUTHENTICATE_" ]
-} else {
-  defines = [ "_FORTIFY_SOURCE = 2" ]
-}
+  if (ohos_kernel_type == "liteos_m" && disable_authenticate == true) {
+    defines = [
+      "_FORTIFY_SOURCE = 2",
+      "_CUT_AUTHENTICATE_",
+    ]
+  } else {
+    defines = [ "_FORTIFY_SOURCE = 2" ]
+  }
 
   cflags = [
     "-fvisibility=hidden",
