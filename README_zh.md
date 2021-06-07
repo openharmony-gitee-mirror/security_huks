@@ -19,10 +19,12 @@ HUKS模块可以分为如下三大部分：
 
 ```
 base/security/huks/
-├── frameworks                       # 框架代码, 作为基础功能目录, 被interfaces和services使用.
-│   └── huks_standard                # huks标准模块, 即表示L2的HUKS模块
-|   └── huks_lite                    # huks L0和L1代码实现
-├── interfaces                       # 接口API代码
+├── build                             # 编译配置文件
+├── frameworks                        # 框架代码, 作为基础功能目录, 被interfaces和services使用.
+│   └── huks_standard                 # huks标准模块, 即表示L2的HUKS模块
+│   └── huks_lite                     # huks L0和L1代码实现
+│   └── crypto_lite                   # 加解密实现
+├── interfaces                        # 接口API代码
 │   └── innerkits
 │       └── huks_standard
 │       └── huks_lite
@@ -32,5 +34,8 @@ base/security/huks/
 
 ## 相关仓<a name="section1371113476307"></a>
 
-**base/security/huks**
+**安全子系统**
+
+**security_huks**
+
 
