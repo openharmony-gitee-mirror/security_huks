@@ -273,7 +273,6 @@ int32_t GetEvpKey(const struct HksBlob *keyBlob, EVP_PKEY *key, bool private)
         EC_KEY_free(eccKey);
         return HKS_FAILURE;
     }
-    EC_KEY_free(eccKey);
     return HKS_SUCCESS;
 }
 
