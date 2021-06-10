@@ -574,7 +574,7 @@ int32_t hks_service_asymmetric_sign(const struct hks_blob *key_alias,
     uint32_t key_size = 0;
     int32_t res = hks_storage_get_key_size(key_alias, &key_size);
 
-    if ((res != HKS_SUCCESS) || (key_size <= 0))
+    if ((res != HKS_SUCCESS) || (key_size == 0))
         return HKS_ERROR_INVALID_PRIVATE_KEY;
 
     struct hks_key_param param;
@@ -714,7 +714,7 @@ static int32_t hks_service_verify_with_alias(const struct hks_blob *key_alias,
     uint32_t key_size = 0;
     int32_t res = hks_storage_get_key_size(key_alias, &key_size);
 
-    hks_if_true_return_error(((res != HKS_SUCCESS) || (key_size <= 0)),
+    hks_if_true_return_error(((res != HKS_SUCCESS) || (key_size == 0)),
         HKS_ERROR_INVALID_PUBLIC_KEY);
     res = hks_malloc_init_ptr(CRYPTO_PUBLIC_KEY_BYTES,
         &(public_key->data));
