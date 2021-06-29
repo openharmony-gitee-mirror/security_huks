@@ -16,6 +16,7 @@
 #ifndef HKS_MEM_H
 #define HKS_MEM_H
 
+#include <stdint.h>
 #include <stdlib.h>
 
 #ifdef __cplusplus
