@@ -24,7 +24,7 @@
 
 #include "hks_log.h"
 #include "hks_mem.h"
-#include "hks_type.h"
+#include "hks_type_inner.h"
 
 using namespace OHOS;
 

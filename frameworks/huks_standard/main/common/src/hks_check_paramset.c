@@ -13,20 +13,31 @@
  * limitations under the License.
  */
 
+#ifdef HKS_CONFIG_FILE
+#include HKS_CONFIG_FILE
+#else
+#include "hks_config.h"
+#endif
+
 #include "hks_check_paramset.h"
 
-#include "hks_common_check.h"
-#ifdef HKS_HAL_ENGINE_CONFIG_FILE
-#include HKS_HAL_ENGINE_CONFIG_FILE
-#else
-#include "hks_crypto_hal_config.h"
-#endif
 #include "hks_base_check.h"
+#include "hks_common_check.h"
 #include "hks_log.h"
+
+#ifdef _CUT_AUTHENTICATE_
+#undef HKS_SUPPORT_HASH_C
+#undef HKS_SUPPORT_RSA_C
+#undef HKS_SUPPORT_ECC_C
+#undef HKS_SUPPORT_X25519_C
+#undef HKS_SUPPORT_ED25519_C
+#undef HKS_SUPPORT_KDF_PBKDF2
+#endif /* _CUT_AUTHENTICATE_ */
 
 #define HKS_DEFAULT_PBKDF2_ITERATION 1000
 #define HKS_DEFAULT_PBKDF2_SALT_SIZE 16
 
+#ifndef _CUT_AUTHENTICATE_
 static uint32_t g_genKeyAlg[] = {
 #ifdef HKS_SUPPORT_RSA_C
     HKS_ALG_RSA,
@@ -71,14 +82,7 @@ static uint32_t g_cipherAlg[] = {
     HKS_ALG_AES,
 #endif
 };
-
-static uint32_t g_cipherAlgLocal[] = {
-#ifdef HKS_SUPPORT_AES_C
-    HKS_ALG_AES,
-#endif
-};
-
-#ifdef HKS_SUPPORT_SIGN_VERIFY
+#ifdef HKS_SUPPORT_API_SIGN_VERIFY
 static uint32_t g_signAlg[] = {
 #ifdef HKS_SUPPORT_RSA_C
     HKS_ALG_RSA,
@@ -106,6 +110,7 @@ static uint32_t g_agreeAlgLocal[] = {
     HKS_ALG_X25519,
 #endif
 };
+#endif /* _CUT_AUTHENTICATE_ */
 
 static uint32_t g_deriveAlg[] = {
 #ifdef HKS_SUPPORT_KDF_HKDF
@@ -134,6 +139,12 @@ static uint32_t g_aesKeySizeLocal[] = {
     HKS_KEY_BYTES(HKS_AES_KEY_SIZE_128),
     HKS_KEY_BYTES(HKS_AES_KEY_SIZE_192),
     HKS_KEY_BYTES(HKS_AES_KEY_SIZE_256)
+};
+
+static uint32_t g_cipherAlgLocal[] = {
+#ifdef HKS_SUPPORT_AES_C
+    HKS_ALG_AES,
+#endif
 };
 
 static int32_t CheckAndGetAlgorithm(const struct HksParamSet *paramSet, const uint32_t *expectAlg,
@@ -176,6 +187,7 @@ static int32_t CheckAndGetDigest(const struct HksParamSet *paramSet, const uint3
     return ret;
 }
 
+#ifndef _CUT_AUTHENTICATE_
 static int32_t CheckGenKeyParamsByAlg(uint32_t alg, const struct HksParamSet *paramSet,
     struct ParamsValues *params)
 {
@@ -309,6 +321,7 @@ static int32_t CheckSignVerifyParamsByAlg(uint32_t cmdId, uint32_t alg, const st
 
     return ret;
 }
+#endif /* _CUT_AUTHENTICATE_ */
 
 static int32_t CheckCipherParamsByAlg(uint32_t cmdId, uint32_t alg, const struct HksParamSet *paramSet,
     const struct ParamsValues *inputParams)
@@ -333,6 +346,7 @@ static int32_t CheckCipherParamsByAlg(uint32_t cmdId, uint32_t alg, const struct
     return ret;
 }
 
+#ifndef _CUT_AUTHENTICATE_
 #ifdef HKS_SUPPORT_KDF_PBKDF2
 static int32_t CheckPbkdf2DeriveKeyParams(const struct HksParamSet *paramSet)
 {
@@ -359,6 +373,258 @@ static int32_t CheckPbkdf2DeriveKeyParams(const struct HksParamSet *paramSet)
     return HKS_SUCCESS;
 }
 #endif
+
+int32_t HksCoreCheckGenKeyParams(const struct HksBlob *keyAlias, const struct HksParamSet *paramSet,
+    const struct HksBlob *keyIn, const struct HksBlob *keyOut)
+{
+    (void)keyAlias;
+    (void)keyIn;
+    (void)keyOut;
+    struct ParamsValues params;
+    (void)memset_s(&params, sizeof(params), 0, sizeof(params));
+    return CoreCheckGenKeyParams(paramSet, &params);
+}
+
+int32_t HksCoreCheckImportKeyParams(const struct HksBlob *keyAlias, const struct HksBlob *key,
+    const struct HksParamSet *paramSet, const struct HksBlob *keyOut)
+{
+    (void)keyAlias;
+    (void)keyOut;
+    /* import key paramset is subset of generate key paramset */
+    struct ParamsValues params;
+    (void)memset_s(&params, sizeof(params), 0, sizeof(params));
+    int32_t ret = CoreCheckGenKeyParams(paramSet, &params);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("CheckImportKeyParams failed");
+        return ret;
+    }
+
+    uint32_t alg;
+    ret = CheckAndGetAlgorithm(paramSet, g_importKeyAlg, HKS_ARRAY_SIZE(g_importKeyAlg), &alg);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("import key check and get alg failed");
+        return ret;
+    }
+
+    /* check keySize */
+    ret = CheckImportKeySize(alg, &params, key);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("import key check key size invalid");
+        return ret;
+    }
+
+    /* check mutable params */
+    return CheckImportMutableParams(alg, &params);
+}
+
+int32_t HksCoreCheckSignVerifyParams(uint32_t cmdId, const struct HksBlob *key, const struct HksParamSet *paramSet,
+    const struct HksBlob *srcData, const struct HksBlob *signature)
+{
+#ifdef HKS_SUPPORT_API_SIGN_VERIFY
+    (void)srcData;
+    uint32_t alg;
+    int32_t ret = CheckAndGetAlgorithm(paramSet, g_signAlg, HKS_ARRAY_SIZE(g_signAlg), &alg);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("check and get alg failed");
+        return ret;
+    }
+
+    struct ParamsValues params;
+    (void)memset_s(&params, sizeof(params), 0, sizeof(params));
+
+    ret = HksGetInputParmasByAlg(alg, HKS_CHECK_TYPE_USE_KEY, paramSet, &params);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("sign or verify get input params failed, ret = %d", ret);
+        return ret;
+    }
+
+    ret = CheckSignVerifyParamsByAlg(cmdId, alg, &params);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("sign or verify check params failed, ret = %d", ret);
+        return ret;
+    }
+
+    ret = HksCheckSignature(cmdId, alg, key, signature);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("check signature failed, ret = %d", ret);
+    }
+
+    return ret;
+#else
+    (void)cmdId;
+    (void)key;
+    (void)paramSet;
+    (void)srcData;
+    (void)signature;
+    return HKS_ERROR_NOT_SUPPORTED;
+#endif
+}
+
+int32_t HksCoreCheckAgreeKeyParams(const struct HksParamSet *paramSet, const struct HksBlob *privateKey,
+    const struct HksBlob *peerPublicKey, const struct HksBlob *agreedKey, bool isLocalCheck)
+{
+    uint32_t alg;
+    int32_t ret;
+
+    if (isLocalCheck) {
+        ret = CheckAndGetAlgorithm(paramSet, g_agreeAlgLocal, HKS_ARRAY_SIZE(g_agreeAlgLocal), &alg);
+    } else {
+        ret = CheckAndGetAlgorithm(paramSet, g_agreeAlg, HKS_ARRAY_SIZE(g_agreeAlg), &alg);
+    }
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("check alg failed");
+        return ret;
+    }
+
+    uint32_t keySize = 0;
+    if (isLocalCheck) {
+        if ((privateKey->size != HKS_KEY_BYTES(HKS_CURVE25519_KEY_SIZE_256)) ||
+            (peerPublicKey->size != HKS_KEY_BYTES(HKS_CURVE25519_KEY_SIZE_256))) {
+            return HKS_ERROR_INVALID_KEY_SIZE;
+        }
+        keySize = privateKey->size * HKS_BITS_PER_BYTE;
+    } else {
+        ret = HksGetKeySize(alg, privateKey, &keySize);
+        if (ret != HKS_SUCCESS) {
+            HKS_LOG_E("get key size failed");
+            return ret;
+        }
+    }
+
+    uint32_t size = keySize / HKS_BITS_PER_BYTE + keySize % HKS_BITS_PER_BYTE;
+    if (agreedKey->size < size) {
+        HKS_LOG_E("agreeKey buffer too small, size %u", agreedKey->size);
+        return HKS_ERROR_BUFFER_TOO_SMALL;
+    }
+
+    return HKS_SUCCESS;
+}
+
+int32_t HksCoreCheckCipherParams(uint32_t cmdId, const struct HksBlob *key, const struct HksParamSet *paramSet,
+    const struct HksBlob *inData, const struct HksBlob *outData)
+{
+    uint32_t alg;
+    int32_t ret = CheckAndGetAlgorithm(paramSet, g_cipherAlg, HKS_ARRAY_SIZE(g_cipherAlg), &alg);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("check alg failed");
+        return ret;
+    }
+
+    struct ParamsValues params;
+    (void)memset_s(&params, sizeof(params), 0, sizeof(params));
+
+    ret = HksGetInputParmasByAlg(alg, HKS_CHECK_TYPE_USE_KEY, paramSet, &params);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("cipher get input params failed, ret = %d", ret);
+        return ret;
+    }
+
+    if (alg == HKS_ALG_RSA) {
+        ret = HksGetKeySize(alg, key, &params.keyLen.value);
+        if (ret != HKS_SUCCESS) {
+            HKS_LOG_E("rsa cipher get key size failed");
+            return ret;
+        }
+    }
+
+    ret = CheckCipherParamsByAlg(cmdId, alg, paramSet, &params);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("cipher check params failed, ret = %d", ret);
+        return ret;
+    }
+
+    ret = HksCheckCihperData(cmdId, alg, &params, inData, outData);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("cipher check input or output data failed, ret = %d", ret);
+    }
+
+    return ret;
+}
+#endif /* _CUT_AUTHENTICATE_ */
+
+int32_t HksLocalCheckCipherParams(uint32_t cmdId, const struct HksBlob *key, const struct HksParamSet *paramSet,
+    const struct HksBlob *inData, const struct HksBlob *outData)
+{
+    int32_t ret = HksCheckValue(key->size, g_aesKeySizeLocal, HKS_ARRAY_SIZE(g_aesKeySizeLocal));
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("keySize value %u not expected", key->size);
+        return HKS_ERROR_INVALID_KEY_SIZE;
+    }
+
+    uint32_t alg;
+    ret = CheckAndGetAlgorithm(paramSet, g_cipherAlgLocal, HKS_ARRAY_SIZE(g_cipherAlgLocal), &alg);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("check alg failed");
+        return ret;
+    }
+
+    struct ParamsValues params;
+    (void)memset_s(&params, sizeof(params), 0, sizeof(params));
+
+    ret = HksGetInputParmasByAlg(alg, HKS_CHECK_TYPE_USE_KEY, paramSet, &params);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("local cipher get input params failed, ret = %d", ret);
+        return ret;
+    }
+
+    ret = CheckCipherParamsByAlg(cmdId, alg, paramSet, &params);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("local cipher check params failed, ret = %d", ret);
+        return ret;
+    }
+
+    ret = HksCheckCihperData(cmdId, alg, &params, inData, outData);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("local cipher check input or output data failed, ret = %d", ret);
+    }
+
+    return ret;
+}
+
+int32_t HksCoreCheckDeriveKeyParams(const struct HksParamSet *paramSet, const struct HksBlob *mainKey,
+    const struct HksBlob *derivedKey, bool isLocalCheck)
+{
+    (void)mainKey;
+    (void)derivedKey;
+    uint32_t alg;
+    int32_t ret;
+    if (isLocalCheck) {
+        ret = CheckAndGetAlgorithm(paramSet, g_deriveAlgLocal, HKS_ARRAY_SIZE(g_deriveAlgLocal), &alg);
+    } else {
+        ret = CheckAndGetAlgorithm(paramSet, g_deriveAlg, HKS_ARRAY_SIZE(g_deriveAlg), &alg);
+    }
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("check alg failed");
+        return ret;
+    }
+
+    struct HksParam *purposeParam = NULL;
+    ret = HksGetParam(paramSet, HKS_TAG_PURPOSE, &purposeParam);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("get param get 0x%x failed", HKS_TAG_PURPOSE);
+        return HKS_ERROR_CHECK_GET_PURPOSE_FAIL;
+    }
+
+    if (purposeParam->uint32Param != HKS_KEY_PURPOSE_DERIVE) {
+        return HKS_ERROR_INVALID_PURPOSE;
+    }
+
+    /* according to RFC5869, HKDF no need check salt and info */
+    uint32_t digest;
+    ret = CheckAndGetDigest(paramSet, g_digest, HKS_ARRAY_SIZE(g_digest), &digest);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("check digest failed");
+        return ret;
+    }
+
+#ifdef HKS_SUPPORT_KDF_PBKDF2
+    if (alg == HKS_ALG_PBKDF2) {
+        return CheckPbkdf2DeriveKeyParams(paramSet);
+    }
+#endif
+
+    return HKS_SUCCESS;
+}
 
 static int32_t CheckMacPurpose(const struct HksParamSet *paramSet)
 {
@@ -406,253 +672,6 @@ static int32_t CheckMacOutput(const struct HksBlob *key, const struct HksParamSe
         HKS_LOG_E("key size too small, size = %u", key->size);
         return HKS_ERROR_INVALID_KEY_SIZE;
     }
-
-    return HKS_SUCCESS;
-}
-
-int32_t HksCoreCheckGenKeyParams(const struct HksBlob *keyAlias, const struct HksParamSet *paramSet,
-    const struct HksBlob *keyIn, struct HksBlob *keyOut)
-{
-    (void)keyAlias;
-    (void)keyIn;
-    (void)keyOut;
-    struct ParamsValues params;
-    (void)memset_s(&params, sizeof(params), 0, sizeof(params));
-    return CoreCheckGenKeyParams(paramSet, &params);
-}
-
-int32_t HksCoreCheckImportKeyParams(const struct HksBlob *keyAlias, const struct HksBlob *key,
-    const struct HksParamSet *paramSet, struct HksBlob *keyOut)
-{
-    (void)keyAlias;
-    (void)keyOut;
-    /* import key paramset is subset of generate key paramset */
-    struct ParamsValues params;
-    (void)memset_s(&params, sizeof(params), 0, sizeof(params));
-    int32_t ret = CoreCheckGenKeyParams(paramSet, &params);
-    if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("CheckImportKeyParams failed");
-        return ret;
-    }
-
-    uint32_t alg;
-    ret = CheckAndGetAlgorithm(paramSet, g_importKeyAlg, HKS_ARRAY_SIZE(g_importKeyAlg), &alg);
-    if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("import key check and get alg failed");
-        return ret;
-    }
-
-    /* check keySize */
-    ret = CheckImportKeySize(alg, &params, key);
-    if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("import key check key size invalid");
-        return ret;
-    }
-
-    /* check mutable params */
-    return CheckImportMutableParams(alg, &params);
-}
-
-int32_t HksCoreCheckSignVerifyParams(uint32_t cmdId, const struct HksBlob *key, const struct HksParamSet *paramSet,
-    const struct HksBlob *srcData, const struct HksBlob *signature)
-{
-#ifdef HKS_SUPPORT_SIGN_VERIFY
-    (void)srcData;
-    uint32_t alg;
-    int32_t ret = CheckAndGetAlgorithm(paramSet, g_signAlg, HKS_ARRAY_SIZE(g_signAlg), &alg);
-    if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("check and get alg failed");
-        return ret;
-    }
-
-    struct ParamsValues params;
-    (void)memset_s(&params, sizeof(params), 0, sizeof(params));
-
-    ret = HksGetInputParmasByAlg(alg, HKS_CHECK_TYPE_USE_KEY, paramSet, &params);
-    if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("sign or verify get input params failed, ret = %d", ret);
-        return ret;
-    }
-
-    ret = CheckSignVerifyParamsByAlg(cmdId, alg, &params);
-    if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("sign or verify check params failed, ret = %d", ret);
-        return ret;
-    }
-
-    ret = HksCheckSignature(cmdId, alg, key, signature);
-    if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("check signature failed, ret = %d", ret);
-    }
-
-    return ret;
-#else
-    return HKS_ERROR_NOT_SUPPORTED;
-#endif
-}
-
-int32_t HksCoreCheckCipherParams(uint32_t cmdId, const struct HksBlob *key, const struct HksParamSet *paramSet,
-    const struct HksBlob *inData, const struct HksBlob *outData)
-{
-    uint32_t alg;
-    int32_t ret = CheckAndGetAlgorithm(paramSet, g_cipherAlg, HKS_ARRAY_SIZE(g_cipherAlg), &alg);
-    if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("check alg failed");
-        return ret;
-    }
-
-    struct ParamsValues params;
-    (void)memset_s(&params, sizeof(params), 0, sizeof(params));
-
-    ret = HksGetInputParmasByAlg(alg, HKS_CHECK_TYPE_USE_KEY, paramSet, &params);
-    if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("cipher get input params failed, ret = %d", ret);
-        return ret;
-    }
-
-    if (alg == HKS_ALG_RSA) {
-        ret = HksGetKeySize(alg, key, &params.keyLen.value);
-        if (ret != HKS_SUCCESS) {
-            HKS_LOG_E("rsa cipher get key size failed");
-            return ret;
-        }
-    }
-
-    ret = CheckCipherParamsByAlg(cmdId, alg, paramSet, &params);
-    if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("cipher check params failed, ret = %d", ret);
-        return ret;
-    }
-
-    ret = HksCheckCihperData(cmdId, alg, &params, inData, outData);
-    if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("cipher check input or output data failed, ret = %d", ret);
-    }
-
-    return ret;
-}
-
-int32_t HksLocalCheckCipherParams(uint32_t cmdId, const struct HksBlob *key, const struct HksParamSet *paramSet,
-    const struct HksBlob *inData, const struct HksBlob *outData)
-{
-    int32_t ret = HksCheckValue(key->size, g_aesKeySizeLocal, HKS_ARRAY_SIZE(g_aesKeySizeLocal));
-    if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("keySize value %u not expected", key->size);
-        return HKS_ERROR_INVALID_KEY_SIZE;
-    }
-
-    uint32_t alg;
-    ret = CheckAndGetAlgorithm(paramSet, g_cipherAlgLocal, HKS_ARRAY_SIZE(g_cipherAlgLocal), &alg);
-    if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("check alg failed");
-        return ret;
-    }
-
-    struct ParamsValues params;
-    (void)memset_s(&params, sizeof(params), 0, sizeof(params));
-
-    ret = HksGetInputParmasByAlg(alg, HKS_CHECK_TYPE_USE_KEY, paramSet, &params);
-    if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("local cipher get input params failed, ret = %d", ret);
-        return ret;
-    }
-
-    ret = CheckCipherParamsByAlg(cmdId, alg, paramSet, &params);
-    if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("local cipher check params failed, ret = %d", ret);
-        return ret;
-    }
-
-    ret = HksCheckCihperData(cmdId, alg, &params, inData, outData);
-    if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("local cipher check input or output data failed, ret = %d", ret);
-    }
-
-    return ret;
-}
-
-
-int32_t HksCoreCheckAgreeKeyParams(const struct HksParamSet *paramSet, const struct HksBlob *privateKey,
-    const struct HksBlob *peerPublicKey, const struct HksBlob *agreedKey, bool isLocalCheck)
-{
-    uint32_t alg;
-    int32_t ret;
-
-    if (isLocalCheck) {
-        ret = CheckAndGetAlgorithm(paramSet, g_agreeAlgLocal, HKS_ARRAY_SIZE(g_agreeAlgLocal), &alg);
-    } else {
-        ret = CheckAndGetAlgorithm(paramSet, g_agreeAlg, HKS_ARRAY_SIZE(g_agreeAlg), &alg);
-    }
-    if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("check alg failed");
-        return ret;
-    }
-
-    uint32_t keySize = 0;
-    if (isLocalCheck) {
-        if ((privateKey->size != HKS_KEY_BYTES(HKS_CURVE25519_KEY_SIZE_256)) ||
-            (peerPublicKey->size != HKS_KEY_BYTES(HKS_CURVE25519_KEY_SIZE_256))) {
-            return HKS_ERROR_INVALID_KEY_SIZE;
-        }
-        keySize = privateKey->size * HKS_BITS_PER_BYTE;
-    } else {
-        ret = HksGetKeySize(alg, privateKey, &keySize);
-        if (ret != HKS_SUCCESS) {
-            HKS_LOG_E("get key size failed");
-            return ret;
-        }
-    }
-
-    uint32_t size = keySize / HKS_BITS_PER_BYTE + keySize % HKS_BITS_PER_BYTE;
-    if (agreedKey->size < size) {
-        HKS_LOG_E("agreeKey buffer too small, size %u", agreedKey->size);
-        return HKS_ERROR_BUFFER_TOO_SMALL;
-    }
-
-    return HKS_SUCCESS;
-}
-
-int32_t HksCoreCheckDeriveKeyParams(const struct HksParamSet *paramSet, const struct HksBlob *mainKey,
-    const struct HksBlob *derivedKey, bool isLocalCheck)
-{
-    (void)mainKey;
-    (void)derivedKey;
-    uint32_t alg;
-    int32_t ret;
-    if (isLocalCheck) {
-        ret = CheckAndGetAlgorithm(paramSet, g_deriveAlgLocal, HKS_ARRAY_SIZE(g_deriveAlgLocal), &alg);
-    } else {
-        ret = CheckAndGetAlgorithm(paramSet, g_deriveAlg, HKS_ARRAY_SIZE(g_deriveAlg), &alg);
-    }
-    if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("check alg failed");
-        return ret;
-    }
-
-    struct HksParam *purposeParam = NULL;
-    ret = HksGetParam(paramSet, HKS_TAG_PURPOSE, &purposeParam);
-    if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("get param get 0x%x failed", HKS_TAG_PURPOSE);
-        return HKS_ERROR_CHECK_GET_PURPOSE_FAIL;
-    }
-
-    if (purposeParam->uint32Param != HKS_KEY_PURPOSE_DERIVE) {
-        return HKS_ERROR_INVALID_PURPOSE;
-    }
-
-    /* according to RFC5869, HKDF no need check salt and info */
-    uint32_t digest;
-    ret = CheckAndGetDigest(paramSet, g_digest, HKS_ARRAY_SIZE(g_digest), &digest);
-    if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("check digest failed");
-        return ret;
-    }
-
-#ifdef HKS_SUPPORT_KDF_PBKDF2
-    if (alg == HKS_ALG_PBKDF2) {
-        return CheckPbkdf2DeriveKeyParams(paramSet);
-    }
-#endif
 
     return HKS_SUCCESS;
 }

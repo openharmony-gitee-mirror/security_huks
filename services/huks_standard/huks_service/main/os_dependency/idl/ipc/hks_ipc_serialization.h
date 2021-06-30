@@ -16,7 +16,7 @@
 #ifndef HKS_IPC_SERIALIZATION_H
 #define HKS_IPC_SERIALIZATION_H
 
-#include "hks_type.h"
+#include "hks_type_inner.h"
 
 #ifdef __cplusplus
 extern "C" {

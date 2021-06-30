@@ -25,6 +25,11 @@ ohos_static_library("libhuks_service_core_standard_static") {
     "//utils/native/base/include",
     "//third_party/openssl/include/",
   ]
+  defines = [
+    "L2_STANDARD",
+    "_HARDWARE_ROOT_KEY_",
+    "_HUKS_LOG_ENABLE_",
+  ]
   sources = [
     "src/hks_client_check.c",
     "src/hks_client_service.c",

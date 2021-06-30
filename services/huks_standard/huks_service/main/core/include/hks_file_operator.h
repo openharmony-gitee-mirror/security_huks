@@ -21,17 +21,33 @@
 #define HKS_MAX_FILE_NAME_LEN 512
 
 #ifdef _STORAGE_LITE_
-#define HKS_KEY_STORE_PATH            "./hks_store/"
+    #define HKS_KEY_STORE_PATH            "/storage/"
 #else
-#define HKS_KEY_STORE_PATH            "/data/data/maindata"
-#define HKS_KEY_STORE_BAK_PATH        "/data/data/bakdata"
+    #ifdef HKS_SUPPORT_PRODUCT_GT_WATCH
+        #define HKS_KEY_STORE_PATH            "user/maindata"
+        #define HKS_KEY_STORE_BAK_PATH        "user/bakdata"
+    #else
+        #ifdef L2_STANDARD
+            #define HKS_KEY_STORE_PATH            "/data/data/maindata"
+            #define HKS_KEY_STORE_BAK_PATH        "/data/data/bakdata"
+        #else
+            #define HKS_KEY_STORE_PATH            "/storage/maindata"
+            #define HKS_KEY_STORE_BAK_PATH        "/storage/bakdata"
+        #endif
+    #endif
+#endif
 #define HKS_KEY_STORE_KEY_PATH        "key"
 #define HKS_KEY_STORE_CERTCHAIN_PATH  "certchain"
 #define HKS_KEY_STORE_ROOT_KEY_PATH   "info"
-#endif
 
+#define HKS_MAX_DIRENT_FILE_LEN 128
 struct HksFileDirentInfo {
-    char *fileName; /* point to dirent->d_name */
+    char fileName[HKS_MAX_DIRENT_FILE_LEN]; /* point to dirent->d_name */
+};
+
+enum HksStoragePathType {
+    HKS_STORAGE_MAIN_PATH,
+    HKS_STORAGE_BACKUP_PATH,
 };
 
 #ifdef __cplusplus
@@ -48,6 +64,8 @@ uint32_t HksFileSize(const char *path, const char *fileName);
 
 int32_t HksIsFileExist(const char *path, const char *fileName);
 
+int32_t HksIsDirExist(const char *path);
+
 int32_t HksMakeDir(const char *path);
 
 void *HksOpenDir(const char *path);
@@ -58,8 +76,21 @@ int32_t HksGetDirFile(void *dirp, struct HksFileDirentInfo *direntInfo);
 
 int32_t HksRemoveDir(const char *dirPath);
 
+/* return < 0 error; > 0 realFileSize; == 0 no data */
+int32_t HksOldVersionFileRead(const char *fileName, uint32_t offset, uint8_t *buf, uint32_t len);
+
+int32_t HksOldVersionFileRemove(const char *fileName);
+
+/* return < 0 error; >= 0 realFileSize */
+int32_t HksOldVersionFileSize(const char *fileName);
+
+/* return true, exist; false not exist */
+bool HksOldVersionIsFileExist(const char *fileName);
+
+int32_t HksGetStoragePath(enum HksStoragePathType pathType, char *path, uint32_t *len);
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif
+#endif /* HKS_FILE_OPERATOR_H */

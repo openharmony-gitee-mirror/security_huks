@@ -13,9 +13,16 @@
  * limitations under the License.
  */
 
+#ifdef HKS_CONFIG_FILE
+#include HKS_CONFIG_FILE
+#else
+#include "hks_config.h"
+#endif
+
 #include "hks_access.h"
 #include "hks_core_service.h"
 
+#ifndef _CUT_AUTHENTICATE_
 int32_t HksAccessGenerateKey(const struct HksBlob *keyBlob, const struct HksParamSet *paramSetIn,
     const struct HksBlob *keyIn, struct HksBlob *keyOut)
 {
@@ -49,11 +56,6 @@ int32_t HksAccessDecrypt(const struct HksBlob *key, const struct HksParamSet *pa
 int32_t HksAccessCheckKeyValidity(const struct HksParamSet *paramSet, const struct HksBlob *key)
 {
     return HksCheckKeyValidity(paramSet, key);
-}
-
-int32_t HksAccessGenerateRandom(const struct HksParamSet *paramSet, struct HksBlob *random)
-{
-    return HksCoreGenerateRandom(paramSet, random);
 }
 
 int32_t HksAccessImportKey(const struct HksBlob *keyAlias, const struct HksBlob *key,
@@ -107,4 +109,31 @@ int32_t HksAccessProcessFinal(uint32_t msgId, uint64_t operationHandle, const st
     struct HksBlob *outData)
 {
     return 0;
+}
+
+int32_t HksAccessRefresh(void)
+{
+    return HksCoreRefreshKeyInfo();
+}
+
+#ifdef _STORAGE_LITE_
+int32_t HksAccessCalcHeaderMac(const struct HksParamSet *paramSet, const struct HksBlob *salt,
+    const struct HksBlob *srcData, struct HksBlob *mac)
+{
+    return HksCoreCalcMacHeader(paramSet, salt, srcData, mac);
+}
+#endif
+
+#ifdef HKS_SUPPORT_UPGRADE_STORAGE_DATA
+int32_t HksAccessUpgradeKeyInfo(const struct HksBlob *keyAlias, const struct HksBlob *keyInfo, struct HksBlob *keyOut)
+{
+    return HksCoreUpgradeKeyInfo(keyAlias, keyInfo, keyOut);
+}
+
+#endif
+#endif /* _CUT_AUTHENTICATE_ */
+
+int32_t HksAccessGenerateRandom(const struct HksParamSet *paramSet, struct HksBlob *random)
+{
+    return HksCoreGenerateRandom(paramSet, random);
 }

@@ -13,18 +13,35 @@
  * limitations under the License.
  */
 
-
-#include "hks_api.h"
-#include "hks_client_service_ipc.h"
-
-#ifdef HKS_HAL_ENGINE_CONFIG_FILE
-#include HKS_HAL_ENGINE_CONFIG_FILE
+#ifdef HKS_CONFIG_FILE
+#include HKS_CONFIG_FILE
 #else
-#include "hks_crypto_hal_config.h"
+#include "hks_config.h"
 #endif
 
+#include "hks_api.h"
+
+#include "hks_client_ipc.h"
 #include "hks_local_engine.h"
 #include "hks_param.h"
+
+#ifdef _CUT_AUTHENTICATE_
+#undef HKS_SUPPORT_API_GENERATE_KEY
+#undef HKS_SUPPORT_API_IMPORT
+#undef HKS_SUPPORT_API_EXPORT
+#undef HKS_SUPPORT_API_DELETE_KEY
+#undef HKS_SUPPORT_API_GET_KEY_PARAM_SET
+#undef HKS_SUPPORT_API_KEY_EXIST
+#undef HKS_SUPPORT_API_SIGN_VERIFY
+#undef HKS_SUPPORT_API_SIGN_VERIFY
+#undef HKS_SUPPORT_API_AGREE_KEY
+#undef HKS_SUPPORT_API_HASH
+#undef HKS_SUPPORT_API_GET_KEY_INFO_LIST
+#undef HKS_SUPPORT_API_ATTEST_KEY
+#undef HKS_SUPPORT_API_GET_CERTIFICATE_CHAIN
+#undef HKS_SUPPORT_API_WRAP_KEY
+#undef HKS_SUPPORT_API_UNWRAP_KEY
+#endif
 
 HKS_API_EXPORT int32_t HksGetSdkVersion(struct HksBlob *sdkVersion)
 {
@@ -48,13 +65,26 @@ HKS_API_EXPORT int32_t HksGetSdkVersion(struct HksBlob *sdkVersion)
 
 HKS_API_EXPORT int32_t HksInitialize(void)
 {
+#ifndef _CUT_AUTHENTICATE_
     return HksClientInitialize();
+#else
+    return HKS_SUCCESS;
+#endif
+}
+
+HKS_API_EXPORT int32_t HksRefreshKeyInfo(void)
+{
+#ifndef _CUT_AUTHENTICATE_
+    return HksClientRefreshKeyInfo();
+#else
+    return HKS_ERROR_NOT_SUPPORTED;
+#endif
 }
 
 HKS_API_EXPORT int32_t HksGenerateKey(const struct HksBlob *keyAlias,
     const struct HksParamSet *paramSetIn, struct HksParamSet *paramSetOut)
 {
-#ifdef HKS_SUPPORT_GENERATE_KEY
+#ifdef HKS_SUPPORT_API_GENERATE_KEY
     struct HksParam *storageFlag = NULL;
     int32_t ret = HksGetParam(paramSetIn, HKS_TAG_KEY_STORAGE_FLAG, &storageFlag);
     if ((ret == HKS_SUCCESS) && (storageFlag->uint32Param == HKS_STORAGE_TEMP)) {
@@ -64,6 +94,7 @@ HKS_API_EXPORT int32_t HksGenerateKey(const struct HksBlob *keyAlias,
         return HksLocalGenerateKey(paramSetIn, paramSetOut);
     }
 
+    /* generate persistent keys */
     if ((paramSetIn == NULL) || (keyAlias == NULL)) {
         return HKS_ERROR_NULL_POINTER;
     }
@@ -79,7 +110,7 @@ HKS_API_EXPORT int32_t HksGenerateKey(const struct HksBlob *keyAlias,
 HKS_API_EXPORT int32_t HksImportKey(const struct HksBlob *keyAlias,
     const struct HksParamSet *paramSet, const struct HksBlob *key)
 {
-#ifdef HKS_SUPPORT_IMPORT
+#ifdef HKS_SUPPORT_API_IMPORT
     if ((keyAlias == NULL) || (paramSet == NULL) || (key == NULL)) {
         return HKS_ERROR_NULL_POINTER;
     }
@@ -95,7 +126,7 @@ HKS_API_EXPORT int32_t HksImportKey(const struct HksBlob *keyAlias,
 HKS_API_EXPORT int32_t HksExportPublicKey(const struct HksBlob *keyAlias,
     const struct HksParamSet *paramSet, struct HksBlob *key)
 {
-#ifdef HKS_SUPPORT_EXPORT
+#ifdef HKS_SUPPORT_API_EXPORT
     if ((keyAlias == NULL) || (key == NULL)) {
         return HKS_ERROR_NULL_POINTER;
     }
@@ -110,33 +141,52 @@ HKS_API_EXPORT int32_t HksExportPublicKey(const struct HksBlob *keyAlias,
 
 HKS_API_EXPORT int32_t HksDeleteKey(const struct HksBlob *keyAlias, const struct HksParamSet *paramSet)
 {
+#ifdef HKS_SUPPORT_API_DELETE_KEY
     if (keyAlias == NULL) {
         return HKS_ERROR_NULL_POINTER;
     }
     return HksClientDeleteKey(keyAlias, paramSet);
+#else
+    (void)keyAlias;
+    (void)paramSet;
+    return HKS_ERROR_NOT_SUPPORTED;
+#endif
 }
 
 HKS_API_EXPORT int32_t HksGetKeyParamSet(const struct HksBlob *keyAlias,
     const struct HksParamSet *paramSetIn, struct HksParamSet *paramSetOut)
 {
+#ifdef HKS_SUPPORT_API_GET_KEY_PARAM_SET
     (void)paramSetIn;
     if ((keyAlias == NULL) || (paramSetOut == NULL)) {
         return HKS_ERROR_NULL_POINTER;
     }
     return HksClientGetKeyParamSet(keyAlias, paramSetOut);
+#else
+    (void)keyAlias;
+    (void)paramSetIn;
+    (void)paramSetOut;
+    return HKS_ERROR_NOT_SUPPORTED;
+#endif
 }
 
 HKS_API_EXPORT int32_t HksKeyExist(const struct HksBlob *keyAlias, const struct HksParamSet *paramSet)
 {
+#ifdef HKS_SUPPORT_API_KEY_EXIST
     if (keyAlias == NULL) {
         return HKS_ERROR_NULL_POINTER;
     }
     return HksClientKeyExist(keyAlias, paramSet);
+#else
+    (void)keyAlias;
+    (void)paramSet;
+    return HKS_ERROR_NOT_SUPPORTED;
+#endif
 }
 
 HKS_API_EXPORT int32_t HksGenerateRandom(const struct HksParamSet *paramSet, struct HksBlob *random)
 {
-#ifdef HKS_SUPPORT_GENERATE_RANDOM
+#ifdef HKS_SUPPORT_API_GENERATE_RANDOM
     if (random == NULL) {
         return HKS_ERROR_NULL_POINTER;
     }
@@ -150,7 +200,7 @@ HKS_API_EXPORT int32_t HksGenerateRandom(const struct HksParamSet *paramSet, str
 HKS_API_EXPORT int32_t HksSign(const struct HksBlob *key, const struct HksParamSet *paramSet,
     const struct HksBlob *srcData, struct HksBlob *signature)
 {
-#ifdef HKS_SUPPORT_SIGN_VERIFY
+#ifdef HKS_SUPPORT_API_SIGN_VERIFY
     if ((key == NULL) || (paramSet == NULL) || (srcData == NULL) || (signature == NULL)) {
         return HKS_ERROR_NULL_POINTER;
     }
@@ -167,7 +217,7 @@ HKS_API_EXPORT int32_t HksSign(const struct HksBlob *key, const struct HksParamS
 HKS_API_EXPORT int32_t HksVerify(const struct HksBlob *key, const struct HksParamSet *paramSet,
     const struct HksBlob *srcData, const struct HksBlob *signature)
 {
-#ifdef HKS_SUPPORT_SIGN_VERIFY
+#ifdef HKS_SUPPORT_API_SIGN_VERIFY
     if ((key == NULL) || (paramSet == NULL) || (srcData == NULL) || (signature == NULL)) {
         return HKS_ERROR_NULL_POINTER;
     }
@@ -190,7 +240,7 @@ HKS_API_EXPORT int32_t HksVerify(const struct HksBlob *key, const struct HksPara
 HKS_API_EXPORT int32_t HksEncrypt(const struct HksBlob *key, const struct HksParamSet *paramSet,
     const struct HksBlob *plainText, struct HksBlob *cipherText)
 {
-#ifdef HKS_SUPPORT_CIPHER
+#ifdef HKS_SUPPORT_API_CIPHER
     if ((key == NULL) || (paramSet == NULL) || (plainText == NULL) || (cipherText == NULL)) {
         return HKS_ERROR_NULL_POINTER;
     }
@@ -200,7 +250,11 @@ HKS_API_EXPORT int32_t HksEncrypt(const struct HksBlob *key, const struct HksPar
     if ((ret == HKS_SUCCESS) && (!isKeyAlias->boolParam)) {
         return HksLocalEncrypt(key, paramSet, plainText, cipherText);
     }
+#ifndef _CUT_AUTHENTICATE_
     return HksClientEncrypt(key, paramSet, plainText, cipherText);
+#else
+    return HKS_ERROR_NOT_SUPPORTED;
+#endif
 #else
     (void)key;
     (void)paramSet;
@@ -213,7 +267,7 @@ HKS_API_EXPORT int32_t HksEncrypt(const struct HksBlob *key, const struct HksPar
 HKS_API_EXPORT int32_t HksDecrypt(const struct HksBlob *key, const struct HksParamSet *paramSet,
     const struct HksBlob *cipherText, struct HksBlob *plainText)
 {
-#ifdef HKS_SUPPORT_CIPHER
+#ifdef HKS_SUPPORT_API_CIPHER
     if ((key == NULL) || (paramSet == NULL) || (cipherText == NULL) || (plainText == NULL)) {
         return HKS_ERROR_NULL_POINTER;
     }
@@ -223,7 +277,11 @@ HKS_API_EXPORT int32_t HksDecrypt(const struct HksBlob *key, const struct HksPar
     if ((ret == HKS_SUCCESS) && (!isKeyAlias->boolParam)) {
         return HksLocalDecrypt(key, paramSet, cipherText, plainText);
     }
+#ifndef _CUT_AUTHENTICATE_
     return HksClientDecrypt(key, paramSet, cipherText, plainText);
+#else
+    return HKS_ERROR_NOT_SUPPORTED;
+#endif
 #else
     (void)key;
     (void)paramSet;
@@ -236,7 +294,7 @@ HKS_API_EXPORT int32_t HksDecrypt(const struct HksBlob *key, const struct HksPar
 HKS_API_EXPORT int32_t HksAgreeKey(const struct HksParamSet *paramSet, const struct HksBlob *privateKey,
     const struct HksBlob *peerPublicKey, struct HksBlob *agreedKey)
 {
-#ifdef HKS_SUPPORT_AGREE_KEY
+#ifdef HKS_SUPPORT_API_AGREE_KEY
     if ((paramSet == NULL) || (privateKey == NULL) || (peerPublicKey == NULL) || (agreedKey == NULL)) {
         return HKS_ERROR_NULL_POINTER;
     }
@@ -246,6 +304,7 @@ HKS_API_EXPORT int32_t HksAgreeKey(const struct HksParamSet *paramSet, const str
     if ((ret == HKS_SUCCESS) && (!isKeyAlias->boolParam)) {
         return HksLocalAgreeKey(paramSet, privateKey, peerPublicKey, agreedKey);
     }
+
     return HksClientAgreeKey(paramSet, privateKey, peerPublicKey, agreedKey);
 #else
     (void)paramSet;
@@ -259,7 +318,7 @@ HKS_API_EXPORT int32_t HksAgreeKey(const struct HksParamSet *paramSet, const str
 HKS_API_EXPORT int32_t HksDeriveKey(const struct HksParamSet *paramSet, const struct HksBlob *mainKey,
     struct HksBlob *derivedKey)
 {
-#ifdef HKS_SUPPORT_DERIVE_KEY
+#ifdef HKS_SUPPORT_API_DERIVE_KEY
     if ((paramSet == NULL) || (mainKey == NULL) || (derivedKey == NULL)) {
         return HKS_ERROR_NULL_POINTER;
     }
@@ -269,7 +328,11 @@ HKS_API_EXPORT int32_t HksDeriveKey(const struct HksParamSet *paramSet, const st
     if ((ret == HKS_SUCCESS) && (!isKeyAlias->boolParam)) {
         return HksLocalDeriveKey(paramSet, mainKey, derivedKey);
     }
+#ifndef _CUT_AUTHENTICATE_
     return HksClientDeriveKey(paramSet, mainKey, derivedKey);
+#else
+    return HKS_ERROR_NOT_SUPPORTED;
+#endif
 #else
     (void)paramSet;
     (void)mainKey;
@@ -281,7 +344,7 @@ HKS_API_EXPORT int32_t HksDeriveKey(const struct HksParamSet *paramSet, const st
 HKS_API_EXPORT int32_t HksMac(const struct HksBlob *key, const struct HksParamSet *paramSet,
     const struct HksBlob *srcData, struct HksBlob *mac)
 {
-#ifdef HKS_SUPPORT_MAC
+#ifdef HKS_SUPPORT_API_MAC
     if ((key == NULL) || (paramSet == NULL) || (srcData == NULL) || (mac == NULL)) {
         return HKS_ERROR_NULL_POINTER;
     }
@@ -291,7 +354,11 @@ HKS_API_EXPORT int32_t HksMac(const struct HksBlob *key, const struct HksParamSe
     if ((ret == HKS_SUCCESS) && (!isKeyAlias->boolParam)) {
         return HksLocalMac(key, paramSet, srcData, mac);
     }
+#ifndef _CUT_AUTHENTICATE_
     return HksClientMac(key, paramSet, srcData, mac);
+#else
+    return HKS_ERROR_NOT_SUPPORTED;
+#endif
 #else
     (void)key;
     (void)paramSet;
@@ -304,7 +371,7 @@ HKS_API_EXPORT int32_t HksMac(const struct HksBlob *key, const struct HksParamSe
 HKS_API_EXPORT int32_t HksHash(const struct HksParamSet *paramSet,
     const struct HksBlob *srcData, struct HksBlob *hash)
 {
-#ifdef HKS_SUPPORT_HASH
+#ifdef HKS_SUPPORT_API_HASH
     if ((paramSet == NULL) || (srcData == NULL) || (hash == NULL)) {
         return HKS_ERROR_NULL_POINTER;
     }
@@ -320,7 +387,7 @@ HKS_API_EXPORT int32_t HksHash(const struct HksParamSet *paramSet,
 HKS_API_EXPORT int32_t HksGetKeyInfoList(const struct HksParamSet *paramSet,
     struct HksKeyInfo *keyInfoList, uint32_t *listCount)
 {
-#ifdef HKS_SUPPORT_GET_KEY_INFO_LIST
+#ifdef HKS_SUPPORT_API_GET_KEY_INFO_LIST
     (void)paramSet;
     if ((keyInfoList == NULL) || (listCount == NULL)) {
         return HKS_ERROR_NULL_POINTER;
@@ -337,7 +404,7 @@ HKS_API_EXPORT int32_t HksGetKeyInfoList(const struct HksParamSet *paramSet,
 HKS_API_EXPORT int32_t HksAttestKey(const struct HksBlob *keyAlias, const struct HksParamSet *paramSet,
     struct HksCertChain *certChain)
 {
-#ifdef HKS_SUPPORT_ATTEST_KEY
+#ifdef HKS_SUPPORT_API_ATTEST_KEY
     if ((keyAlias == NULL) || (paramSet == NULL) || (certChain == NULL)) {
         return HKS_ERROR_NULL_POINTER;
     }
@@ -353,7 +420,7 @@ HKS_API_EXPORT int32_t HksAttestKey(const struct HksBlob *keyAlias, const struct
 HKS_API_EXPORT int32_t HksGetCertificateChain(const struct HksBlob *keyAlias, const struct HksParamSet *paramSet,
     struct HksCertChain *certChain)
 {
-#ifdef HKS_SUPPORT_ATTEST_KEY
+#ifdef HKS_SUPPORT_API_GET_CERTIFICATE_CHAIN
     if ((keyAlias == NULL) || (paramSet == NULL) || (certChain == NULL)) {
         return HKS_ERROR_NULL_POINTER;
     }
@@ -369,7 +436,7 @@ HKS_API_EXPORT int32_t HksGetCertificateChain(const struct HksBlob *keyAlias, co
 HKS_API_EXPORT int32_t HksWrapKey(const struct HksBlob *keyAlias, const struct HksBlob *targetKeyAlias,
     const struct HksParamSet *paramSet, struct HksBlob *wrappedData)
 {
-#ifdef HKS_SUPPORT_WRAP_KEY
+#ifdef HKS_SUPPORT_API_WRAP_KEY
     if ((keyAlias == NULL) || (targetKeyAlias == NULL) || (paramSet == NULL) || (wrappedData == NULL)) {
         return HKS_ERROR_NULL_POINTER;
     }
@@ -386,7 +453,7 @@ HKS_API_EXPORT int32_t HksWrapKey(const struct HksBlob *keyAlias, const struct H
 HKS_API_EXPORT int32_t HksUnwrapKey(const struct HksBlob *keyAlias, const struct HksBlob *targetKeyAlias,
     const struct HksBlob *wrappedData, const struct HksParamSet *paramSet)
 {
-#ifdef HKS_SUPPORT_UNWRAP_KEY
+#ifdef HKS_SUPPORT_API_UNWRAP_KEY
     if ((keyAlias == NULL) || (targetKeyAlias == NULL) || (wrappedData == NULL) || (paramSet == NULL)) {
         return HKS_ERROR_NULL_POINTER;
     }
@@ -403,10 +470,11 @@ HKS_API_EXPORT int32_t HksUnwrapKey(const struct HksBlob *keyAlias, const struct
 HKS_API_EXPORT int32_t HksBnExpMod(struct HksBlob *x, const struct HksBlob *a,
     const struct HksBlob *e, const struct HksBlob *n)
 {
-#ifdef HKS_SUPPORT_BN_EXP_MOD
+#ifdef HKS_SUPPORT_API_BN_EXP_MOD
     if ((x == NULL) || (a == NULL) || (e == NULL) || (n == NULL)) {
         return HKS_ERROR_NULL_POINTER;
     }
+
     return HksLocalBnExpMod(x, a, e, n);
 #else
     (void)x;

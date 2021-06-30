@@ -16,7 +16,8 @@
 #ifndef HKS_CLIENT_SERVICE_H
 #define HKS_CLIENT_SERVICE_H
 
-#include "hks_type.h"
+#include "hks_type_inner.h"
+
 #include "hks_param.h"
 
 #ifdef __cplusplus
@@ -24,6 +25,8 @@ extern "C" {
 #endif
 
 int32_t HksServiceInitialize(void);
+
+int32_t HksServiceRefreshKeyInfo(const struct HksBlob *processName);
 
 int32_t HksServiceProvision(const struct HksBlob *keybox, const struct HksBlob *challengeIn);
 

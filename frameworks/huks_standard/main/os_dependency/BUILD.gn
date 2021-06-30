@@ -29,6 +29,11 @@ ohos_static_library("libhuks_os_dependency_standard_static") {
     "//utils/native/base/include",
     "//utils/system/safwk/native/include",
   ]
+  defines = [
+    "L2_STANDARD",
+    "_HARDWARE_ROOT_KEY_",
+    "_HUKS_LOG_ENABLE_",
+  ]
   sources = [
     "./ipc/src/hks_client_service_ipc.c",
     "./ipc/src/hks_ipc_check.c",

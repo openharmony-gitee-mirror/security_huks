@@ -20,7 +20,11 @@ config("huks_config") {
 ohos_static_library("libhuks_common_standard_static") {
   subsystem_name = "security"
   part_name = "huks_standard"
-
+  defines = [
+    "L2_STANDARD",
+    "_HARDWARE_ROOT_KEY_",
+    "_HUKS_LOG_ENABLE_",
+  ]
   public_configs =
       [ ":huks_config" ]  # Share include files for other gn when deps.
 

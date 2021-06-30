@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "hks_client_service_ipc.h"
+#include "hks_client_ipc.h"
 #include "hks_common_check.h"
 #include "hks_ipc_check.h"
 #include "hks_ipc_serialization.h"
@@ -24,6 +24,11 @@
 #include "hks_request.h"
 
 int32_t HksClientInitialize(void)
+{
+    return HKS_SUCCESS;
+}
+
+int32_t HksClientRefreshKeyInfo(void)
 {
     return HKS_SUCCESS;
 }

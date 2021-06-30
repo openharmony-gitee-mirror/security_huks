@@ -15,8 +15,9 @@
 
 #include "hks_log.h"
 
-#include <securec.h>
+#include "securec.h"
 #include "hilog/log.h"
+#include "hks_mem.h"
 
 #undef LOG_DOMAIN
 #undef LOG_TAG
@@ -27,13 +28,20 @@ static const char* LOG_TAG = "HUKS";
 
 void HksLog(uint32_t logLevel, const char *funcName, uint32_t lineNo, const char *format, ...)
 {
-    char buf[MAX_LOG_BUFF_LEN] = {0};
-    va_list ap = {0};
+    char *buf = (char *)HksMalloc(MAX_LOG_BUFF_LEN);
+    if (buf == NULL) {
+        HILOG_ERROR(LOG_CORE, "hks log malloc fail");
+        return;
+    }
+    (void)memset_s(buf, MAX_LOG_BUFF_LEN, 0, MAX_LOG_BUFF_LEN);
+
+    va_list ap;
     va_start(ap, format);
-    int32_t ret = vsnprintf_s(buf, MAX_LOG_BUFF_LEN, sizeof(buf) - 1, format, ap);
+    int32_t ret = vsnprintf_s(buf, MAX_LOG_BUFF_LEN, MAX_LOG_BUFF_LEN - 1, format, ap);
     va_end(ap);
     if (ret < 0) {
         HILOG_ERROR(LOG_CORE, "hks log concatenate error.");
+        HKS_FREE_PTR(buf);
         return;
     }
 
@@ -51,6 +59,9 @@ void HksLog(uint32_t logLevel, const char *funcName, uint32_t lineNo, const char
             HILOG_DEBUG(LOG_CORE, "%{public}s[%{public}u]: %{private}s\n", funcName, lineNo, buf);
             break;
         default:
+            HKS_FREE_PTR(buf);
             return;
     }
+
+    HKS_FREE_PTR(buf);
 }

@@ -16,7 +16,7 @@
 #ifndef HKS_CLIENT_SERVICE_ADAPTER_H
 #define HKS_CLIENT_SERVICE_ADAPTER_H
 
-#include "hks_type.h"
+#include "hks_type_inner.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,4 +34,4 @@ int32_t TranslateToInnerAesFormat(const struct HksBlob *key, struct HksBlob *out
 }
 #endif
 
-#endif
+#endif /* HKS_CLIENT_SERVICE_ADAPTER_H */

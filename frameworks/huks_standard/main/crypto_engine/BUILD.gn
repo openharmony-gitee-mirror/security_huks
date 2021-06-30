@@ -14,6 +14,11 @@
 import("//build/ohos.gni")
 
 ohos_static_library("libhuks_crypto_engine_standard_static") {
+  defines = [
+    "L2_STANDARD",
+    "_HARDWARE_ROOT_KEY_",
+    "_HUKS_LOG_ENABLE_",
+  ]
   subsystem_name = "security"
   part_name = "huks_standard"
   public_deps = [ "//base/security/huks/frameworks/huks_standard/main/crypto_engine/openssl:libhuks_openssl_standard_static" ]

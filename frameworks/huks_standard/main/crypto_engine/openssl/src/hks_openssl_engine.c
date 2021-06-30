@@ -31,7 +31,7 @@
 #include "hks_openssl_hash.h"
 #include "hks_openssl_hmac.h"
 #include "hks_openssl_kdf.h"
-#include "hks_type.h"
+#include "hks_type_inner.h"
 
 void HksLogOpensslError()
 {

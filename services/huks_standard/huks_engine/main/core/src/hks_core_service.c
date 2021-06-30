@@ -13,24 +13,35 @@
  * limitations under the License.
  */
 
+#ifdef HKS_CONFIG_FILE
+#include HKS_CONFIG_FILE
+#else
+#include "hks_config.h"
+#endif
+
 #include "hks_core_service.h"
+
 #include "hks_auth.h"
 #include "hks_check_paramset.h"
 #include "hks_cmd_id.h"
 #include "hks_crypto_adapter.h"
 #include "hks_crypto_hal.h"
-#ifdef HKS_HAL_ENGINE_CONFIG_FILE
-#include HKS_HAL_ENGINE_CONFIG_FILE
-#else
-#include "hks_crypto_hal_config.h"
-#endif
 #include "hks_keyblob.h"
 #include "hks_log.h"
 #include "hks_mem.h"
 #include "hks_param.h"
-#include "hks_type.h"
+#include "hks_type_inner.h"
 
-#define CURVE25519_KEY_BYTE_SIZE HKS_CURVE25519_KEY_SIZE_256 / HKS_BITS_PER_BYTE
+#ifndef _HARDWARE_ROOT_KEY_
+#include "hks_rkc.h"
+#endif
+
+#ifdef HKS_SUPPORT_UPGRADE_STORAGE_DATA
+#include "hks_upgrade_key_info.h"
+#endif
+
+#ifndef _CUT_AUTHENTICATE_
+#define CURVE25519_KEY_BYTE_SIZE HKS_KEY_BYTES(HKS_CURVE25519_KEY_SIZE_256)
 
 static int32_t GetGenType(const struct HksParamSet *paramSet, uint32_t *genType)
 {
@@ -63,13 +74,13 @@ static int32_t GetGenType(const struct HksParamSet *paramSet, uint32_t *genType)
             }
             break;
         default:
-            HKS_LOG_E("invalid generated key tpye");
+            HKS_LOG_E("invalid generated key type");
     }
 
     return ret;
 }
 
-#if defined(HKS_SUPPORT_X25519_C) || defined(HKS_SUPPORT_ED25519_C)
+#ifdef HKS_SUPPORT_ED25519_TO_X25519
 int32_t CheckAgreeKeyIn(const struct HksBlob *key)
 {
     if (CheckBlob(key) != HKS_SUCCESS) {
@@ -82,7 +93,8 @@ int32_t CheckAgreeKeyIn(const struct HksBlob *key)
     }
 
     struct Hks25519KeyPair *keyPair = (struct Hks25519KeyPair *)(key->data);
-    if (key->size < (sizeof(*keyPair) + keyPair->privateBufferSize + keyPair->publicBufferSize)) { /* overflow check */
+    if ((keyPair->privateBufferSize > (key->size - sizeof(*keyPair))) ||
+        (keyPair->publicBufferSize > (key->size - sizeof(*keyPair) - keyPair->privateBufferSize))) {
         HKS_LOG_E("invlaid agree key size, small than keyPair");
         return HKS_ERROR_INVALID_ARGUMENT;
     }
@@ -140,7 +152,7 @@ int32_t GetAgreePubKey(const struct HksBlob *keyIn, const struct HksParamSet *pa
 {
     struct HksParam *isKeyAliasParam = NULL;
     int32_t ret = HksGetParam(paramSet, HKS_TAG_AGREE_PUBLIC_KEY_IS_KEY_ALIAS, &isKeyAliasParam);
-    if ((ret == HKS_SUCCESS) && (isKeyAliasParam->boolParam == false)) {
+    if ((ret == HKS_SUCCESS) && (!(isKeyAliasParam->boolParam))) {
         return GetAgreeBaseKey(true, true, keyIn, keyOut);
     }
 
@@ -242,7 +254,7 @@ int32_t HksCoreGenerateKey(const struct HksBlob *keyAlias, const struct HksParam
             break;
         }
         case HKS_KEY_GENERATE_TYPE_AGREE:
-#if defined(HKS_SUPPORT_X25519_C) || defined(HKS_SUPPORT_ED25519_C)
+#ifdef HKS_SUPPORT_ED25519_TO_X25519
             ret = GenKeyByAgree(keyIn, paramSet, &key);
 #else
             ret = HKS_ERROR_INVALID_ARGUMENT;
@@ -253,8 +265,6 @@ int32_t HksCoreGenerateKey(const struct HksBlob *keyAlias, const struct HksParam
     }
     if (ret != HKS_SUCCESS) {
         HKS_LOG_E("GenerateKey failed, ret:%x!", ret);
-        (void)memset_s(key.data, key.size, 0, key.size);
-        HKS_FREE_BLOB(key);
         return ret;
     }
 
@@ -513,12 +523,6 @@ int32_t HksCheckKeyValidity(const struct HksParamSet *paramSet, const struct Hks
     return HKS_SUCCESS;
 }
 
-int32_t HksCoreGenerateRandom(const struct HksParamSet *paramSet, struct HksBlob *random)
-{
-    (void)paramSet;
-    return HksCryptoHalFillRandom(random);
-}
-
 int32_t HksCoreImportKey(const struct HksBlob *keyAlias, const struct HksBlob *key,
     const struct HksParamSet *paramSet, struct HksBlob *keyOut)
 {
@@ -674,5 +678,98 @@ int32_t HksCoreMac(const struct HksBlob *key, const struct HksParamSet *paramSet
 
 int32_t HksCoreInitialize(void)
 {
+#ifndef _HARDWARE_ROOT_KEY_
+    int32_t ret = HksRkcInit();
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("Hks rkc init failed! ret = 0x%X", ret);
+    }
+
+    return ret;
+#else
     return HKS_SUCCESS;
+#endif
 }
+
+int32_t HksCoreRefreshKeyInfo(void)
+{
+#ifndef _HARDWARE_ROOT_KEY_
+    HksRkcDestroy();
+    int32_t ret = HksRkcInit();
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("Hks rkc refresh info failed! ret = 0x%X", ret);
+    }
+
+    return ret;
+#else
+    return HKS_SUCCESS;
+#endif
+}
+
+#ifdef HKS_SUPPORT_UPGRADE_STORAGE_DATA
+int32_t HksCoreUpgradeKeyInfo(const struct HksBlob *keyAlias, const struct HksBlob *keyInfo, struct HksBlob *keyOut)
+{
+    return HksUpgradeKeyInfo(keyAlias, keyInfo, keyOut);
+}
+#endif
+
+#ifdef _STORAGE_LITE_
+static int32_t GetMacKey(const struct HksBlob *salt, struct HksBlob *macKey)
+{
+    uint8_t keyBuf[HKS_KEY_BYTES(HKS_AES_KEY_SIZE_256)] = {0};
+    struct HksBlob mk = { HKS_KEY_BYTES(HKS_AES_KEY_SIZE_256), keyBuf };
+
+    int32_t ret = HksCryptoHalGetMainKey(NULL, &mk);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("get kek failed, ret = %d", ret);
+        return ret;
+    }
+
+    struct HksKeyDerivationParam derParam = {
+        .salt = *salt,
+        .iterations = HKS_KEY_BLOB_DERIVE_CNT,
+        .digestAlg = HKS_DIGEST_SHA256,
+    };
+    struct HksKeySpec derivationSpec = { HKS_ALG_PBKDF2, HKS_KEY_BYTES(HKS_AES_KEY_SIZE_256), &derParam };
+    ret = HksCryptoHalDeriveKey(&mk, &derivationSpec, macKey);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("get keyblob derive key failed!");
+    }
+
+    (void)memset_s(mk.data, mk.size, 0, mk.size);
+    return ret;
+}
+
+int32_t HksCoreCalcMacHeader(const struct HksParamSet *paramSet, const struct HksBlob *salt,
+    const struct HksBlob *srcData, struct HksBlob *mac)
+{
+    /* 1. get mac key by derive from salt */
+    uint8_t keyBuf[HKS_KEY_BYTES(HKS_AES_KEY_SIZE_256)] = {0};
+    struct HksBlob macKey = { HKS_KEY_BYTES(HKS_AES_KEY_SIZE_256), keyBuf };
+    int32_t ret = GetMacKey(salt, &macKey);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("get mac key failed, ret = %d", ret);
+        return ret;
+    }
+
+    struct HksParam *digestParam = NULL;
+    ret = HksGetParam(paramSet, HKS_TAG_DIGEST, &digestParam);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("calc mac header get HKS_TAG_DIGEST param failed, ret = %d", ret);
+        (void)memset_s(macKey.data, macKey.size, 0, macKey.size);
+        return ret;
+    }
+
+    /* 2. do mac */
+    ret = HksCryptoHalHmac(&macKey, digestParam->uint32Param, srcData, mac);
+    (void)memset_s(macKey.data, macKey.size, 0, macKey.size);
+    return ret;
+}
+#endif
+#endif /* _CUT_AUTHENTICATE_ */
+
+int32_t HksCoreGenerateRandom(const struct HksParamSet *paramSet, struct HksBlob *random)
+{
+    (void)paramSet;
+    return HksCryptoHalFillRandom(random);
+}
+

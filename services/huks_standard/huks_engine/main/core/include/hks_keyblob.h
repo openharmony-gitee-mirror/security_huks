@@ -16,7 +16,7 @@
 #ifndef HKS_KEYBLOB_H
 #define HKS_KEYBLOB_H
 
-#include "hks_type.h"
+#include "hks_type_inner.h"
 
 #define HKS_KEY_BLOB_DERIVE_SALT_SIZE 16
 #define HKS_KEY_BLOB_DERIVE_CNT 1000

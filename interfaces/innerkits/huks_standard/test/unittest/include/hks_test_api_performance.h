@@ -18,6 +18,8 @@
 
 #include "hks_type.h"
 
+#include "securec.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -36,7 +38,6 @@ int32_t HksMacRun(const struct HksBlob *key, const struct HksParamSet *paramSet,
 
 int32_t HksDeriveKeyRun(const struct HksParamSet *paramSet, const struct HksBlob *masterKey,
     struct HksBlob *derivedKey, uint32_t performTimes);
-
 
 int32_t HksDeleteKeyRun(const struct HksBlob *keyAlias, uint32_t performTimes);
 

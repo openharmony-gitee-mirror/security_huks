@@ -18,6 +18,7 @@
 #include "hks_common_check.h"
 #include "hks_log.h"
 
+#ifndef _CUT_AUTHENTICATE_
 static int32_t CheckProcessNameAndKeyAliasSize(uint32_t processNameSize, uint32_t keyAliasSize)
 {
     if (processNameSize > HKS_MAX_PROCESS_NAME_LEN) {
@@ -73,25 +74,6 @@ int32_t HksCheckGetKeyParamSetParams(const struct HksBlob *processName, const st
 
     if ((paramSet == NULL) || (paramSet->paramSetSize == 0)) {
         HKS_LOG_E("invalid paramSet");
-        return HKS_ERROR_INVALID_ARGUMENT;
-    }
-
-    return HKS_SUCCESS;
-}
-
-int32_t HksCheckGenerateRandomParams(const struct HksBlob *processName, const struct HksBlob *random)
-{
-    if (HksCheckBlob2(processName, random) != HKS_SUCCESS) {
-        return HKS_ERROR_INVALID_ARGUMENT;
-    }
-
-    if (processName->size > HKS_MAX_PROCESS_NAME_LEN) {
-        HKS_LOG_E("processName size too long, size %u.", processName->size);
-        return HKS_ERROR_INVALID_ARGUMENT;
-    }
-
-    if (random->size > HKS_MAX_RANDOM_LEN) {
-        HKS_LOG_E("random size too long, size %u.", random->size);
         return HKS_ERROR_INVALID_ARGUMENT;
     }
 
@@ -162,3 +144,24 @@ int32_t HksCheckInitParams(const struct HksBlob *processName, const struct HksBl
 
     return HKS_SUCCESS;
 }
+#endif /* _CUT_AUTHENTICATE_ */
+
+int32_t HksCheckGenerateRandomParams(const struct HksBlob *processName, const struct HksBlob *random)
+{
+    if (HksCheckBlob2(processName, random) != HKS_SUCCESS) {
+        return HKS_ERROR_INVALID_ARGUMENT;
+    }
+
+    if (processName->size > HKS_MAX_PROCESS_NAME_LEN) {
+        HKS_LOG_E("processName size too long, size %u.", processName->size);
+        return HKS_ERROR_INVALID_ARGUMENT;
+    }
+
+    if (random->size > HKS_MAX_RANDOM_LEN) {
+        HKS_LOG_E("random size too long, size %u.", random->size);
+        return HKS_ERROR_INVALID_ARGUMENT;
+    }
+
+    return HKS_SUCCESS;
+}
+

@@ -14,9 +14,6 @@
  */
 
 #include "hks_common_check.h"
-
-#include <unistd.h>
-
 #include "hks_log.h"
 #include "hks_param.h"
 

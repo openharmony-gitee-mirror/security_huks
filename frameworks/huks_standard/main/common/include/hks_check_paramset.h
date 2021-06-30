@@ -17,17 +17,17 @@
 #define HKS_CHECK_PARAMSET_H
 
 #include "hks_param.h"
-#include "hks_type.h"
+#include "hks_type_inner.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 int32_t HksCoreCheckGenKeyParams(const struct HksBlob *keyAlias, const struct HksParamSet *paramSet,
-    const struct HksBlob *keyIn, struct HksBlob *keyOut);
+    const struct HksBlob *keyIn, const struct HksBlob *keyOut);
 
 int32_t HksCoreCheckImportKeyParams(const struct HksBlob *keyAlias, const struct HksBlob *key,
-    const struct HksParamSet *paramSet, struct HksBlob *keyOut);
+    const struct HksParamSet *paramSet, const struct HksBlob *keyOut);
 
 int32_t HksCoreCheckSignVerifyParams(uint32_t cmdId, const struct HksBlob *key, const struct HksParamSet *paramSet,
     const struct HksBlob *srcData, const struct HksBlob *signature);

@@ -13,27 +13,98 @@
  * limitations under the License.
  */
 
+#ifdef HKS_CONFIG_FILE
+#include HKS_CONFIG_FILE
+#else
+#include "hks_config.h"
+#endif
+
 #include "hks_client_service.h"
 
 #include "hks_access.h"
 #include "hks_client_check.h"
 #include "hks_client_service_adapter.h"
-
-#ifdef HKS_HAL_ENGINE_CONFIG_FILE
-#include HKS_HAL_ENGINE_CONFIG_FILE
-#else
-#include "hks_crypto_hal_config.h"
-#endif
-
 #include "hks_log.h"
 #include "hks_mem.h"
 #include "hks_operation.h"
 #include "hks_storage.h"
+#ifdef _STORAGE_LITE_
+#include "hks_storage_adapter.h"
+#endif
+
+#ifdef HKS_SUPPORT_UPGRADE_STORAGE_DATA
+#include "hks_upgrade_storage_data.h"
+#endif
 
 #define MAX_KEY_COUNT 256
-#define AGREE_KEY_MAX_SIZE 1024
 #define MAX_STORAGE_SIZE (2 * 1024 * 1024)
 
+#ifndef _CUT_AUTHENTICATE_
+#ifdef _STORAGE_LITE_
+static int32_t GetKeyData(const struct HksBlob *processName, const struct HksBlob *keyAlias,
+    struct HksBlob *key, int32_t mode)
+{
+    int32_t ret = HksStoreGetKeyBlob(processName, keyAlias, mode, key);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("get key blob from storage failed, ret = %d", ret);
+    }
+    return ret;
+}
+
+static int32_t CheckKeyCondition(const struct HksBlob *processName, const struct HksBlob *keyAlias)
+{
+    /* check is enough buffer to store */
+    uint32_t size = 0;
+    int32_t ret = HksStoreGetToatalSize(&size);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("get total size from storage failed, ret = %d", ret);
+        return ret;
+    }
+
+    if (size >= MAX_STORAGE_SIZE) {
+        /* is key exist */
+        ret = HksStoreIsKeyBlobExist(processName, keyAlias, HKS_STORAGE_TYPE_KEY);
+        if (ret != HKS_SUCCESS) {
+            HKS_LOG_E("buffer exceeds limit");
+            return HKS_ERROR_STORAGE_FAILURE;
+        }
+    }
+
+    return HKS_SUCCESS;
+}
+
+static int32_t GetKeyParamSet(const struct HksBlob *key, struct HksParamSet *paramSet)
+{
+    struct HksParamSet *tmpParamSet = NULL;
+    int32_t ret = TranslateKeyInfoBlobToParamSet(NULL, key, &tmpParamSet);
+    if (ret != HKS_SUCCESS) {
+        return ret;
+    }
+
+    if (paramSet->paramSetSize < tmpParamSet->paramSetSize) {
+        HksFreeParamSet(&tmpParamSet);
+        return HKS_ERROR_BUFFER_TOO_SMALL;
+    }
+    if (memcpy_s(paramSet, paramSet->paramSetSize, tmpParamSet, tmpParamSet->paramSetSize) != EOK) {
+        HKS_LOG_E("memcpy paramSet failed");
+        ret = HKS_ERROR_BAD_STATE;
+    }
+
+    HksFreeParamSet(&tmpParamSet);
+    return ret;
+}
+
+int32_t HksServiceGetKeyInfoList(const struct HksBlob *processName, struct HksKeyInfo *keyInfoList,
+    uint32_t *listCount)
+{
+    int32_t ret = HksCheckGetKeyInfoListParams(processName, keyInfoList, listCount);
+    if (ret != HKS_SUCCESS) {
+        return ret;
+    }
+
+    return HksStoreGetKeyInfoList(keyInfoList, listCount);
+}
+#else
 static int32_t GetKeyData(const struct HksBlob *processName, const struct HksBlob *keyAlias,
     struct HksBlob *key, int32_t mode)
 {
@@ -228,6 +299,8 @@ int32_t HksServiceGetKeyInfoList(const struct HksBlob *processName, struct HksKe
 
     return ret;
 }
+#endif
+#endif /* _CUT_AUTHENTICATE_ */
 
 static int32_t AppendToNewParamSet(const struct HksParamSet *paramSet, struct HksParamSet **outParamSet)
 {
@@ -309,6 +382,7 @@ static int32_t AppendProcessNameTag(const struct HksParamSet *paramSet, const st
     return ret;
 }
 
+#ifndef _CUT_AUTHENTICATE_
 static int32_t GetKeyAndNewParamSet(const struct HksBlob *processName, const struct HksBlob *keyAlias,
     const struct HksParamSet *paramSet, struct HksBlob *key, struct HksParamSet **outParamSet)
 {
@@ -358,7 +432,7 @@ static int32_t GetHksInnerKeyFormat(const struct HksParamSet *paramSet, const st
     }
 }
 
-#if defined(HKS_SUPPORT_X25519_C) || defined(HKS_SUPPORT_ED25519_C)
+#ifdef HKS_SUPPORT_ED25519_TO_X25519
 static int32_t GetAgreeStoreKey(uint32_t keyAliasTag, const struct HksBlob *processName,
     const struct HksParamSet *paramSet, struct HksBlob *key)
 {
@@ -374,7 +448,7 @@ static int32_t GetAgreeStoreKey(uint32_t keyAliasTag, const struct HksBlob *proc
         return HKS_ERROR_INVALID_ARGUMENT;
     }
 
-    return GetKeyData(processName, &keyAliasParam->blob, key, HKS_STORAGE_TYPE_KEY);
+    return GetKeyData(processName, &(keyAliasParam->blob), key, HKS_STORAGE_TYPE_KEY);
 }
 
 static int32_t GetAgreePublicKey(const uint32_t alg, const struct HksBlob *processName,
@@ -382,7 +456,7 @@ static int32_t GetAgreePublicKey(const uint32_t alg, const struct HksBlob *proce
 {
     struct HksParam *isKeyAliasParam = NULL;
     int32_t ret = HksGetParam(paramSet, HKS_TAG_AGREE_PUBLIC_KEY_IS_KEY_ALIAS, &isKeyAliasParam);
-    if ((ret == HKS_SUCCESS) && (isKeyAliasParam->boolParam == false)) {
+    if ((ret == HKS_SUCCESS) && (!(isKeyAliasParam->boolParam))) {
         struct HksParam *keyParam = NULL;
         ret = HksGetParam(paramSet, HKS_TAG_AGREE_PUBLIC_KEY, &keyParam);
         if (ret != HKS_SUCCESS) {
@@ -467,6 +541,8 @@ static int32_t GetAgreeKeyPair(const uint32_t alg, const struct HksBlob *process
 static int32_t GetAgreeBaseKey(const struct HksBlob *processName, const struct HksParamSet *paramSet,
     struct HksBlob *key)
 {
+    (void)key;
+    (void)processName;
     struct HksParam *keyAlgParam = NULL;
     int32_t ret = HksGetParam(paramSet, HKS_TAG_ALGORITHM, &keyAlgParam);
     if (ret != HKS_SUCCESS) {
@@ -479,7 +555,7 @@ static int32_t GetAgreeBaseKey(const struct HksBlob *processName, const struct H
         return HKS_SUCCESS;
     }
 
-#if defined(HKS_SUPPORT_X25519_C) || defined(HKS_SUPPORT_ED25519_C)
+#ifdef HKS_SUPPORT_ED25519_TO_X25519
     struct HksParam *agreeAlgParam = NULL;
     ret = HksGetParam(paramSet, HKS_TAG_AGREE_ALG, &agreeAlgParam);
     if (ret != HKS_SUCCESS) {
@@ -502,8 +578,7 @@ static int32_t GetDeriveMainKey(const struct HksBlob *processName, const struct 
     struct HksParam *keyGenTypeParam = NULL;
     int32_t ret = HksGetParam(paramSet, HKS_TAG_KEY_GENERATE_TYPE, &keyGenTypeParam);
     if (ret != HKS_SUCCESS) {
-        HKS_LOG_I("KEY_GENERATE_TYPE has not been set, generate a key of the default type");
-        return HKS_SUCCESS;
+        return HKS_SUCCESS; /* not set tag KEY_GENERATE_TYPE, gen key by default type */
     }
 
     if (keyGenTypeParam->uint32Param == HKS_KEY_GENERATE_TYPE_AGREE) {
@@ -512,6 +587,27 @@ static int32_t GetDeriveMainKey(const struct HksBlob *processName, const struct 
         return HKS_SUCCESS;
     }
     return HKS_ERROR_INVALID_ARGUMENT;
+}
+
+static int32_t GetKeyIn(const struct HksBlob *processName, const struct HksParamSet *paramSet,
+    struct HksBlob *key)
+{
+    int32_t ret = GetDeriveMainKey(processName, paramSet, key);
+    if (ret != HKS_SUCCESS) {
+        return ret;
+    }
+
+    /* if not generate by derive, init keyIn by default value(ca to ta not accept null pointer) */
+    if (key->data == NULL) {
+        key->size = 1; /* malloc least buffer as keyIn buffer */
+        key->data = (uint8_t *)HksMalloc(key->size);
+        if (key->data == NULL) {
+            HKS_LOG_E("malloc failed");
+            return HKS_ERROR_MALLOC_FAIL;
+        }
+        key->data[0] = 0;
+    }
+    return HKS_SUCCESS;
 }
 
 int32_t HksServiceGenerateKey(const struct HksBlob *processName, const struct HksBlob *keyAlias,
@@ -550,9 +646,9 @@ int32_t HksServiceGenerateKey(const struct HksBlob *processName, const struct Hk
             break;
         }
 
-        ret = GetDeriveMainKey(processName, newParamSet, &keyIn);
+        ret = GetKeyIn(processName, newParamSet, &keyIn);
         if (ret != HKS_SUCCESS) {
-            HKS_LOG_E("get derive main key failed, ret = %d", ret);
+            HKS_LOG_E("get keyIn failed, ret = %d", ret);
             break;
         }
 
@@ -612,7 +708,7 @@ int32_t HksServiceVerify(const struct HksBlob *processName, const struct HksBlob
     do {
         ret = HksCheckAllParams(processName, keyAlias, paramSet, srcData, signature);
         if (ret != HKS_SUCCESS) {
-            HKS_LOG_E("check verify params failed,, ret = %d", ret);
+            HKS_LOG_E("check verify params failed, ret = %d", ret);
             break;
         }
 
@@ -754,31 +850,6 @@ int32_t HksServiceGetKeyParamSet(const struct HksBlob *processName, const struct
     } while (0);
 
     HKS_FREE_BLOB(keyFromFile);
-    HksFreeParamSet(&newParamSet);
-    return ret;
-}
-
-int32_t HksServiceGenerateRandom(const struct HksBlob *processName, struct HksBlob *random)
-{
-    int32_t ret;
-    struct HksParamSet *newParamSet = NULL;
-
-    do {
-        ret = HksCheckGenerateRandomParams(processName, random);
-        if (ret != HKS_SUCCESS) {
-            HKS_LOG_E("check generate random params failed, ret = %d", ret);
-            break;
-        }
-
-        ret = AppendProcessNameTag(NULL, processName, &newParamSet);
-        if (ret != HKS_SUCCESS) {
-            HKS_LOG_E("append processName tag failed, ret = %d", ret);
-            break;
-        }
-
-        ret = HksAccessGenerateRandom(newParamSet, random);
-    } while (0);
-
     HksFreeParamSet(&newParamSet);
     return ret;
 }
@@ -988,16 +1059,56 @@ int32_t HksServiceMac(const struct HksBlob *processName, const struct HksBlob *k
 
 int32_t HksServiceInitialize(void)
 {
-    int32_t ret;
-#ifdef _STORAGE_LITE_
-    ret = HksLoadFileToBuffer(HKS_KEY_STORE_FILE_NAME);
+    int32_t ret = HKS_SUCCESS;
+
+#ifdef HKS_SUPPORT_UPGRADE_STORAGE_DATA
+    ret = HksUpgradeStorageData();
     if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("load file to buffer failed, ret = %d", ret);
+        HKS_LOG_E("hks update storage data failed, ret = %d", ret);
+        return ret;
     }
-#else
+#endif
+
+#ifndef _HARDWARE_ROOT_KEY_
     ret = HksAccessInitialize();
     if (ret != HKS_SUCCESS) {
         HKS_LOG_E("hks core service initialize failed! ret = %d", ret);
+        return ret;
+    }
+#endif
+
+#ifdef _STORAGE_LITE_
+    ret = HksLoadFileToBuffer();
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("load file to buffer failed, ret = %d", ret);
+        return ret;
+    }
+#endif
+    return ret;
+}
+
+int32_t HksServiceRefreshKeyInfo(const struct HksBlob *processName)
+{
+    int32_t ret = HksStoreDestory(processName);
+    HKS_LOG_I("destroy storage files ret = 0x%X", ret); /* only recode log */
+
+#ifdef HKS_SUPPORT_UPGRADE_STORAGE_DATA
+    ret = HksDestroyOldVersionFiles();
+    HKS_LOG_I("destroy old version files ret = 0x%X", ret); /* only recode log */
+#endif
+
+#ifndef _HARDWARE_ROOT_KEY_
+    ret = HksAccessRefresh();
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("Hks core service refresh info failed! ret = 0x%X", ret);
+        return ret;
+    }
+#endif
+
+#ifdef _STORAGE_LITE_
+    ret = HksFileBufferRefresh();
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("load file to buffer failed, ret = %d", ret);
         return ret;
     }
 #endif
@@ -1143,5 +1254,31 @@ int32_t HksServiceProvisionVerify(const struct HksBlob *srcData, const struct Hk
 int32_t HksServiceExportTrustCerts(const struct HksBlob *processName, struct HksBlob *certChain)
 {
     return 0;
+}
+#endif
+
+int32_t HksServiceGenerateRandom(const struct HksBlob *processName, struct HksBlob *random)
+{
+    int32_t ret;
+    struct HksParamSet *newParamSet = NULL;
+
+    do {
+        ret = HksCheckGenerateRandomParams(processName, random);
+        if (ret != HKS_SUCCESS) {
+            HKS_LOG_E("check generate random params failed, ret = %d", ret);
+            break;
+        }
+
+        ret = AppendProcessNameTag(NULL, processName, &newParamSet);
+        if (ret != HKS_SUCCESS) {
+            HKS_LOG_E("append processName tag failed, ret = %d", ret);
+            break;
+        }
+
+        ret = HksAccessGenerateRandom(newParamSet, random);
+    } while (0);
+
+    HksFreeParamSet(&newParamSet);
+    return ret;
 }
 

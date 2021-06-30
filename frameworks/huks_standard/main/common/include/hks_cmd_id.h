@@ -16,7 +16,7 @@
 #ifndef HKS_CMD_ID_H
 #define HKS_CMD_ID_H
 
-#include "hks_type.h"
+#include "hks_type_inner.h"
 
 enum HksCmdId {
     HKS_CMD_ID_INVALID = 0x0,

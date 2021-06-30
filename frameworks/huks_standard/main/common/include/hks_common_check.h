@@ -17,7 +17,7 @@
 #define HKS_COMMON_CHECK_H
 
 #include "hks_param.h"
-#include "hks_type.h"
+#include "hks_type_inner.h"
 
 #define HKS_DIGEST_SHA256_LEN 32
 #define HKS_DIGEST_SHA384_LEN 48
@@ -51,10 +51,8 @@ int32_t HksGetDigestLen(uint32_t digest, uint32_t *digestLen);
 
 int32_t HksCheckAesAeMode(const struct HksParamSet *paramSet, bool *isAes, bool *isAeMode);
 
-int32_t HksGetProcessName(char **processName);
-
 #ifdef __cplusplus
 }
 #endif
 
-#endif
+#endif /* HKS_COMMON_CHECK_H */

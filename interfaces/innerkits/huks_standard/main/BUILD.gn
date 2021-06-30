@@ -21,7 +21,11 @@ ohos_shared_library("libhukssdk") {
   subsystem_name = "security"
   part_name = "huks_standard"
   public_configs = [ ":huks_config" ]
-
+  defines = [
+    "L2_STANDARD",
+    "_HARDWARE_ROOT_KEY_",
+    "_HUKS_LOG_ENABLE_",
+  ]
   include_dirs = [ "//utils/native/base/include" ]
 
   sources = [ "src/hks_api.c" ]

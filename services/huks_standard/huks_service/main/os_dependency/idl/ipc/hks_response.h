@@ -16,7 +16,7 @@
 #ifndef HKS_RESPONSE_H
 #define HKS_RESPONSE_H
 
-#include "hks_type.h"
+#include "hks_type_inner.h"
 
 #ifdef __cplusplus
 extern "C" {

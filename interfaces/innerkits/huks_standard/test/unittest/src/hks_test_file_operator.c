@@ -27,6 +27,8 @@
 #include "hks_test_mem.h"
 #include "hks_type.h"
 
+#include "securec.h"
+
 #define HKS_MAX_FILE_NAME_LEN 512
 
 static int32_t GetFileName(const char *path, const char *fileName, char *fullFileName, uint32_t fullFileNameLen)

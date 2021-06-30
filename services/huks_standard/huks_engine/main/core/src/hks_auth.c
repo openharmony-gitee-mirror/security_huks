@@ -16,7 +16,7 @@
 #include "hks_auth.h"
 #include "hks_log.h"
 #include "hks_param.h"
-#include "hks_type.h"
+#include "hks_type_inner.h"
 
 struct HksAuthPolicy {
     uint32_t authId;
@@ -24,6 +24,7 @@ struct HksAuthPolicy {
     uint32_t *policyTag;
 };
 
+#ifndef _CUT_AUTHENTICATE_
 static uint32_t g_symCipherPolicyTag[] = { HKS_TAG_ALGORITHM, HKS_TAG_BLOCK_MODE, HKS_TAG_PADDING, HKS_TAG_PURPOSE };
 static uint32_t g_asymCipherPolicyTag[] = { HKS_TAG_ALGORITHM, HKS_TAG_DIGEST, HKS_TAG_PADDING, HKS_TAG_PURPOSE };
 static uint32_t g_signVerifyRsaPolicyTag[] = { HKS_TAG_ALGORITHM, HKS_TAG_DIGEST, HKS_TAG_PADDING, HKS_TAG_PURPOSE };
@@ -93,3 +94,5 @@ int32_t HksAuth(uint32_t authId, const struct HksKeyNode *keyNode, const struct 
     }
     return HKS_ERROR_BAD_STATE;
 }
+
+#endif /* _CUT_AUTHENTICATE_ */

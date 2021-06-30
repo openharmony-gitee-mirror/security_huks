@@ -16,6 +16,7 @@
 #include "hks_param.h"
 #include "hks_log.h"
 #include "hks_mem.h"
+#include "hks_type_inner.h"
 
 enum HksTag g_validTags[] = {
     HKS_TAG_ALGORITHM,
@@ -37,6 +38,7 @@ enum HksTag g_validTags[] = {
     HKS_TAG_KEY_GENERATE_TYPE,
     HKS_TAG_DERIVE_MAIN_KEY,
     HKS_TAG_DERIVE_FACTOR,
+    HKS_TAG_DERIVE_ALG,
     HKS_TAG_AGREE_ALG,
     HKS_TAG_AGREE_PUBLIC_KEY_IS_KEY_ALIAS,
     HKS_TAG_AGREE_PRIVATE_KEY_ALIAS,
@@ -88,6 +90,9 @@ enum HksTag g_validTags[] = {
     HKS_TAG_KEY,
     HKS_TAG_KEY_VERSION,
     HKS_TAG_IS_KEY_HANDLE,
+    HKS_TAG_SYMMETRIC_KEY_DATA,
+    HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA,
+    HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA,
 };
 
 static enum HksTagType GetTagType(enum HksTag tag)
@@ -268,7 +273,6 @@ HKS_API_EXPORT int32_t HksAddParams(struct HksParamSet *paramSet,
         (void)memcpy_s(&paramSet->params[paramSet->paramsCnt++], sizeof(struct HksParam), &params[i],
             sizeof(struct HksParam));
     }
-
     return HKS_SUCCESS;
 }
 

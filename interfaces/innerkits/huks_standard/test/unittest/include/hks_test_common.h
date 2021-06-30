@@ -17,6 +17,7 @@
 #define HKS_TEST_COMMON_H
 
 #include "hks_type.h"
+#include "securec.h"
 
 #define GOTO_ERROR_IF_FAIL(ret, err) \
     if ((ret) != 0) { \

@@ -13,16 +13,25 @@
  * limitations under the License.
  */
 
+#ifdef HKS_CONFIG_FILE
+#include HKS_CONFIG_FILE
+#else
+#include "hks_config.h"
+#endif
+
 #include "hks_base_check.h"
 
 #include "hks_cmd_id.h"
 #include "hks_common_check.h"
-#ifdef HKS_HAL_ENGINE_CONFIG_FILE
-#include HKS_HAL_ENGINE_CONFIG_FILE
-#else
-#include "hks_crypto_hal_config.h"
-#endif
 #include "hks_log.h"
+
+#ifdef _CUT_AUTHENTICATE_
+#undef HKS_SUPPORT_RSA_C
+#undef HKS_SUPPORT_ECC_C
+#undef HKS_SUPPORT_ECDH_C
+#undef HKS_SUPPORT_X25519_C
+#undef HKS_SUPPORT_ED25519_C
+#endif
 
 #define HKS_AES_CBC_IV_LEN          16
 #define HKS_AES_CCM_AAD_LEN_MIN     4
@@ -231,6 +240,7 @@ static const struct ExpectParamsValuesChecker g_expectCurve25519Params[] = {
 };
 #endif
 
+#ifndef _CUT_AUTHENTICATE_
 #ifndef _STORAGE_LITE_
 static int32_t CheckAndGetKeySize(const struct HksBlob *key, const uint32_t *expectKeySize,
     uint32_t expectCnt, uint32_t *keySize)
@@ -282,58 +292,6 @@ static int32_t CheckAndGetKeySize(const struct HksBlob *key, const uint32_t *exp
     return ret;
 }
 #endif
-
-static int32_t GetInputParams(const struct HksParamSet *paramSet, struct ParamsValues *inputParams)
-{
-    int32_t ret = HKS_SUCCESS;
-    struct HksParam *checkParam = NULL;
-    if (inputParams->keyLen.needCheck) {
-        ret = HksGetParam(paramSet, HKS_TAG_KEY_SIZE, &checkParam);
-        if (ret != HKS_SUCCESS) {
-            HKS_LOG_E("get Param get tag:0x%x failed", HKS_TAG_KEY_SIZE);
-            return HKS_ERROR_CHECK_GET_KEY_SIZE_FAIL;
-        }
-        inputParams->keyLen.value = checkParam->uint32Param;
-    }
-
-    if (inputParams->padding.needCheck) {
-        ret = HksGetParam(paramSet, HKS_TAG_PADDING, &checkParam);
-        if (ret != HKS_SUCCESS) {
-            HKS_LOG_E("get Param get tag:0x%x failed", HKS_TAG_PADDING);
-            return HKS_ERROR_CHECK_GET_PADDING_FAIL;
-        }
-        inputParams->padding.value = checkParam->uint32Param;
-    }
-
-    if (inputParams->purpose.needCheck) {
-        ret = HksGetParam(paramSet, HKS_TAG_PURPOSE, &checkParam);
-        if (ret != HKS_SUCCESS) {
-            HKS_LOG_E("get Param get tag:0x%x failed", HKS_TAG_PURPOSE);
-            return HKS_ERROR_CHECK_GET_PURPOSE_FAIL;
-        }
-        inputParams->purpose.value = checkParam->uint32Param;
-    }
-
-    if (inputParams->digest.needCheck) {
-        ret = HksGetParam(paramSet, HKS_TAG_DIGEST, &checkParam);
-        if (ret != HKS_SUCCESS) {
-            HKS_LOG_E("get Param get tag:0x%x failed", HKS_TAG_DIGEST);
-            return HKS_ERROR_CHECK_GET_DIGEST_FAIL;
-        }
-        inputParams->digest.value = checkParam->uint32Param;
-    }
-
-    if (inputParams->mode.needCheck) {
-        ret = HksGetParam(paramSet, HKS_TAG_BLOCK_MODE, &checkParam);
-        if (ret != HKS_SUCCESS) {
-            HKS_LOG_E("get Param get tag:0x%x failed", HKS_TAG_BLOCK_MODE);
-            return HKS_ERROR_CHECK_GET_MODE_FAIL;
-        }
-        inputParams->mode.value = checkParam->uint32Param;
-    }
-
-    return ret;
-}
 
 static int32_t CheckPurposeUnique(uint32_t inputPurpose)
 {
@@ -395,6 +353,60 @@ static int32_t CheckPurposeValid(uint32_t alg, uint32_t inputPurpose)
 
     return HKS_SUCCESS;
 }
+#endif /* _CUT_AUTHENTICATE_ */
+
+static int32_t GetInputParams(const struct HksParamSet *paramSet, struct ParamsValues *inputParams)
+{
+    int32_t ret = HKS_SUCCESS;
+    struct HksParam *checkParam = NULL;
+    if (inputParams->keyLen.needCheck) {
+        ret = HksGetParam(paramSet, HKS_TAG_KEY_SIZE, &checkParam);
+        if (ret != HKS_SUCCESS) {
+            HKS_LOG_E("get Param get tag:0x%x failed", HKS_TAG_KEY_SIZE);
+            return HKS_ERROR_CHECK_GET_KEY_SIZE_FAIL;
+        }
+        inputParams->keyLen.value = checkParam->uint32Param;
+    }
+
+    if (inputParams->padding.needCheck) {
+        ret = HksGetParam(paramSet, HKS_TAG_PADDING, &checkParam);
+        if (ret != HKS_SUCCESS) {
+            HKS_LOG_E("get Param get tag:0x%x failed", HKS_TAG_PADDING);
+            return HKS_ERROR_CHECK_GET_PADDING_FAIL;
+        }
+        inputParams->padding.value = checkParam->uint32Param;
+    }
+
+    if (inputParams->purpose.needCheck) {
+        ret = HksGetParam(paramSet, HKS_TAG_PURPOSE, &checkParam);
+        if (ret != HKS_SUCCESS) {
+            HKS_LOG_E("get Param get tag:0x%x failed", HKS_TAG_PURPOSE);
+            return HKS_ERROR_CHECK_GET_PURPOSE_FAIL;
+        }
+        inputParams->purpose.value = checkParam->uint32Param;
+    }
+
+    if (inputParams->digest.needCheck) {
+        ret = HksGetParam(paramSet, HKS_TAG_DIGEST, &checkParam);
+        if (ret != HKS_SUCCESS) {
+            HKS_LOG_E("get Param get tag:0x%x failed", HKS_TAG_DIGEST);
+            return HKS_ERROR_CHECK_GET_DIGEST_FAIL;
+        }
+        inputParams->digest.value = checkParam->uint32Param;
+    }
+
+    if (inputParams->mode.needCheck) {
+        ret = HksGetParam(paramSet, HKS_TAG_BLOCK_MODE, &checkParam);
+        if (ret != HKS_SUCCESS) {
+            HKS_LOG_E("get Param get tag:0x%x failed", HKS_TAG_BLOCK_MODE);
+            return HKS_ERROR_CHECK_GET_MODE_FAIL;
+        }
+        inputParams->mode.value = checkParam->uint32Param;
+    }
+
+    return ret;
+}
+
 
 static int32_t InitInputParams(enum CheckKeyType checkType, struct ParamsValues *inputParams,
     const struct ParamsValuesChecker *checkSet, uint32_t checkSetSize)
@@ -859,6 +871,7 @@ int32_t HksCheckValue(uint32_t inputValue, const uint32_t *expectValues, uint32_
     return ret;
 }
 
+#ifndef _CUT_AUTHENTICATE_
 int32_t HksCheckGenKeyPurpose(uint32_t alg, uint32_t inputPurpose)
 {
     int32_t ret = CheckPurposeUnique(inputPurpose);
@@ -894,6 +907,7 @@ int32_t HksGetKeySize(uint32_t alg, const struct HksBlob *key, uint32_t *keySize
             return HKS_ERROR_INVALID_ALGORITHM;
     }
 }
+#endif /* _CUT_AUTHENTICATE_ */
 
 int32_t HksGetInputParmasByAlg(uint32_t alg, enum CheckKeyType checkType, const struct HksParamSet *paramSet,
     struct ParamsValues *inputParams)
@@ -963,6 +977,7 @@ int32_t HksCheckFixedParams(uint32_t alg, enum CheckKeyType checkType, const str
     return ret;
 }
 
+#ifndef _CUT_AUTHENTICATE_
 int32_t HksCheckGenKeyMutableParams(uint32_t alg, const struct ParamsValues *inputParams)
 {
     int32_t ret = HksCheckGenKeyPurpose(alg, inputParams->purpose.value);
@@ -997,6 +1012,7 @@ int32_t HksCheckGenKeyMutableParams(uint32_t alg, const struct ParamsValues *inp
 
     return ret;
 }
+
 int32_t HksCheckSignature(uint32_t cmdId, uint32_t alg, const struct HksBlob *key, const struct HksBlob *signature)
 {
     uint32_t keySize = 0;
@@ -1056,6 +1072,7 @@ int32_t HksCheckSignVerifyMutableParams(uint32_t cmdId, uint32_t alg, const stru
     }
     return HKS_SUCCESS;
 }
+#endif /* _CUT_AUTHENTICATE_ */
 
 int32_t HksCheckCipherMutableParams(uint32_t cmdId, uint32_t alg, const struct ParamsValues *inputParams)
 {

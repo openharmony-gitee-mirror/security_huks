@@ -13,6 +13,12 @@
  * limitations under the License.
  */
 
+#ifdef HKS_CONFIG_FILE
+#include HKS_CONFIG_FILE
+#else
+#include "hks_config.h"
+#endif
+
 #include "hks_client_service_adapter.h"
 
 #include <openssl/bn.h>
@@ -21,12 +27,6 @@
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
 #include <openssl/x509.h>
-
-#ifdef HKS_HAL_ENGINE_CONFIG_FILE
-#include HKS_HAL_ENGINE_CONFIG_FILE
-#else
-#include "hks_crypto_hal_config.h"
-#endif
 
 #include "hks_log.h"
 #include "hks_mem.h"

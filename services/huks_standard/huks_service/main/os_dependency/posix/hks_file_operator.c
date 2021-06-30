@@ -13,6 +13,12 @@
  * limitations under the License.
  */
 
+#ifdef HKS_CONFIG_FILE
+#include HKS_CONFIG_FILE
+#else
+#include "hks_config.h"
+#endif
+
 #include "hks_file_operator.h"
 
 #include <dirent.h>
@@ -20,6 +26,7 @@
 #include <limits.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include "securec.h"
 
 #include "hks_log.h"
 #include "hks_mem.h"
@@ -222,6 +229,14 @@ int32_t HksIsFileExist(const char *path, const char *fileName)
     return ret;
 }
 
+int32_t HksIsDirExist(const char *path)
+{
+    if (path == NULL) {
+        return HKS_ERROR_NULL_POINTER;
+    }
+    return IsFileExist(path);
+}
+
 int32_t HksMakeDir(const char *path)
 {
     return mkdir(path, S_IRWXU);
@@ -248,11 +263,40 @@ int32_t HksGetDirFile(void *dirp, struct HksFileDirentInfo *direntInfo)
             continue;
         }
 
-        direntInfo->fileName = dire->d_name;
+        uint32_t len = strlen(dire->d_name);
+        if (memcpy_s(direntInfo->fileName, sizeof(direntInfo->fileName) - 1, dire->d_name, len) != EOK) {
+            return HKS_ERROR_BAD_STATE;
+        }
+        direntInfo->fileName[len] = '\0';
         return HKS_SUCCESS;
     }
 
     return HKS_ERROR_NOT_EXIST;
+}
+
+int32_t HksGetStoragePath(enum HksStoragePathType pathType, char *path, uint32_t *len)
+{
+    if ((path == NULL) || (len == NULL) || (*len <= 1)) {
+        return HKS_ERROR_INVALID_ARGUMENT;
+    }
+    errno_t ret;
+    uint32_t pathLen;
+    if (pathType == HKS_STORAGE_MAIN_PATH) {
+        pathLen = strlen(HKS_KEY_STORE_PATH);
+        ret = memcpy_s(path, *len - 1, HKS_KEY_STORE_PATH, pathLen);
+    } else if (pathType == HKS_STORAGE_BACKUP_PATH) {
+        pathLen = strlen(HKS_KEY_STORE_BAK_PATH);
+        ret = memcpy_s(path, *len - 1, HKS_KEY_STORE_BAK_PATH, pathLen);
+    } else {
+        return HKS_ERROR_INVALID_ARGUMENT;
+    }
+    if (ret != EOK) {
+        HKS_LOG_E("memcpy failed");
+        return HKS_ERROR_BAD_STATE;
+    }
+    path[pathLen] = '\0';
+    *len = pathLen + 1;
+    return HKS_SUCCESS;
 }
 
 int32_t HksRemoveDir(const char *dirPath)

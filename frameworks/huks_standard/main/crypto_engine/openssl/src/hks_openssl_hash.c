@@ -19,7 +19,7 @@
 
 #include "hks_log.h"
 #include "hks_openssl_engine.h"
-#include "hks_type.h"
+#include "hks_type_inner.h"
 
 static int32_t CheckDigestAlg(uint32_t alg)
 {

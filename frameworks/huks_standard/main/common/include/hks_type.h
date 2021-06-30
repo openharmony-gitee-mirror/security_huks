@@ -20,19 +20,13 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "securec.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #ifndef HKS_API_PUBLIC
-    #if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
-        #ifdef HKS_DLL_EXPORT
-            #define HKS_API_EXPORT __declspec(dllexport)
-        #else
-            #define HKS_API_EXPORT __declspec(dllimport)
-        #endif
+    #if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__) || defined(__ICCARM__) /* __ICCARM__ for iar */
+        #define HKS_API_EXPORT
     #else
         #define HKS_API_EXPORT __attribute__ ((visibility("default")))
     #endif
@@ -211,6 +205,8 @@ enum HksErrorCode {
     HKS_ERROR_IPC_INIT_FAIL = -33,
     HKS_ERROR_IPC_DLOPEN_FAIL = -34,
     HKS_ERROR_EFUSE_READ_FAIL = -35,
+    HKS_ERROR_NEW_ROOT_KEY_MATERIAL_EXIST = -36,
+    HKS_ERROR_UPDATE_ROOT_KEY_MATERIAL_FAIL = -37,
 
     HKS_ERROR_CHECK_GET_ALG_FAIL = -100,
     HKS_ERROR_CHECK_GET_KEY_SIZE_FAIL = -101,
@@ -282,6 +278,7 @@ enum HksTag {
     HKS_TAG_KEY_GENERATE_TYPE = HKS_TAG_TYPE_UINT | 15, /* choose from enum HksKeyGenerateType */
     HKS_TAG_DERIVE_MAIN_KEY = HKS_TAG_TYPE_BYTES | 16,
     HKS_TAG_DERIVE_FACTOR = HKS_TAG_TYPE_BYTES | 17,
+    HKS_TAG_DERIVE_ALG = HKS_TAG_TYPE_UINT | 18,
     HKS_TAG_AGREE_ALG = HKS_TAG_TYPE_UINT | 19,
     HKS_TAG_AGREE_PUBLIC_KEY_IS_KEY_ALIAS = HKS_TAG_TYPE_BOOL | 20,
     HKS_TAG_AGREE_PRIVATE_KEY_ALIAS = HKS_TAG_TYPE_BYTES | 21,
