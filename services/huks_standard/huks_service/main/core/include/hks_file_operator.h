@@ -23,17 +23,12 @@
 #ifdef _STORAGE_LITE_
     #define HKS_KEY_STORE_PATH            "/storage/"
 #else
-    #ifdef HKS_SUPPORT_PRODUCT_GT_WATCH
-        #define HKS_KEY_STORE_PATH            "user/maindata"
-        #define HKS_KEY_STORE_BAK_PATH        "user/bakdata"
+    #ifdef L2_STANDARD
+        #define HKS_KEY_STORE_PATH            "/data/data/maindata"
+        #define HKS_KEY_STORE_BAK_PATH        "/data/data/bakdata"
     #else
-        #ifdef L2_STANDARD
-            #define HKS_KEY_STORE_PATH            "/data/data/maindata"
-            #define HKS_KEY_STORE_BAK_PATH        "/data/data/bakdata"
-        #else
-            #define HKS_KEY_STORE_PATH            "/storage/maindata"
-            #define HKS_KEY_STORE_BAK_PATH        "/storage/bakdata"
-        #endif
+        #define HKS_KEY_STORE_PATH            "/storage/maindata"
+        #define HKS_KEY_STORE_BAK_PATH        "/storage/bakdata"
     #endif
 #endif
 #define HKS_KEY_STORE_KEY_PATH        "key"

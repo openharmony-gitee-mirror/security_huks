@@ -23,29 +23,9 @@
 #define HKS_HARDWARE_UDID_LEN 32
 
 #ifndef _CUT_AUTHENTICATE_
-#if defined(HKS_SUPPORT_PRODUCT_GT_WATCH)
-extern uint8_t GetUdid(uint8_t *buf, uint8_t length);
-
 int32_t HksGetHardwareUdid(uint8_t *udid, uint32_t udidLen)
 {
-    uint8_t hardwareUdid[HKS_HARDWARE_UDID_LEN] = {0};
-    uint8_t resultLen = GetUdid(hardwareUdid, HKS_HARDWARE_UDID_LEN);
-    if (resultLen != HKS_HARDWARE_UDID_LEN) {
-        HKS_LOG_E("Get Udid failed!");
-        return HKS_FAILURE;
-    }
-
-    if (memcpy_s(udid, udidLen, hardwareUdid, HKS_HARDWARE_UDID_LEN) != EOK) {
-        HKS_LOG_E("Memcpy udid failed!");
-        return HKS_ERROR_BAD_STATE;
-    }
-
-    return HKS_SUCCESS;
-}
-
-#else
-int32_t HksGetHardwareUdid(uint8_t *udid, uint32_t udidLen)
-{
+    /* simulation implementation */
     const uint8_t testUdid[HKS_HARDWARE_UDID_LEN] = {
         0xFE, 0xF1, 0xFA, 0xD5, 0xB6, 0x9D, 0x4A, 0xC8,
         0x52, 0xE7, 0xF5, 0xA3, 0x8F, 0x0D, 0xE1, 0xC0,
@@ -60,6 +40,4 @@ int32_t HksGetHardwareUdid(uint8_t *udid, uint32_t udidLen)
 
     return HKS_SUCCESS;
 }
-#endif
-
 #endif /* _CUT_AUTHENTICATE_ */
