@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-
 #ifndef HKS_API_H
 #define HKS_API_H
 
@@ -26,6 +25,8 @@ extern "C" {
 HKS_API_EXPORT int32_t HksGetSdkVersion(struct HksBlob *sdkVersion);
 
 HKS_API_EXPORT int32_t HksInitialize(void);
+
+HKS_API_EXPORT int32_t HksRefreshKeyInfo(void);
 
 HKS_API_EXPORT int32_t HksGenerateKey(const struct HksBlob *keyAlias,
     const struct HksParamSet *paramSetIn, struct HksParamSet *paramSetOut);

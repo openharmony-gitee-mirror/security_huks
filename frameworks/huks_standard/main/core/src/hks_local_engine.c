@@ -27,27 +27,7 @@
 #define MAX_DEGIST_SIZE 64
 #define X25519_KEY_BYTE_SIZE 32
 
-int32_t HksLocalMac(const struct HksBlob *key, const struct HksParamSet *paramSet,
-    const struct HksBlob *srcData, struct HksBlob *mac)
-{
-    if (HksCheckBlob3AndParamSet(key, srcData, mac, paramSet) != HKS_SUCCESS) {
-        return HKS_ERROR_INVALID_ARGUMENT;
-    }
-    int32_t ret = HksCoreCheckMacParams(key, paramSet, srcData, mac, true);
-    if (ret != HKS_SUCCESS) {
-        return ret;
-    }
-
-    struct HksParam *digestAlg = NULL;
-    ret = HksGetParam(paramSet, HKS_TAG_DIGEST, &digestAlg);
-    if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("get param digest failed");
-        return HKS_ERROR_CHECK_GET_DIGEST_FAIL;
-    }
-
-    return HksCryptoHalHmac(key, digestAlg->uint32Param, srcData, mac);
-}
-
+#ifndef _CUT_AUTHENTICATE_
 int32_t HksLocalHash(const struct HksParamSet *paramSet, const struct HksBlob *srcData, struct HksBlob *hash)
 {
     if (HksCheckBlob2AndParamSet(srcData, hash, paramSet) != HKS_SUCCESS) {
@@ -75,6 +55,28 @@ int32_t HksLocalHash(const struct HksParamSet *paramSet, const struct HksBlob *s
 
     return HksCryptoHalHash(digestAlg->uint32Param, srcData, hash);
 }
+#endif
+
+int32_t HksLocalMac(const struct HksBlob *key, const struct HksParamSet *paramSet,
+    const struct HksBlob *srcData, struct HksBlob *mac)
+{
+    if (HksCheckBlob3AndParamSet(key, srcData, mac, paramSet) != HKS_SUCCESS) {
+        return HKS_ERROR_INVALID_ARGUMENT;
+    }
+    int32_t ret = HksCoreCheckMacParams(key, paramSet, srcData, mac, true);
+    if (ret != HKS_SUCCESS) {
+        return ret;
+    }
+
+    struct HksParam *digestAlg = NULL;
+    ret = HksGetParam(paramSet, HKS_TAG_DIGEST, &digestAlg);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("get param digest failed");
+        return HKS_ERROR_CHECK_GET_DIGEST_FAIL;
+    }
+
+    return HksCryptoHalHmac(key, digestAlg->uint32Param, srcData, mac);
+}
 
 int32_t HksLocalBnExpMod(struct HksBlob *x, const struct HksBlob *a, const struct HksBlob *e, const struct HksBlob *n)
 {
@@ -85,6 +87,7 @@ int32_t HksLocalBnExpMod(struct HksBlob *x, const struct HksBlob *a, const struc
     return HksCryptoHalBnExpMod(x, a, e, n);
 }
 
+#ifndef _CUT_AUTHENTICATE_
 static int32_t CheckLocalGenerateKeyParams(const struct HksParamSet *paramSetIn, struct HksParamSet *paramSetOut)
 {
     if ((HksCheckParamSetValidity(paramSetIn) != HKS_SUCCESS) || (paramSetOut == NULL)) {
@@ -182,6 +185,7 @@ int32_t HksLocalAgreeKey(const struct HksParamSet *paramSet, const struct HksBlo
     HKS_FREE_PTR(publicKeyMaterial.data);
     return ret;
 }
+#endif
 
 static int32_t CipherEncrypt(const struct HksBlob *key, const struct HksParamSet *paramSet,
     const struct HksUsageSpec *usageSpec, const struct HksBlob *inData, struct HksBlob *outData)
@@ -275,6 +279,7 @@ int32_t HksLocalDeriveKey(const struct HksParamSet *paramSet, const struct HksBl
     return HksCryptoHalDeriveKey(mainKey, &derivationSpec, derivedKey);
 }
 
+#ifndef _CUT_AUTHENTICATE_
 static int32_t CheckLocalVerifyParams(const struct HksBlob *key, const struct HksParamSet *paramSet,
     const struct HksBlob *srcData, const struct HksBlob *signature)
 {
@@ -334,3 +339,4 @@ int32_t HksLocalVerify(const struct HksBlob *key, const struct HksParamSet *para
     HKS_FREE_PTR(keyMaterial.data);
     return ret;
 }
+#endif

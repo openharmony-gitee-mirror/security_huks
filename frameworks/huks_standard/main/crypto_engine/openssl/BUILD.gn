@@ -27,6 +27,11 @@ ohos_static_library("libhuks_openssl_standard_static") {
     "//third_party/openssl/include/",
   ]
 
+  defines = [
+    "L2_STANDARD",
+    "_HARDWARE_ROOT_KEY_",
+    "_HUKS_LOG_ENABLE_",
+  ]
   sources = [
     "src/hks_openssl_aes.c",
     "src/hks_openssl_curve25519.c",

@@ -17,7 +17,7 @@
 #define HKS_CORE_SERVICE_H
 
 #include "hks_crypto_hal.h"
-#include "hks_type.h"
+#include "hks_type_inner.h"
 
 #define MAX_HASH_SIZE 64
 
@@ -61,13 +61,13 @@ int32_t HksCoreInitialize(void);
 
 int32_t HksCoreRefreshKeyInfo(void);
 
-#ifdef _STORAGE_LITE_
+int32_t HksCoreUpgradeKeyInfo(const struct HksBlob *keyAlias, const struct HksBlob *keyInfo, struct HksBlob *keyOut);
+
 int32_t HksCoreCalcMacHeader(const struct HksParamSet *paramSet, const struct HksBlob *salt,
     const struct HksBlob *srcData, struct HksBlob *mac);
-#endif
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* HKS_ACCESS_H */
+#endif /* HKS_CORE_SERVICE_H */

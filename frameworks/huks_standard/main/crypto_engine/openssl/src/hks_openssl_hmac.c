@@ -20,7 +20,7 @@
 
 #include "hks_log.h"
 #include "hks_openssl_engine.h"
-#include "hks_type.h"
+#include "hks_type_inner.h"
 
 static int32_t HmacCheckBuffer(const struct HksBlob *key, const struct HksBlob *msg, const struct HksBlob *mac)
 {

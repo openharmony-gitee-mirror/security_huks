@@ -25,6 +25,11 @@ ohos_static_library("libhuks_engine_os_dependency_standard_static") {
     "//utils/native/base/include",
     "//utils/system/safwk/native/include",
   ]
+  defines = [
+    "L2_STANDARD",
+    "_HARDWARE_ROOT_KEY_",
+    "_HUKS_LOG_ENABLE_",
+  ]
   sources = []
   deps = [
     "//base/security/huks/frameworks/huks_standard/main/common:libhuks_common_standard_static",

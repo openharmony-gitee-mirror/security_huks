@@ -18,4 +18,22 @@ declare_args() {
 
   # cut abilities for authentication
   disable_authenticate = false
+
+  # if HUKS use mbedlts engine
+  use_mbedlts = true
+
+  # mbedtls path when HUKS using mbedlts engine
+  mbedtls_path = "//third_party/mbedtls/include"
+
+  # whether use lite storeage
+  use_lite_storage = false
+
+  # whether use hardware root key
+  use_hardware_root_key = false
+
+  # whether use hks config file
+  hks_config_file = ""
+
+  # whether huks enable log
+  enable_huks_log = false
 }

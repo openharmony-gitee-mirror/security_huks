@@ -16,7 +16,7 @@
 #ifndef HKS_REQUEST_H
 #define HKS_REQUEST_H
 
-#include "hks_type.h"
+#include "hks_type_inner.h"
 
 enum HksMessage {
     HKS_MSG_BASE = 0x3a400, /* range of message value defined by router. globally unique */

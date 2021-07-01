@@ -16,6 +16,11 @@ import("//build/ohos.gni")
 ohos_static_library("libhuks_service_standard_static") {
   subsystem_name = "security"
   part_name = "huks_standard"
+  defines = [
+    "L2_STANDARD",
+    "_HARDWARE_ROOT_KEY_",
+    "_HUKS_LOG_ENABLE_",
+  ]
   public_deps = [
     "//base/security/huks/services/huks_standard/huks_service/main/core:libhuks_service_core_standard_static",
     "//base/security/huks/services/huks_standard/huks_service/main/os_dependency:libhuks_service_os_dependency_standard_static",

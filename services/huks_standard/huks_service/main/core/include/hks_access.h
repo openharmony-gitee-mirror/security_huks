@@ -16,7 +16,7 @@
 #ifndef HKS_ACCESS_H
 #define HKS_ACCESS_H
 
-#include "hks_type.h"
+#include "hks_type_inner.h"
 #include "hks_cmd_id.h"
 
 #ifdef __cplusplus
@@ -70,8 +70,13 @@ int32_t HksAccessInitialize(void);
 
 int32_t HksAccessRefresh(void);
 
+int32_t HksAccessUpgradeKeyInfo(const struct HksBlob *keyAlias, const struct HksBlob *keyInfo, struct HksBlob *keyOut);
+
+int32_t HksAccessCalcHeaderMac(const struct HksParamSet *paramSet, const struct HksBlob *salt,
+    const struct HksBlob *srcData, struct HksBlob *mac);
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif
+#endif /* HKS_ACCESS_H */

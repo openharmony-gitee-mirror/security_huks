@@ -16,7 +16,7 @@
 #ifndef HKS_STORAGE_H
 #define HKS_STORAGE_H
 
-#include "hks_type.h"
+#include "hks_type_inner.h"
 
 enum HksStorageType {
     HKS_STORAGE_TYPE_KEY = 0,
@@ -49,8 +49,22 @@ int32_t HksGetKeyAliasByProcessName(const struct HksBlob *processName, struct Hk
 
 int32_t HksStoreDestory(const struct HksBlob *processName);
 
+#ifdef _STORAGE_LITE_
+
+#define HKS_KEY_STORE_FILE_NAME "hks_keystore"
+
+int32_t HksLoadFileToBuffer(void);
+
+int32_t HksFileBufferRefresh(void);
+
+int32_t HksStoreGetToatalSize(uint32_t *size);
+
+int32_t HksStoreGetKeyInfoList(struct HksKeyInfo *keyInfoList, uint32_t *listCount);
+
+#endif /* _STORAGE_LITE_ */
+
 #ifdef __cplusplus
 }
 #endif
 
-#endif
+#endif /* HKS_STORAGE_H */

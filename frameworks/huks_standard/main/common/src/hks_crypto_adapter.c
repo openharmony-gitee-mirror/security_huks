@@ -231,6 +231,7 @@ int32_t HksGetEncryptAeTag(const struct HksParamSet *paramSet, const struct HksB
     return HKS_SUCCESS;
 }
 
+#ifndef _CUT_AUTHENTICATE_
 static int32_t SetCurve25519KeyMaterial(bool isPubKey, const struct HksBlob *keyIn, struct HksBlob *keyOut)
 {
     struct KeyMaterial25519 curve25519Km = {0};
@@ -368,14 +369,14 @@ int32_t GetCurve25519FromKeyMaterial(const bool isPubKey, const struct HksBlob *
 
     const struct KeyMaterial25519 *km = (struct KeyMaterial25519 *)(keyMaterial->data);
 
-    uint32_t size = isPubKey ? km->pubKeySize : km->priKeySize;
+    uint32_t size = (isPubKey ? km->pubKeySize : km->priKeySize);
     uint8_t *buffer = (uint8_t *)HksMalloc(size);
     if (buffer == NULL) {
         return HKS_ERROR_MALLOC_FAIL;
     }
 
     uint32_t offset = sizeof(struct KeyMaterial25519);
-    uint8_t *tmp = isPubKey ? (keyMaterial->data + offset) : (keyMaterial->data + offset + km->pubKeySize);
+    uint8_t *tmp = (isPubKey ? (keyMaterial->data + offset) : (keyMaterial->data + offset + km->pubKeySize));
     if (memcpy_s(buffer, size, tmp, size) != EOK) {
         (void)memset_s(buffer, size, 0, size);
         HKS_FREE_PTR(buffer);
@@ -386,7 +387,6 @@ int32_t GetCurve25519FromKeyMaterial(const bool isPubKey, const struct HksBlob *
     keyOut->size = size;
     return HKS_SUCCESS;
 }
-
 
 int32_t HksSetKeyToMaterial(uint32_t alg, bool isPubKey, const struct HksBlob *key, struct HksBlob *keyMaterial)
 {
@@ -423,3 +423,4 @@ int32_t HksFormatKeyFromMaterial(uint32_t alg, const struct HksBlob *keyMaterial
             return HKS_ERROR_INVALID_ALGORITHM;
     }
 }
+#endif

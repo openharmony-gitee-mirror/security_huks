@@ -17,7 +17,7 @@
 #define HKS_BASE_CHECK_H
 
 #include "hks_param.h"
-#include "hks_type.h"
+#include "hks_type_inner.h"
 
 enum CheckKeyType {
     HKS_CHECK_TYPE_GEN_KEY,

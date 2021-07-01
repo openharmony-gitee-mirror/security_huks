@@ -25,6 +25,11 @@ ohos_static_library("libhuks_service_idl_standard_static") {
     "//utils/native/base/include",
     "//base/security/huks/services/huks_standard/huks_engine/main/core/include",
   ]
+  defines = [
+    "L2_STANDARD",
+    "_HARDWARE_ROOT_KEY_",
+    "_HUKS_LOG_ENABLE_",
+  ]
   sources = [
     "ipc/hks_ipc_serialization.c",
     "ipc/hks_ipc_service.c",

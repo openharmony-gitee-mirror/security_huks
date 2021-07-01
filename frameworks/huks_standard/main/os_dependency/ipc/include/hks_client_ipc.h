@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2020-2021 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,16 +13,18 @@
  * limitations under the License.
  */
 
-#ifndef HKS_CLIENT_SERVICE_IPC_H
-#define HKS_CLIENT_SERVICE_IPC_H
+#ifndef HKS_CLIENT_IPC_H
+#define HKS_CLIENT_IPC_H
 
-#include "hks_type.h"
+#include "hks_type_inner.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 int32_t HksClientInitialize(void);
+
+int32_t HksClientRefreshKeyInfo(void);
 
 int32_t HksClientGenerateKey(const struct HksBlob *keyAlias, const struct HksParamSet *paramSetIn,
     struct HksParamSet *paramSetOut);
@@ -80,4 +82,4 @@ int32_t HksClientUnwrapKey(const struct HksBlob *keyAlias, const struct HksBlob 
 }
 #endif
 
-#endif
+#endif /* HKS_CLIENT_IPC_H */

@@ -14,13 +14,16 @@
  */
 
 #include "hks_keyblob.h"
+
 #include "hks_crypto_adapter.h"
 #include "hks_crypto_hal.h"
 #include "hks_file_operator.h"
 #include "hks_log.h"
 #include "hks_mem.h"
 #include "hks_param.h"
-#include "hks_type.h"
+#include "hks_type_inner.h"
+
+#ifndef _CUT_AUTHENTICATE_
 
 #define HKS_KEY_BLOB_DUMMY_KEY_VERSION 1
 #define HKS_KEY_BLOB_DUMMY_OS_VERSION 1
@@ -33,7 +36,7 @@ struct HksKeyBlobInfo {
     uint32_t keySize;
 };
 
-static void CleanKey(struct HksParamSet *paramSet)
+static void CleanKey(const struct HksParamSet *paramSet)
 {
     struct HksParam *keyParam = NULL;
     int32_t ret = HksGetParam(paramSet, HKS_TAG_KEY, &keyParam);
@@ -59,6 +62,8 @@ void HksFreeKeyNode(struct HksKeyNode **keyNode)
     }
 }
 
+#ifndef _STORAGE_LITE_
+#ifdef L2_STANDARD
 #define HKS_ENCRYPT_KEY_NAME "root_encrypt_key"
 
 static int32_t WriteEncryptKey(struct HksBlob *key)
@@ -90,6 +95,12 @@ static int32_t GetEncryptKey(struct HksBlob *key)
         return HKS_SUCCESS;
     }
 }
+#else
+static int32_t GetEncryptKey(struct HksBlob *mainKey)
+{
+    return HksCryptoHalGetMainKey(NULL, mainKey);
+}
+#endif
 
 static int32_t GetSalt(const struct HksParamSet *paramSet, const struct HksKeyBlobInfo *keyBlobInfo,
     struct HksBlob *salt)
@@ -158,6 +169,7 @@ static int32_t GetDeriveKey(const struct HksParamSet *paramSet, const struct Hks
     if (derivedKey->data == NULL) {
         HKS_LOG_E("malloc failed");
         HKS_FREE_BLOB(salt);
+        (void)memset_s(encryptKeyData, HKS_KEY_BLOB_MAIN_KEY_SIZE, 0, HKS_KEY_BLOB_MAIN_KEY_SIZE);
         return HKS_ERROR_MALLOC_FAIL;
     }
 
@@ -166,6 +178,7 @@ static int32_t GetDeriveKey(const struct HksParamSet *paramSet, const struct Hks
         HKS_LOG_E("get keyblob derived key failed!");
         HKS_FREE_PTR(derivedKey->data);
     }
+    (void)memset_s(encryptKeyData, HKS_KEY_BLOB_MAIN_KEY_SIZE, 0, HKS_KEY_BLOB_MAIN_KEY_SIZE);
     HKS_FREE_BLOB(salt);
 
     return ret;
@@ -547,3 +560,7 @@ int32_t HksBuildKeyBlob(const struct HksBlob *keyAlias, uint8_t keyFlag, const s
     HksFreeParamSet(&keyBlobParamSet);
     return HKS_SUCCESS;
 }
+
+#endif
+
+#endif /* _CUT_AUTHENTICATE_ */

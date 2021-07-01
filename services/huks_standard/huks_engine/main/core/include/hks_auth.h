@@ -17,7 +17,7 @@
 #define HKS_AUTH_H
 
 #include "hks_keyblob.h"
-#include "hks_type.h"
+#include "hks_type_inner.h"
 
 enum HksAuthId {
     HKS_AUTH_ID_SIGN_VERIFY_RSA = 0x1,

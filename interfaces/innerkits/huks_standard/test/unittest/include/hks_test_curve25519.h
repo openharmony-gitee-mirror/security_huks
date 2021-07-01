@@ -17,6 +17,8 @@
 #define HKS_TEST_CURVE25519
 #include "hks_type.h"
 
+#include "securec.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

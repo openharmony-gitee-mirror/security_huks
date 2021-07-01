@@ -16,7 +16,7 @@
 #ifndef HKS_IPC_SERIALIZATION_H
 #define HKS_IPC_SERIALIZATION_H
 
-#include "hks_type.h"
+#include "hks_type_inner.h"
 
 #define MAX_IPC_BUF_SIZE    0x10000   /* Maximun IPC message buffer size. */
 #define MAX_IPC_RSV_SIZE    0x400     /* Reserve IPC message buffer size */

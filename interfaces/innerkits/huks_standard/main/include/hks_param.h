@@ -13,7 +13,6 @@
  * limitations under the License.
  */
 
-
 #ifndef HKS_PARAM_H
 #define HKS_PARAM_H
 

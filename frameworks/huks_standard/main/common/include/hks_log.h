@@ -18,6 +18,13 @@
 
 #include "hks_type.h"
 
+#ifdef _HUKS_LOG_ENABLE_
+#undef LOG_TAG
+#define LOG_TAG "HUKS"
+#undef LOG_DOMAIN
+#define LOG_DOMAIN 0xD002F00 /* Security subsystem's domain id */
+#endif
+
 enum HksLogLevel {
     HKS_LOG_LEVEL_I,
     HKS_LOG_LEVEL_E,
@@ -29,12 +36,19 @@ enum HksLogLevel {
 extern "C" {
 #endif
 
+#ifdef _HUKS_LOG_ENABLE_
 void HksLog(uint32_t logLevel, const char *funcName, uint32_t lineNo, const char *format, ...);
 
 #define HKS_LOG_I(...) HksLog(HKS_LOG_LEVEL_I, __func__, __LINE__, __VA_ARGS__)
 #define HKS_LOG_W(...) HksLog(HKS_LOG_LEVEL_W, __func__, __LINE__, __VA_ARGS__)
 #define HKS_LOG_E(...) HksLog(HKS_LOG_LEVEL_E, __func__, __LINE__, __VA_ARGS__)
 #define HKS_LOG_D(...) HksLog(HKS_LOG_LEVEL_D, __func__, __LINE__, __VA_ARGS__)
+#else
+#define HKS_LOG_I(...)
+#define HKS_LOG_W(...)
+#define HKS_LOG_E(...)
+#define HKS_LOG_D(...)
+#endif
 
 #ifdef __cplusplus
 }
