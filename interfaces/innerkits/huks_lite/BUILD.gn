@@ -41,8 +41,8 @@ huks_sources = [
   "../../../interfaces/innerkits/huks_standard/main/src/hks_api.c",
 ]
 
-if (use_mbedlts == true) {
-  huks_mbedlts_engine_sources = [
+if (huks_use_mbedtls == true) {
+  huks_mbedtls_engine_sources = [
     "../../../frameworks/huks_standard/main/crypto_engine/mbedtls/src/hks_crypto_ed25519.c",
     "../../../frameworks/huks_standard/main/crypto_engine/mbedtls/src/hks_mbedtls_aes.c",
     "../../../frameworks/huks_standard/main/crypto_engine/mbedtls/src/hks_mbedtls_bn.c",
@@ -62,11 +62,10 @@ if (use_mbedlts == true) {
 huks_access_sources =
   [ "../../../services/huks_standard/huks_service/main/os_dependency/idl/passthrough/hks_passthrough_access.c" ]
 
-if (use_lite_storage == true) {
+if (huks_use_lite_storage == true) {
   huks_storage_source = [
     "../../../services/huks_standard/huks_service/main/core/src/hks_storage_adapter.c",
     "../../../services/huks_standard/huks_service/main/core/src/hks_storage_lite.c",
-
     "../../../services/huks_standard/huks_engine/main/core/src/hks_keyblob_lite.c",
   ]
 } else {
@@ -84,7 +83,7 @@ config("hilog_lite_dir") {
 config("mbedtls_engine") {
   include_dirs = [
     "../../../frameworks/huks_standard/main/crypto_engine/mbedtls/include",
-    mbedtls_path,
+    huks_mbedtls_path,
   ]
 }
 
@@ -116,11 +115,11 @@ config("soft_huks_config") {
     cflags += [ "-flto" ]
   }
 
-  if (use_hardware_root_key == true) {
+  if (huks_use_hardware_root_key == true) {
     cflags += [ "-D_HARDWARE_ROOT_KEY_" ]
   }
 
-  if (use_lite_storage == true) {
+  if (huks_use_lite_storage == true) {
     cflags += [ "-D_STORAGE_LITE_" ]
   } else {
     if (ohos_kernel_type == "liteos_a") {
@@ -130,13 +129,13 @@ config("soft_huks_config") {
     }
   }
 
-  if (ohos_kernel_type != "liteos_m" || enable_huks_log == true) {
+  if (ohos_kernel_type != "liteos_m" || huks_enable_log == true) {
     cflags += [ "-D_HUKS_LOG_ENABLE_" ]
   }
 
-  if (hks_config_file != "") {
-    print(hks_config_file)
-    cflags += [ "-DHKS_CONFIG_FILE=\"${hks_config_file}\"" ]
+  if (huks_config_file != "") {
+    print(huks_config_file)
+    cflags += [ "-DHKS_CONFIG_FILE=\"${huks_config_file}\"" ]
   }
 }
 
@@ -148,7 +147,7 @@ config("public_huks_config") {
 
 #begin: add
 if (ohos_kernel_type == "liteos_m") {
-  static_library("huks_new1") {
+  static_library("huks_3.0_sdk") {
     public_configs = [ ":public_huks_config" ]
     configs += [ ":soft_huks_config" ]
 
@@ -156,13 +155,13 @@ if (ohos_kernel_type == "liteos_m") {
     sources += huks_storage_source
     sources += huks_access_sources
 
-    if (use_mbedlts == true) {
-      sources += huks_mbedlts_engine_sources
+    if (huks_use_mbedtls == true) {
+      sources += huks_mbedtls_engine_sources
       deps = [ "//build/lite/config/component/openssl:openssl_static" ]
       configs += [ ":mbedtls_engine" ]
     }
 
-    if (enable_huks_log == true) {
+    if (huks_enable_log == true) {
       sources += [ "../../../frameworks/huks_standard/main/os_dependency/log/hks_log_lite.c" ]
       configs += [ ":hilog_lite_dir" ]
       deps += [ "//base/hiviewdfx/hilog_lite/frameworks/mini:hilog_lite" ]
@@ -174,7 +173,7 @@ if (ohos_kernel_type == "liteos_m") {
   #  }
   #}
 } else {
-  shared_library("huks_new1") {
+  shared_library("huks_3.0_sdk") {
     public_configs = [ ":public_huks_config" ]
     configs += [ ":soft_huks_config" ]
 
@@ -185,8 +184,8 @@ if (ohos_kernel_type == "liteos_m") {
 
     deps = []
 
-    if (use_mbedlts == true) {
-      sources += huks_mbedlts_engine_sources
+    if (huks_use_mbedtls == true) {
+      sources += huks_mbedtls_engine_sources
       deps += [
         "//build/lite/config/component/openssl:openssl_shared",
         "//third_party/bounds_checking_function:libsec_shared",
@@ -197,10 +196,10 @@ if (ohos_kernel_type == "liteos_m") {
 
     configs += [ ":hilog_dir" ]
     deps += [ "//base/hiviewdfx/hilog_lite/frameworks/featured:hilog_shared" ]
-    #if (ohos_build_type == "debug") {
-    #  group("huks_new_test") {
-    #    deps = [ "//base/security/huks/test:huks_new_test" ]
-    #  }
-    #}
   }
+  #if (ohos_build_type == "debug") {
+  #  group("huks_new_test") {
+  #    deps = [ "//base/security/huks/test:huks_new_test" ]
+  #  }
+  #}
 }
