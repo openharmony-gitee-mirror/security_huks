@@ -45,8 +45,8 @@ unittest("huks_new_test") {
   ]
 
   deps = [
-    "//base/security/huks/huawei_property/source:huks_new",
-    "//base/security/huks/huawei_property/test/unittest/src/common:huks_new_test_common",
+    "//base/security/huks/interfaces/innerkits/huks_lite:huks_3.0_sdk",
+    "//base/security/huks/test/unittest/src/common:huks_new_test_common",
   ]
   cflags = [ "-Wno-error" ]
 
