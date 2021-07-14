@@ -170,7 +170,7 @@ static int32_t X25519CheckKeyMaterialSize(const struct HksBlob *priKey, const st
         return ret;
     }
 
-    return X25519CheckKeySize(priKey, pubKm, true);
+    return X25519CheckKeySize(pubKey, pubKm, true);
 }
 
 #ifdef HKS_SUPPORT_X25519_GENERATE_KEY
