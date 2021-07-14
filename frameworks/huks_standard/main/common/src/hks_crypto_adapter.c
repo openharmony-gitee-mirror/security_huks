@@ -370,6 +370,10 @@ int32_t GetCurve25519FromKeyMaterial(const bool isPubKey, const struct HksBlob *
     const struct KeyMaterial25519 *km = (struct KeyMaterial25519 *)(keyMaterial->data);
 
     uint32_t size = (isPubKey ? km->pubKeySize : km->priKeySize);
+    if (size == 0) {
+        HKS_LOG_E("get key material size invalid, pubSize = %u, priSize = %u", km->pubKeySize, km->priKeySize);
+        return HKS_ERROR_INVALID_KEY_INFO;
+    }
     uint8_t *buffer = (uint8_t *)HksMalloc(size);
     if (buffer == NULL) {
         return HKS_ERROR_MALLOC_FAIL;
