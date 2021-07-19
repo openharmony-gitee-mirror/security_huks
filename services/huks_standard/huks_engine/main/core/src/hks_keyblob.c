@@ -178,14 +178,7 @@ static int32_t GetDeriveKey(const struct HksParamSet *paramSet, const struct Hks
         HKS_LOG_E("get keyblob derived key failed!");
         HKS_FREE_PTR(derivedKey->data);
     }
-#ifdef L2_STANDARD
-    /* This is a temporary passthrough version for deriving key, which will be fixed soon */
-    if ((derivedKey->data == NULL) ||
-        memcpy_s(derivedKey->data, derivedKey->size, encryptKey.data, encryptKey.size) != EOK) {
-        HKS_LOG_E("Hks memcpy derived key failed!");
-        ret = HKS_ERROR_BAD_STATE;
-    }
-#endif
+
     (void)memset_s(encryptKeyData, HKS_KEY_BLOB_MAIN_KEY_SIZE, 0, HKS_KEY_BLOB_MAIN_KEY_SIZE);
     HKS_FREE_BLOB(salt);
 

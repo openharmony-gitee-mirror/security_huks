@@ -13,7 +13,14 @@
 
 import("//build/ohos.gni")
 
-ohos_shared_library("libhukssrv") {
+ohos_prebuilt_etc("huks_service.rc") {
+  source = "huks_service.rc"
+  relative_install_dir = "init"
+  subsystem_name = "security"
+  part_name = "huks_standard"
+}
+
+ohos_shared_library("huks_service") {
   subsystem_name = "security"
   part_name = "huks_standard"
   defines = [
@@ -22,8 +29,16 @@ ohos_shared_library("libhukssrv") {
     "_HUKS_LOG_ENABLE_",
   ]
   deps = [
+    ":huks_service.rc",
     "//base/security/huks/services/huks_standard/huks_engine/main:libhuks_engine_standard_static",
     "//base/security/huks/services/huks_standard/huks_service/main:libhuks_service_standard_static",
+  ]
+  external_deps = [
+    "hiviewdfx_hilog_native:libhilog",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
+    "samgr_L2:samgr_proxy",
+	
   ]
 }
 
