@@ -157,7 +157,11 @@ if (ohos_kernel_type == "liteos_m") {
 
     if (huks_use_mbedtls == true) {
       sources += huks_mbedtls_engine_sources
-      deps = [ "//build/lite/config/component/openssl:openssl_static" ]
+      deps = []
+      #deps += [ "//build/lite/config/component/openssl:openssl_static" ]
+      if (huks_mbedtls_path == "//third_party/mbedtls/include") {
+        deps += [ "//third_party/mbedtls:mbedtls_static" ]
+      }
       configs += [ ":mbedtls_engine" ]
     }
 
