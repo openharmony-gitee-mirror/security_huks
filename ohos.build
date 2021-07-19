@@ -19,7 +19,7 @@
       ],
       "module_list": [
         "//base/security/huks/frameworks/huks_standard/main:huks_standard_frameworks",
-        "//base/security/huks/services/huks_standard:libhukssrv",
+        "//base/security/huks/services/huks_standard:huks_service",
         "//base/security/huks/services/huks_standard/huks_service/main/os_dependency/sa/sa_profile:huks_sa_profile"
       ],
       "test_list": [

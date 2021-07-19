@@ -11,10 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import("//build/ohos/sa_profile/sa_profile.gni")
+on post-fs-data
+    start huks_service
 
-ohos_sa_profile("huks_sa_profile") {
-  part_name = "huks_standard"
-
-  sources = [ "huks_service.xml" ]
-}
+service huks_service /system/bin/sa_main /system/profile/huks_service.xml
+    class z_core
+    user system
+    group system shell
+    seclabel u:r:deviceauth_service:s0
