@@ -15,7 +15,6 @@
 
 #ifndef _CUT_AUTHENTICATE_
 
-
 #include "hks_safe_compare_key_test.h"
 
 #include <hctest.h>

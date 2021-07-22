@@ -14,7 +14,7 @@
  */
 
 #ifndef _CUT_AUTHENTICATE_
-
+#ifndef _CUT_ED25519_
 
 #include "hks_safe_cipher_key_test.h"
 
@@ -162,4 +162,5 @@ LITE_TEST_CASE(HksSafeCipherKeyTest, HksSafeCipherKeyTest001, Level1)
 }
 RUN_TEST_SUITE(HksSafeCipherKeyTest);
 
+#endif
 #endif /* _CUT_AUTHENTICATE_ */
