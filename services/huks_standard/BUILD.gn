@@ -14,7 +14,11 @@
 import("//build/ohos.gni")
 
 ohos_prebuilt_etc("huks_service.rc") {
-  source = "huks_service.rc"
+  if (use_musl) {
+    source = "huks_service.cfg"
+  } else {
+    source = "huks_service.rc"
+  }
   relative_install_dir = "init"
   subsystem_name = "security"
   part_name = "huks_standard"
