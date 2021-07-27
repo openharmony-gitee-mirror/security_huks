@@ -291,13 +291,34 @@ static int32_t CheckEd25519Pubkey(const struct Curve25519Structure *curve25519, 
     return res;
 }
 
+static int32_t FillPubKeyByZero(uint8_t *pubKey, uint32_t *pubKeySize)
+{
+    if (*pubKeySize < P_BYTES) {
+        uint8_t tmpKey[P_BYTES] = {0};
+        int baseAddr = P_BYTES - *pubKeySize;
+        if (memcpy_s(tmpKey + baseAddr, P_BYTES - baseAddr, pubKey, *pubKeySize) != EOK) {
+            HKS_LOG_E("memcpy_s pubKey to buf failed");
+            return HKS_FAILURE;
+        }
+        if (memcpy_s(pubKey, P_BYTES, tmpKey, P_BYTES) != EOK) {
+            HKS_LOG_E("memcpy_s buf to pubKey failed");
+            return HKS_FAILURE;
+        }
+        *pubKeySize = P_BYTES;
+    }
+    return HKS_SUCCESS;
+}
+
 static int32_t BnOperationOfPubKeyConversion(const struct HksBlob *keyIn, struct HksBlob *keyOut,
     struct Curve25519Var *var, BIGNUM *numberOne, BN_CTX *ctx)
 {
+    uint32_t tmpSize = keyOut->size;
+    uint8_t tmpKey[P_BYTES] = {0};
     struct Curve25519Structure curve25519 = {0};
     int32_t ret = Curve25519Initialize(&curve25519, keyIn->data, keyIn->size, true);
-    if (ret != HKS_SUCCESS)
+    if (ret != HKS_SUCCESS) {
         return ret;
+    }
     ret = HKS_FAILURE;
     do {
         if (CheckEd25519Pubkey(&curve25519, var, keyIn->data[keyIn->size - 1], ctx) != HKS_SUCCESS) {
@@ -321,15 +342,22 @@ static int32_t BnOperationOfPubKeyConversion(const struct HksBlob *keyIn, struct
         if (BN_mod_mul(var->c, var->a, var->b, curve25519.p, ctx) <= 0) {
             break;
         }
-        if (BN_bn2bin(var->c, keyOut->data) <= 0) {
+        if (BN_bn2bin(var->c, tmpKey) <= 0) {
             break;
         }
-        keyOut->size = BN_num_bytes(var->c);
-
-        SwapEndianThirtyTwoByte(keyOut->data, keyOut->size, true);
+        tmpSize = BN_num_bytes(var->c);
+        if (FillPubKeyByZero(tmpKey, &tmpSize) != HKS_SUCCESS) {
+            break;
+        }
+        SwapEndianThirtyTwoByte(tmpKey, tmpSize, true);
+        if (memcpy_s(keyOut->data, keyOut->size, tmpKey, tmpSize) != EOK) {
+            break;
+        }
+        keyOut->size = tmpSize;
         ret = HKS_SUCCESS;
     } while (0);
     Curve25519Destroy(&curve25519);
+    (void)memset_s(tmpKey, tmpSize, 0, tmpSize);
     return ret;
 }
 
