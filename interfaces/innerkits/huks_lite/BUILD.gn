@@ -161,6 +161,7 @@ if (ohos_kernel_type == "liteos_m") {
     sources = huks_sources
     sources += huks_storage_source
     sources += huks_access_sources
+    sources += [ "hks_tmp_client.c" ]
 
     if (huks_use_mbedtls == true) {
       sources += huks_mbedtls_engine_sources
