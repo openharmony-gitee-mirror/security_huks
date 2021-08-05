@@ -14,7 +14,7 @@
  */
 
 #ifndef _CUT_AUTHENTICATE_
-
+#ifndef _CUT_ED25519_
 
 #include "hks_safe_cipher_key_test.h"
 
@@ -90,7 +90,7 @@ static int32_t GetKeyOffsetByKeyAlias(const struct HksBlob *keyAlias, uint32_t *
     return HKS_ERROR_NOT_EXIST;
 }
 
-static int32_t CompareTwoKey(struct HksBlob *keyAliasOne, struct HksBlob *keyAliasTwo)
+static int32_t CompareTwoKey(const struct HksBlob *keyAliasOne, const  struct HksBlob *keyAliasTwo)
 {
     uint32_t sizeOne = HksTestFileSize(g_storePath, "hks_keystore");
     uint8_t *bufOne = (uint8_t *)HksTestMalloc(sizeOne);
@@ -162,4 +162,5 @@ LITE_TEST_CASE(HksSafeCipherKeyTest, HksSafeCipherKeyTest001, Level1)
 }
 RUN_TEST_SUITE(HksSafeCipherKeyTest);
 
+#endif
 #endif /* _CUT_AUTHENTICATE_ */

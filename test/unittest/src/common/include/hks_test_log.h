@@ -36,6 +36,7 @@ void HksAssertLog(bool test);
 }
 #endif
 
+#ifndef _CUT_LOG_
 #define HKS_TEST_LOG_E(...) \
 do { \
     HksTestLog(HKS_LOG_LEVEL_E, __FUNCTION__, __LINE__, __VA_ARGS__); \
@@ -55,6 +56,12 @@ do { \
 do { \
     HksTestLog(HKS_LOG_LEVEL_D, __FUNCTION__, __LINE__, __VA_ARGS__); \
 } while (0)
+#else
+#define HKS_TEST_LOG_E(...)
+#define HKS_TEST_LOG_I(...)
+#define HKS_TEST_LOG_W(...)
+#define HKS_TEST_LOG_D(...)
+#endif
 
 #define HKS_TEST_ASSERT HksAssertLog
 

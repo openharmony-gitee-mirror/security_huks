@@ -23,17 +23,57 @@
 #define HKS_HARDWARE_UDID_LEN 32
 
 #ifndef _CUT_AUTHENTICATE_
+
+#ifdef GET_DEV_UDID_ENABLE
+#include "pms_interface_inner.h"
+
+#define HKS_HARDWARE_UDID_STRING_LEN    (HKS_HARDWARE_UDID_LEN * 2 + 1)
+
+static uint8_t CharToHex(char data)
+{
+    if (data >= 'a' && data <= 'f') {
+        return ((uint8_t)(data - 'a') + 10); // ASCII hex(16) to decimal(10)
+    } else if (data >= 'A' && data <= 'F') {
+        return ((uint8_t)(data - 'A') + 10); // ASCII hex(16) to decimal(10)
+    } else {
+        return (uint8_t)(data - '0');
+    }
+}
+
+static uint8_t StringToHex(char high, char low)
+{
+    return (CharToHex(high) << 0x4) | CharToHex(low); // ASCII hex to hex
+}
+
+#endif
+
 int32_t HksGetHardwareUdid(uint8_t *udid, uint32_t udidLen)
 {
+#ifdef GET_DEV_UDID_ENABLE
+    int ret;
+    char devUdidString[HKS_HARDWARE_UDID_STRING_LEN] = { 0 };
+    uint8_t devUdid[HKS_HARDWARE_UDID_LEN] = { 0 };
+
+    ret = RequestDevUdid((unsigned char*)devUdidString, sizeof(devUdidString));
+    if (ret != EOK) {
+        HKS_LOG_E("Get dev udid error!");
+        return HKS_ERROR_NO_PERMISSION;
+    }
+
+    for (uint32_t i = 0; i < HKS_HARDWARE_UDID_LEN; i++) {
+        devUdid[i] = StringToHex(devUdidString[i * 2], devUdidString[i * 2 + 1]); // 2 : two characters
+    }
+#else
     /* simulation implementation */
-    const uint8_t testUdid[HKS_HARDWARE_UDID_LEN] = {
+    const uint8_t devUdid[HKS_HARDWARE_UDID_LEN] = {
         0xFE, 0xF1, 0xFA, 0xD5, 0xB6, 0x9D, 0x4A, 0xC8,
         0x52, 0xE7, 0xF5, 0xA3, 0x8F, 0x0D, 0xE1, 0xC0,
         0x87, 0xA4, 0x40, 0xF2, 0x10, 0x5A, 0xC9, 0x31,
         0xC4, 0xD7, 0x2E, 0xDE, 0x51, 0xE3, 0x73, 0x11,
     };
+#endif
 
-    if (memcpy_s(udid, udidLen, testUdid, HKS_HARDWARE_UDID_LEN) != EOK) {
+    if (memcpy_s(udid, udidLen, devUdid, HKS_HARDWARE_UDID_LEN) != EOK) {
         HKS_LOG_E("Memcpy udid failed!");
         return HKS_ERROR_BAD_STATE;
     }
