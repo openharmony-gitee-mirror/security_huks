@@ -46,7 +46,11 @@ hctest_suite("huks_new_test") {
     "//base/security/huks/test/unittest/src/common:huks_new_test_common",
   ]
 
+  cflags = [
+    "-D_CUT_ED25519_",
+    "-D_CUT_LOG_"
+  ]
   if (disable_authenticate == true) {
-    cflags = [ "-D_CUT_AUTHENTICATE_" ]
+    cflags += [ "-D_CUT_AUTHENTICATE_" ]
   }
 }

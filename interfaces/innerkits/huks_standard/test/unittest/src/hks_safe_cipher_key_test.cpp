@@ -57,7 +57,7 @@ void HksSafeCipherKeyTest::TearDown()
 const char *g_storePath = "/data/data/maindata/+0+0+0+0/key";
 const char *g_testEd25519 = "test_ed25519";
 
-static int32_t CompareTwoKey(struct HksBlob *keyAliasOne, struct HksBlob *keyAliasTwo)
+static int32_t CompareTwoKey(const struct HksBlob *keyAliasOne, const struct HksBlob *keyAliasTwo)
 {
     uint32_t sizeOne = HksFileSize(g_storePath, (char *)keyAliasOne->data);
     uint8_t *bufOne = (uint8_t *)HksTestMalloc(sizeOne);
@@ -107,7 +107,6 @@ HWTEST_F(HksSafeCipherKeyTest, HksSafeCipherKeyTest001, TestSize.Level1)
     ret = CompareTwoKey(&newAliasOne, &newAliasTwo);
     HKS_TEST_ASSERT(ret != 0);
     ASSERT_TRUE(ret != 0);
-
 
     ret = HksDeleteKey(&newAliasOne, NULL);
     HKS_TEST_ASSERT(ret == 0);

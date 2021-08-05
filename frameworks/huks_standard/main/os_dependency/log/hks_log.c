@@ -16,6 +16,7 @@
 #include "hks_log.h"
 
 #include "securec.h"
+
 #include "hilog/log.h"
 #include "hks_mem.h"
 

@@ -145,6 +145,13 @@ config("public_huks_config") {
   ]
 }
 
+config("get_dev_udid_config") {
+  cflags = [ "-DGET_DEV_UDID_ENABLE" ]
+  include_dirs = [
+    "//base/security/permission/interfaces/innerkits/permission_lite/",
+  ]
+}
+
 #begin: add
 if (ohos_kernel_type == "liteos_m") {
   static_library("huks_3.0_sdk") {
@@ -176,13 +183,13 @@ if (ohos_kernel_type == "liteos_m") {
   shared_library("huks_3.0_sdk") {
     public_configs = [ ":public_huks_config" ]
     configs += [ ":soft_huks_config" ]
-
+    configs += [ ":get_dev_udid_config" ]
     sources = huks_sources
     sources += huks_storage_source
     sources += huks_access_sources
     sources += [ "../../../frameworks/huks_standard/main/os_dependency/log/hks_log_lite.c" ]
 
-    deps = []
+    deps = [ "//base/security/permission/services/permission_lite/pms_client:pms_client" ]
 
     if (huks_use_mbedtls == true) {
       sources += huks_mbedtls_engine_sources

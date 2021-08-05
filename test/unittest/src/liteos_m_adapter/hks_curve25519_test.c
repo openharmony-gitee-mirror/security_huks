@@ -14,7 +14,7 @@
  */
 
 #ifndef _CUT_AUTHENTICATE_
-
+#ifndef _CUT_ED25519_
 #include "hks_curve25519_test.h"
 
 #include "cmsis_os2.h"
@@ -130,5 +130,6 @@ LITE_TEST_CASE(HksCurve25519Test, HksCurve25519Test004, Level1)
 }
 
 RUN_TEST_SUITE(HksCurve25519Test);
+#endif
 #endif /* _CUT_AUTHENTICATE_ */
 

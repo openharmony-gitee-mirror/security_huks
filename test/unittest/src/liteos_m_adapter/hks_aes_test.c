@@ -51,6 +51,7 @@ static BOOL HksAesTestTearDown()
 }
 
 #ifndef _CUT_AUTHENTICATE_
+#ifndef _CUT_ED25519_
 /**
  * @tc.name: HksCipherTest.HksCipherTest001
  * @tc.desc: The static function will return true;
@@ -80,6 +81,7 @@ LITE_TEST_CASE(HksAesTest, HksAesTest003, Level1)
 {
     TEST_ASSERT_TRUE(TestAes256ByAgree2() == 0);
 }
+#endif
 #endif /* _CUT_AUTHENTICATE_ */
 
 /**
