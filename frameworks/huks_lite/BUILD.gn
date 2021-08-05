@@ -16,14 +16,5 @@
 import("//base/security/huks/build/config.gni")
 
 group("huks_sdk") {
-  if (ohos_kernel_type == "liteos_m" && disable_huks_binary == false) {
-    deps = [
-      "//base/security/huks/interfaces/innerkits/huks_lite:huks_3.0_sdk"
-    ]
-  } else {
-    deps = [
-      "source:huks",
-      "//base/security/huks/interfaces/innerkits/huks_lite:huks_3.0_sdk"
-    ]
-  }
+  deps = [ "//base/security/huks/interfaces/innerkits/huks_lite:huks_3.0_sdk" ]
 }
