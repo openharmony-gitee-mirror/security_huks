@@ -66,7 +66,8 @@ int32_t HksGetKeyInfoListUnpackFromService(const struct HksBlob *srcData, uint32
 int32_t HksCertificateChainPack(struct HksBlob *destData, const struct HksBlob *keyAlias,
     const struct HksParamSet *paramSet, const struct HksBlob *certChainBlob);
 
-int32_t HksCertificateChainUnpackFromService(const struct HksBlob *srcData, struct HksCertChain *certChain);
+int32_t HksCertificateChainUnpackFromService(const struct HksBlob *srcData, bool needEncode,
+    struct HksCertChain *certChain);
 
 int32_t HksWrapKeyPack(struct HksBlob *destData, const struct HksBlob *keyAlias, const struct HksBlob *targetKeyAlias,
     const struct HksParamSet *paramSet, const struct HksBlob *wrappedData);
