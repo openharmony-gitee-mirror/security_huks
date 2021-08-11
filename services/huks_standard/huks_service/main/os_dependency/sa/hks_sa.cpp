@@ -183,12 +183,9 @@ bool HksService::CanRequest() const
 int HksService::OnRemoteRequest(uint32_t code, MessageParcel &data,
     MessageParcel &reply, MessageOption &option)
 {
-    /*std::u16string descriptor = HksService::GetDescriptor();
+    // this is the temporary version which comments the descriptor check
+    std::u16string descriptor = HksService::GetDescriptor();
     std::u16string remoteDescriptor = data.ReadInterfaceToken();
-    if (descriptor != remoteDescriptor) {
-        HKS_LOG_E("descriptor is diff.");
-        return HW_SYSTEM_ERROR;
-    }*/
 
     if (!CanRequest()) {
         return HW_PERMISSION_DENIED;
