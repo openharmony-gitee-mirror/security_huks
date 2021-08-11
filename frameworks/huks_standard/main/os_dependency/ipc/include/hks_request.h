@@ -19,8 +19,11 @@
 #include "hks_type_inner.h"
 
 enum HksMessage {
+#ifdef _HKS_L1_TEE_
     HKS_MSG_BASE = 0x3a400, /* range of message value defined by router. globally unique */
-
+#else
+    HKS_MSG_BASE = 1000, /* range of message value defined by SmartLock. Max 65535 */
+#endif
     HKS_MSG_GEN_KEY = HKS_MSG_BASE,
     HKS_MSG_IMPORT_KEY,
     HKS_MSG_EXPORT_PUBLIC_KEY,

@@ -551,7 +551,8 @@ static int32_t EncodeCertChain(const struct HksBlob *inBlob, struct HksBlob *out
     return ret;
 }
 
-int32_t HksCertificateChainUnpackFromService(const struct HksBlob *srcData, struct HksCertChain *certChain)
+int32_t HksCertificateChainUnpackFromService(const struct HksBlob *srcData, bool needEncode,
+    struct HksCertChain *certChain)
 {
     if (srcData->size < sizeof(certChain->certsCount)) {
         HKS_LOG_E("invalid certs buffer");
@@ -575,11 +576,15 @@ int32_t HksCertificateChainUnpackFromService(const struct HksBlob *srcData, stru
             return HKS_FAILURE;
         }
 
-        struct HksBlob inBlob = { tmp.size, certChain->certs[i].data };
-        int32_t ret = EncodeCertChain(&inBlob, &certChain->certs[i]);
-        if (ret != HKS_SUCCESS) {
-            HKS_LOG_E("EncodeCertChain fail, ret = %d", ret);
-            return HKS_FAILURE;
+        if (needEncode) {
+            struct HksBlob inBlob = { tmp.size, certChain->certs[i].data };
+            int32_t ret = EncodeCertChain(&inBlob, &certChain->certs[i]);
+            if (ret != HKS_SUCCESS) {
+                HKS_LOG_E("EncodeCertChain fail, ret = %d", ret);
+                return HKS_FAILURE;
+            }
+        } else {
+            certChain->certs[i].size = tmp.size;
         }
     }
     certChain->certsCount = certsCount;

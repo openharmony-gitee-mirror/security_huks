@@ -594,7 +594,7 @@ static int32_t CertificateChainGetOrAttest(enum HksMessage type, const struct Hk
             break;
         }
 
-        ret = HksCertificateChainUnpackFromService(&outBlob, certChain);
+        ret = HksCertificateChainUnpackFromService(&outBlob, true, certChain);
     } while (0);
 
     HKS_FREE_BLOB(inBlob);
