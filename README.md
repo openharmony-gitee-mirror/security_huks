@@ -13,7 +13,7 @@ HUKS consists of the following modules:
 -   HUKS SDK layer: provides HUKS APIs for applications.
 
 -   HUKS service layer: implements functions such as HUKS key management and storage.
--   HUKS engine layer: HUKS core module, which generates, encrypts, and decrypts keys. For devices running a standard system, this module of the commercial version must run in a secure environment such as a TEE or a chip with security capabilities. A secure environment requires dedicated hardware and is therefore implemented only by emulation in the open-source code. For the small and mini systems, HUKS only provides the example implementation of the root key protection solution. In commercial scenarios, the implementation must adapt to hardware root key or other root key protection solutions.
+-   HUKS engine layer: HUKS core module, which generates, encrypts, and decrypts keys. For devices running a standard system, this module of the commercial version must run in a secure environment such as a TEE or a chip with security capabilities. A secure environment requires dedicated hardware and is therefore implemented only by emulation in the open-source code. For the small and mini systems, HUKS only provides the example implementation of the root key protection solution. In commercial scenarios, the implementation must adapt to the protection solution for either the hardware root key or other root keys.
 
 ## Directory Structure<a name="section161941989596"></a>
 
@@ -21,8 +21,8 @@ HUKS consists of the following modules:
 base/security/huks/
 ├── build                            # Build configuration file
 ├── frameworks                       # Framework code, which is used by interfaces and services
-│   └── huks_standard                # HUKS implementation
-|   └── huks_lite                    # HUKS build script in a mini or small system
+│   └── huks_standard                # Code implementation
+|   └── huks_lite                    # Build script in a small and mini systems
 |   └── crypto_lite                  # Encryption and decryption implementation
 ├── interfaces                       # APIs
 │   └── innerkits

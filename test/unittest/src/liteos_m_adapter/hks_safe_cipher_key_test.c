@@ -90,7 +90,7 @@ static int32_t GetKeyOffsetByKeyAlias(const struct HksBlob *keyAlias, uint32_t *
     return HKS_ERROR_NOT_EXIST;
 }
 
-static int32_t CompareTwoKey(const struct HksBlob *keyAliasOne, const  struct HksBlob *keyAliasTwo)
+static int32_t CompareTwoKey(const struct HksBlob *keyAliasOne, const struct HksBlob *keyAliasTwo)
 {
     uint32_t sizeOne = HksTestFileSize(g_storePath, "hks_keystore");
     uint8_t *bufOne = (uint8_t *)HksTestMalloc(sizeOne);
