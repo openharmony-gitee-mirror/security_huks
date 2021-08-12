@@ -506,11 +506,13 @@ static int32_t KeyInfoListInit(struct HksKeyInfo *keyInfoList, uint32_t listCoun
         ret = MallocBlobFromBuffer(srcData, &keyInfoList[i].alias, offset);
         if (ret != HKS_SUCCESS) {
             HKS_LOG_E("malloc keyInfoList alias failed");
+            break;
         }
 
         ret = MallocParamSetFromBuffer(srcData, &keyInfoList[i].paramSet, offset);
         if (ret != HKS_SUCCESS) {
             HKS_LOG_E("malloc keyInfoList paramSetSize failed");
+            break;
         }
     }
 
