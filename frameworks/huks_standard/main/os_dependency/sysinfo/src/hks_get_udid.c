@@ -25,24 +25,15 @@
 #ifndef _CUT_AUTHENTICATE_
 
 #ifdef GET_DEV_UDID_ENABLE
-#include "pms_interface_inner.h"
+#include "hks_crypto_hal.h"
+#include "parameter.h"
 
 #define HKS_HARDWARE_UDID_STRING_LEN    (HKS_HARDWARE_UDID_LEN * 2 + 1)
 
-static uint8_t CharToHex(char data)
+static int32_t ComputeHash(const char *data, uint32_t len, struct HksBlob *hash)
 {
-    if (data >= 'a' && data <= 'f') {
-        return ((uint8_t)(data - 'a') + 10); // ASCII hex(16) to decimal(10)
-    } else if (data >= 'A' && data <= 'F') {
-        return ((uint8_t)(data - 'A') + 10); // ASCII hex(16) to decimal(10)
-    } else {
-        return (uint8_t)(data - '0');
-    }
-}
-
-static uint8_t StringToHex(char high, char low)
-{
-    return (CharToHex(high) << 0x4) | CharToHex(low); // ASCII hex to hex
+    struct HksBlob srcData = { len, (uint8_t *)data };
+    return HksCryptoHalHash(HKS_DIGEST_SHA256, &srcData, hash);
 }
 
 #endif
@@ -50,18 +41,19 @@ static uint8_t StringToHex(char high, char low)
 int32_t HksGetHardwareUdid(uint8_t *udid, uint32_t udidLen)
 {
 #ifdef GET_DEV_UDID_ENABLE
-    int ret;
     char devUdidString[HKS_HARDWARE_UDID_STRING_LEN] = { 0 };
-    uint8_t devUdid[HKS_HARDWARE_UDID_LEN] = { 0 };
-
-    ret = RequestDevUdid((unsigned char*)devUdidString, sizeof(devUdidString));
-    if (ret != EOK) {
-        HKS_LOG_E("Get dev udid error!");
+    int32_t ret = GetDevUdid(devUdidString, sizeof(devUdidString));
+    if (ret != 0) {
+        HKS_LOG_E("Get dev udid error, ret = 0x%x", ret);
         return HKS_ERROR_NO_PERMISSION;
     }
 
-    for (uint32_t i = 0; i < HKS_HARDWARE_UDID_LEN; i++) {
-        devUdid[i] = StringToHex(devUdidString[i * 2], devUdidString[i * 2 + 1]); // 2 : two characters
+    uint8_t devUdid[HKS_HARDWARE_UDID_LEN] = { 0 };
+    struct HksBlob hashData = { HKS_HARDWARE_UDID_LEN, devUdid };
+    ret = ComputeHash(devUdidString, sizeof(devUdidString), &hashData);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("compute udid hash failed");
+        return ret;
     }
 #else
     /* simulation implementation */
