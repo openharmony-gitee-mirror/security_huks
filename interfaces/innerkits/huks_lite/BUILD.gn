@@ -148,7 +148,7 @@ config("public_huks_config") {
 config("get_dev_udid_config") {
   cflags = [ "-DGET_DEV_UDID_ENABLE" ]
   include_dirs = [
-    "//base/security/permission/interfaces/innerkits/permission_lite/",
+    "//base/startup/syspara_lite/interfaces/kits",
   ]
 }
 
@@ -189,20 +189,22 @@ if (ohos_kernel_type == "liteos_m") {
     sources += huks_access_sources
     sources += [ "../../../frameworks/huks_standard/main/os_dependency/log/hks_log_lite.c" ]
 
-    deps = [ "//base/security/permission/services/permission_lite/pms_client:pms_client" ]
+    deps = [ "//base/startup/syspara_lite/frameworks/parameter/src:sysparam" ]
 
     if (huks_use_mbedtls == true) {
       sources += huks_mbedtls_engine_sources
       deps += [
         "//build/lite/config/component/openssl:openssl_shared",
-        "//third_party/bounds_checking_function:libsec_shared",
         "//third_party/mbedtls:mbedtls_shared",
       ]
       configs += [ ":mbedtls_engine" ]
     }
 
     configs += [ ":hilog_dir" ]
-    deps += [ "//base/hiviewdfx/hilog_lite/frameworks/featured:hilog_shared" ]
+    deps += [
+      "//base/hiviewdfx/hilog_lite/frameworks/featured:hilog_shared",
+      "//third_party/bounds_checking_function:libsec_shared",  
+    ]
   }
   #if (ohos_build_type == "debug") {
   #  group("huks_new_test") {
