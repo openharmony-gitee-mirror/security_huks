@@ -26,14 +26,16 @@ volatile bool g_messageRecived = false;
 volatile int32_t g_result = HKS_ERROR_UNKNOWN_ERROR;
 volatile int32_t g_sleepTimeout = SLEEP_SECOND_TIMEOUT;
 
-static void UpdaeGlobalStatus(uint32_t outBlobSize, bool messageRecived, int32_t result, int32_t sleepTime) {
+static void UpdaeGlobalStatus(uint32_t outBlobSize, bool messageRecived, int32_t result, int32_t sleepTime)
+{
     g_outBlob.size = outBlobSize;
     g_result = result;
-    g_sleepTimeout= sleepTime;
+    g_sleepTimeout = sleepTime;
     g_messageRecived = messageRecived;
 }
 
-static int32_t SynchronizeOutput(struct HksBlob *outBlob) {
+static int32_t SynchronizeOutput(struct HksBlob *outBlob)
+{
     while (!g_messageRecived) {
         g_sleepTimeout -= SLEEP_SECOND_TIME;
         usleep(SLEEP_SECOND_TIME);
@@ -99,7 +101,6 @@ static int CurrentCallback(IOwner owner, int code, IpcIo *reply)
     g_outBlob.data = dataBuf;
     UpdaeGlobalStatus(len, true, g_result, SLEEP_SECOND_TIMEOUT);
     return HKS_SUCCESS;
-
 }
 
 static int32_t IpcAsyncCall(IUnknown *iUnknown, enum HksMessage type, const struct HksBlob *inBlob,
@@ -163,16 +164,18 @@ void HKS_DestroyClient(const char *service, const char *feature, void *iproxy)
     free(iproxy);
 }
 
-int32_t HksSamgrInitialize(void) {
+int32_t HksSamgrInitialize(void)
+{
     int32_t ret = SAMGR_RegisterFectory(HKS_SAMGR_SERVICE, HKS_SAMGR_FEATRURE, HKS_CreatClient, HKS_DestroyClient);
     if (ret != HKS_SUCCESS) {
-        return HKS_FAILURE; 
+        return HKS_FAILURE;
     }
     SAMGR_Bootstrap();
     return HKS_SUCCESS;
 }
 
-static int32_t HksSendRequestSync(enum HksMessage type, const struct HksBlob *inBlob, struct HksBlob *outBlob) {
+static int32_t HksSendRequestSync(enum HksMessage type, const struct HksBlob *inBlob, struct HksBlob *outBlob)
+{
     HksMgrClientApi *clientProxy;
     IUnknown *iUnknown = SAMGR_GetInstance()->GetFeatureApi(HKS_SAMGR_SERVICE, HKS_SAMGR_FEATRURE);
     if (iUnknown == NULL) {

@@ -14,6 +14,7 @@
  */
 
 #include <unistd.h>
+
 #include "samgr_lite.h"
 
 void __attribute__((weak)) OHOS_SystemInit(void)
