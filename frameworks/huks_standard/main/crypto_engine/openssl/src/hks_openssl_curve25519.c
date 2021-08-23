@@ -32,22 +32,24 @@ static int32_t SaveCurve25519KeyMaterial(uint32_t algType, const EVP_PKEY *pKey,
         return HKS_ERROR_MALLOC_FAIL;
     }
 
-    uint32_t pubKeyLen = CURVE25519_KEY_LEN;
-    uint32_t priKeyLen = CURVE25519_KEY_LEN;
+    size_t tmpPubKeyLen = CURVE25519_KEY_LEN;
+    size_t tmpPriKeyLen = CURVE25519_KEY_LEN;
     uint32_t offset = sizeof(struct KeyMaterial25519);
 
-    if (EVP_PKEY_get_raw_public_key(pKey, buffer + offset, &pubKeyLen) != HKS_OPENSSL_SUCCESS) {
+    if (EVP_PKEY_get_raw_public_key(pKey, buffer + offset, &tmpPubKeyLen) != HKS_OPENSSL_SUCCESS) {
         HksLogOpensslError();
         HksFree(buffer);
         return HKS_ERROR_BAD_STATE;
     }
+    uint32_t pubKeyLen = (uint32_t)tmpPubKeyLen;
 
     offset += pubKeyLen;
-    if (EVP_PKEY_get_raw_private_key(pKey, buffer + offset, &priKeyLen) != HKS_OPENSSL_SUCCESS) {
+    if (EVP_PKEY_get_raw_private_key(pKey, buffer + offset, &tmpPriKeyLen) != HKS_OPENSSL_SUCCESS) {
         HksLogOpensslError();
         HksFree(buffer);
         return HKS_ERROR_BAD_STATE;
     }
+    uint32_t priKeyLen = (uint32_t)tmpPriKeyLen;
 
     struct KeyMaterial25519 *keyMaterial = (struct KeyMaterial25519 *)buffer;
     keyMaterial->keyAlg = algType;
@@ -141,6 +143,7 @@ int32_t HksOpensslX25519AgreeKey(const struct HksBlob *nativeKey, const struct H
     EVP_PKEY *ours = NULL;
     EVP_PKEY *theirs = NULL;
     EVP_PKEY_CTX *ctx = NULL;
+    size_t tmpSharedKeySize = (size_t)sharedKey->size;
 
     int32_t ret = ImportX25519EvpKey(&ours, &theirs, nativeKey, pubKey);
     if (ret != HKS_SUCCESS) {
@@ -164,10 +167,11 @@ int32_t HksOpensslX25519AgreeKey(const struct HksBlob *nativeKey, const struct H
             ret = HKS_ERROR_BAD_STATE;
             break;
         }
-        if (EVP_PKEY_derive(ctx, sharedKey->data, &sharedKey->size) != HKS_OPENSSL_SUCCESS) {
+        if (EVP_PKEY_derive(ctx, sharedKey->data, &tmpSharedKeySize) != HKS_OPENSSL_SUCCESS) {
             HksLogOpensslError();
             ret = HKS_ERROR_BAD_STATE;
         }
+        sharedKey->size = (uint32_t)tmpSharedKeySize;
     } while (0);
     EVP_PKEY_free(theirs);
     EVP_PKEY_free(ours);

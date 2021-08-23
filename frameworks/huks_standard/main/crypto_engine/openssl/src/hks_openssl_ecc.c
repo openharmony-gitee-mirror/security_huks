@@ -298,6 +298,7 @@ int32_t GetPeerKey(const struct HksBlob *pubKey, EVP_PKEY *key)
 
 int32_t EcdhDerive(EVP_PKEY_CTX *ctx, EVP_PKEY *peerKey, struct HksBlob *sharedKey)
 {
+    size_t tmpSharedKeySize = (size_t)sharedKey->size;
     if (EVP_PKEY_derive_init(ctx) != 1) {
         HksLogOpensslError();
         return HKS_FAILURE;
@@ -306,21 +307,22 @@ int32_t EcdhDerive(EVP_PKEY_CTX *ctx, EVP_PKEY *peerKey, struct HksBlob *sharedK
         HksLogOpensslError();
         return HKS_FAILURE;
     }
-    if (EVP_PKEY_derive(ctx, NULL, &sharedKey->size) != 1) {
+    if (EVP_PKEY_derive(ctx, NULL, &tmpSharedKeySize) != 1) {
         HksLogOpensslError();
         return HKS_FAILURE;
     }
 
-    uint8_t *buffer = (uint8_t *)HksMalloc(sharedKey->size);
+    uint8_t *buffer = (uint8_t *)HksMalloc(tmpSharedKeySize);
     if (buffer == NULL) {
-        HKS_LOG_E("malloc size %u failed", sharedKey->size);
+        HKS_LOG_E("malloc size %u failed", tmpSharedKeySize);
         return HKS_ERROR_MALLOC_FAIL;
     }
-    if (EVP_PKEY_derive(ctx, buffer, &sharedKey->size) != 1) {
+    if (EVP_PKEY_derive(ctx, buffer, &tmpSharedKeySize) != 1) {
         HksLogOpensslError();
         HksFree(buffer);
         return HKS_FAILURE;
     }
+    sharedKey->size = (uint32_t)tmpSharedKeySize;
     sharedKey->data = buffer;
     return HKS_SUCCESS;
 }
