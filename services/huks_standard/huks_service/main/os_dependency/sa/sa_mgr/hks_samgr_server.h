@@ -17,6 +17,7 @@
 #define HKS_SAMGR_SERVER_H
 
 #include <stdio.h>
+
 #include <ohos_init.h>
 
 #include "iproxy_server.h"
