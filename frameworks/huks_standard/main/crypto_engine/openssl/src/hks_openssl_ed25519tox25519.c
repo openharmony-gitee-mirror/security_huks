@@ -357,7 +357,7 @@ static int32_t BnOperationOfPubKeyConversion(const struct HksBlob *keyIn, struct
         ret = HKS_SUCCESS;
     } while (0);
     Curve25519Destroy(&curve25519);
-    (void)memset_s(tmpKey, tmpSize, 0, tmpSize);
+    (void)memset_s(tmpKey, P_BYTES, 0, P_BYTES);
     return ret;
 }
 
