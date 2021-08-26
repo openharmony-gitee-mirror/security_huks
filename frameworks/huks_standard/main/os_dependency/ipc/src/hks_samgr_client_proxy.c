@@ -77,7 +77,7 @@ static int CurrentCallback(IOwner owner, int code, IpcIo *reply)
         return HKS_SUCCESS;
     }
     BuffPtr *buffRsv = IpcIoPopDataBuff(reply);
-    if (buffRsv) {
+    if (buffRsv == NULL) {
         g_messageRecived = true;
         return HKS_ERROR_NULL_POINTER;
     }
