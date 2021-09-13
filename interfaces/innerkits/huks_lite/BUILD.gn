@@ -211,9 +211,9 @@ if (ohos_kernel_type == "liteos_m") {
       "//third_party/bounds_checking_function:libsec_shared",  
     ]
   }
-  #if (ohos_build_type == "debug") {
-  #  group("huks_new_test") {
-  #    deps = [ "//base/security/huks/test:huks_new_test" ]
-  #  }
-  #}
+  if (ohos_build_type == "debug") {
+    group("huks_new_test") {
+      deps = [ "//base/security/huks/test:huks_new_test" ]
+    }
+  }
 }
