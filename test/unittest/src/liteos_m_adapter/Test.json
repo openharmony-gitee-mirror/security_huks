@@ -20,7 +20,7 @@
     ],
     "driver": {
         "type": "CppTestLite",
-        "execute": "/test_root/security/huks_new_test.bin"
+        "execute": "/test_root/security/huks_3.0_test.bin"
     }
 }
 

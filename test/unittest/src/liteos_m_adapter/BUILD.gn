@@ -16,8 +16,8 @@
 import("//base/security/huks/build/config.gni")
 import("//test/xts/tools/lite/build/suite_lite.gni")
 
-hctest_suite("huks_new_test") {
-  suite_name = "huks_new_test"
+hctest_suite("huks_3.0_test") {
+  suite_name = "huks_3.0_test"
   sources = [
     "hks_aes_test.c",
     "hks_agreement_test.c",
@@ -43,12 +43,12 @@ hctest_suite("huks_new_test") {
 
   deps = [
     #"//base/security/huks/huawei_property/source:huks_new",
-    "//base/security/huks/test/unittest/src/common:huks_new_test_common",
+    "//base/security/huks/test/unittest/src/common:huks_3.0_test_common",
   ]
 
   cflags = [
     "-D_CUT_ED25519_",
-    "-D_CUT_LOG_"
+    "-D_CUT_LOG_",
   ]
   if (disable_authenticate == true) {
     cflags += [ "-D_CUT_AUTHENTICATE_" ]
