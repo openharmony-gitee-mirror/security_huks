@@ -13,32 +13,32 @@
 # limitations under the License.
 #
 
-import("//build/lite/config/component/lite_component.gni")
 import("//base/security/huks/build/config.gni")
+import("//build/lite/config/component/lite_component.gni")
 
 huks_sources = [
-  "../../../services/huks_standard/huks_service/main/core/src/hks_client_check.c",
-  "../../../services/huks_standard/huks_service/main/core/src/hks_client_service.c",
-  "../../../services/huks_standard/huks_service/main/core/src/hks_client_service_adapter_lite.c",
-  "../../../frameworks/huks_standard/main/os_dependency/ipc/src/hks_client_service_passthrough.c",
-  "../../../services/huks_standard/huks_service/main/os_dependency/posix/hks_file_operator_lite.c",
-  "../../../services/huks_standard/huks_service/main/core/src/hks_upgrade_storage_data.c",
-  "../../../frameworks/huks_standard/main/common/src/hks_common_check.c",
-  "../../../frameworks/huks_standard/main/common/src/hks_crypto_adapter.c",
-  "../../../frameworks/huks_standard/main/os_dependency/sysinfo/src/hks_get_process_info_passthrough.c",
-  "../../../frameworks/huks_standard/main/os_dependency/sysinfo/src/hks_get_udid.c",
-  "../../../frameworks/huks_standard/main/common/src/hks_param.c",
-  "../../../frameworks/huks_standard/main/os_dependency/posix/hks_mem.c",
-  "../../../frameworks/huks_standard/main/core/src/hks_local_engine.c",
-  "../../../services/huks_standard/huks_engine/main/core/src/hks_auth.c",
   "../../../frameworks/huks_standard/main/common/src/hks_base_check.c",
   "../../../frameworks/huks_standard/main/common/src/hks_check_paramset.c",
+  "../../../frameworks/huks_standard/main/common/src/hks_common_check.c",
+  "../../../frameworks/huks_standard/main/common/src/hks_crypto_adapter.c",
+  "../../../frameworks/huks_standard/main/common/src/hks_param.c",
+  "../../../frameworks/huks_standard/main/core/src/hks_local_engine.c",
+  "../../../frameworks/huks_standard/main/os_dependency/ipc/src/hks_client_service_passthrough.c",
+  "../../../frameworks/huks_standard/main/os_dependency/posix/hks_mem.c",
+  "../../../frameworks/huks_standard/main/os_dependency/sysinfo/src/hks_get_process_info_passthrough.c",
+  "../../../frameworks/huks_standard/main/os_dependency/sysinfo/src/hks_get_udid.c",
+  "../../../interfaces/innerkits/huks_standard/main/src/hks_api.c",
+  "../../../services/huks_standard/huks_engine/main/core/src/hks_auth.c",
   "../../../services/huks_standard/huks_engine/main/core/src/hks_core_service.c",
   "../../../services/huks_standard/huks_engine/main/core/src/hks_keyblob.c",
   "../../../services/huks_standard/huks_engine/main/core/src/hks_rkc.c",
   "../../../services/huks_standard/huks_engine/main/core/src/hks_rkc_rw.c",
   "../../../services/huks_standard/huks_engine/main/core/src/hks_upgrade_key_info.c",
-  "../../../interfaces/innerkits/huks_standard/main/src/hks_api.c",
+  "../../../services/huks_standard/huks_service/main/core/src/hks_client_check.c",
+  "../../../services/huks_standard/huks_service/main/core/src/hks_client_service.c",
+  "../../../services/huks_standard/huks_service/main/core/src/hks_client_service_adapter_lite.c",
+  "../../../services/huks_standard/huks_service/main/core/src/hks_upgrade_storage_data.c",
+  "../../../services/huks_standard/huks_service/main/os_dependency/posix/hks_file_operator_lite.c",
 ]
 
 if (huks_use_mbedtls == true) {
@@ -59,8 +59,7 @@ if (huks_use_mbedtls == true) {
   ]
 }
 
-huks_access_sources =
-  [ "../../../services/huks_standard/huks_service/main/os_dependency/idl/passthrough/hks_passthrough_access.c" ]
+huks_access_sources = [ "../../../services/huks_standard/huks_service/main/os_dependency/idl/passthrough/hks_passthrough_access.c" ]
 
 if (huks_use_lite_storage == true) {
   huks_storage_source = [
@@ -69,7 +68,9 @@ if (huks_use_lite_storage == true) {
     "../../../services/huks_standard/huks_engine/main/core/src/hks_keyblob_lite.c",
   ]
 } else {
-  huks_storage_source = [ "../../../services/huks_standard/huks_service/main/core/src/hks_storage.c" ]
+  huks_storage_source = [
+    "../../../services/huks_standard/huks_service/main/core/src/hks_storage.c",
+  ]
 }
 config("hilog_dir") {
   include_dirs =
@@ -140,16 +141,12 @@ config("soft_huks_config") {
 }
 
 config("public_huks_config") {
-  include_dirs = [ 
-    "../../../interfaces/innerkits/huks_standard/main/include",
-  ]
+  include_dirs = [ "../../../interfaces/innerkits/huks_standard/main/include" ]
 }
 
 config("get_dev_udid_config") {
   cflags = [ "-DGET_DEV_UDID_ENABLE" ]
-  include_dirs = [
-    "//base/startup/syspara_lite/interfaces/kits",
-  ]
+  include_dirs = [ "//base/startup/syspara_lite/interfaces/kits" ]
 }
 
 #begin: add
@@ -166,6 +163,7 @@ if (ohos_kernel_type == "liteos_m") {
     if (huks_use_mbedtls == true) {
       sources += huks_mbedtls_engine_sources
       deps = []
+
       #deps += [ "//build/lite/config/component/openssl:openssl_static" ]
       if (huks_mbedtls_path == "//third_party/mbedtls/include") {
         deps += [ "//third_party/mbedtls:mbedtls_static" ]
@@ -180,8 +178,8 @@ if (ohos_kernel_type == "liteos_m") {
     }
   }
   #if (ohos_build_type == "debug") {
-  #  group("huks_new_test") {
-  #    deps = [ "//base/security/huks/test:huks_new_test" ]
+  #  group("huks_3.0_test") {
+  #    deps = [ "//base/security/huks/test:huks_3.0_test" ]
   #  }
   #}
 } else {
@@ -192,7 +190,9 @@ if (ohos_kernel_type == "liteos_m") {
     sources = huks_sources
     sources += huks_storage_source
     sources += huks_access_sources
-    sources += [ "../../../frameworks/huks_standard/main/os_dependency/log/hks_log_lite.c" ]
+    sources += [
+      "../../../frameworks/huks_standard/main/os_dependency/log/hks_log_lite.c",
+    ]
 
     deps = [ "//base/startup/syspara_lite/frameworks/parameter/src:sysparam" ]
 
@@ -208,12 +208,12 @@ if (ohos_kernel_type == "liteos_m") {
     configs += [ ":hilog_dir" ]
     deps += [
       "//base/hiviewdfx/hilog_lite/frameworks/featured:hilog_shared",
-      "//third_party/bounds_checking_function:libsec_shared",  
+      "//third_party/bounds_checking_function:libsec_shared",
     ]
   }
-  #if (ohos_build_type == "debug") {
-  #  group("huks_new_test") {
-  #    deps = [ "//base/security/huks/test:huks_new_test" ]
-  #  }
-  #}
+  if (ohos_build_type == "debug") {
+    group("huks_3.0_test") {
+      deps = [ "//base/security/huks/test:huks_3.0_test" ]
+    }
+  }
 }

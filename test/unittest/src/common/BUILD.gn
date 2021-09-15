@@ -29,7 +29,7 @@ config("huks_test_common") {
   ]
 }
 
-static_library("huks_new_test_common") {
+static_library("huks_3.0_test_common") {
   sources = [
     "hks_test_aes.c",
     "hks_test_api_performance.c",
@@ -46,6 +46,7 @@ static_library("huks_new_test_common") {
   configs += [ ":huks_test_common" ]
 
   if (ohos_kernel_type == "liteos_m") {
+    cflags = [ "-D_CUT_LOG_" ]
     configs += [ ":hilog_lite_dir" ]
     deps += [ "//base/hiviewdfx/hilog_lite/frameworks/mini:hilog_lite" ]
   } else {

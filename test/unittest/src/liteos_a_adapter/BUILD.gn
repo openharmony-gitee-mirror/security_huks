@@ -17,7 +17,7 @@ import("//base/security/huks/build/config.gni")
 import("//build/lite/config/component/lite_component.gni")
 import("//build/lite/config/test.gni")
 
-unittest("huks_new_test") {
+unittest("huks_3.0_test") {
   output_extension = "bin"
   output_dir = "$root_out_dir/test/unittest/security/"
   sources = [
@@ -46,7 +46,7 @@ unittest("huks_new_test") {
 
   deps = [
     "//base/security/huks/interfaces/innerkits/huks_lite:huks_3.0_sdk",
-    "//base/security/huks/test/unittest/src/common:huks_new_test_common",
+    "//base/security/huks/test/unittest/src/common:huks_3.0_test_common",
   ]
   cflags = [ "-Wno-error" ]
 
@@ -56,5 +56,5 @@ unittest("huks_new_test") {
 }
 
 group("unittest") {
-  deps = [ ":huks_new_test" ]
+  deps = [ ":huks_3.0_test" ]
 }
