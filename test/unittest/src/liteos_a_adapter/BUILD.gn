@@ -40,7 +40,7 @@ unittest("huks_3.0_test") {
   ]
 
   include_dirs = [
-    "//base/security/huks/huawei_property/include",
+    "//base/security/huks/interfaces/innerkits/huks_lite",
     "../common/include",
   ]
 
