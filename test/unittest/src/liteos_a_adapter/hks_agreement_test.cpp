@@ -199,6 +199,7 @@ HWTEST_F(HksAgreementTest, HksAgreementTest002, TestSize.Level1)
     TestFreeBlob(&peerPubKeyAlias);
     TestFreeBlob(&peerPublicKey);
     TestFreeBlob(&agreeKey);
+    TestFreeBlob(&agreeKey2);
 }
 
 
