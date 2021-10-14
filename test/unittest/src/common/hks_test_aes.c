@@ -579,6 +579,7 @@ int32_t TestAes256ByLocal()
     struct HksBlob plainText = { TEST_AES_256, tmp };
     ret = HksDecrypt(&keyBlob, paramSet, &cipherText, &plainText);
     HKS_TEST_ASSERT(ret == 0);
+    HKS_TEST_ASSERT(plainText1.size == plainText.size);
     HKS_TEST_ASSERT(memcmp(plainText.data, plainText1.data, plainText.size) == 0);
     HksFreeParamSet(&paramSet);
 
