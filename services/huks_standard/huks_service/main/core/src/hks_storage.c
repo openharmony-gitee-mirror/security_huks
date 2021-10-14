@@ -26,6 +26,7 @@
 #include "hks_file_operator.h"
 #include "hks_log.h"
 #include "hks_mem.h"
+#include "hks_storage_file_lock.h"
 
 #define HKS_ENCODE_OFFSET_LEN         6
 #define HKS_ENCODE_KEY_SALT_VALUE     0x3f
@@ -393,7 +394,22 @@ static int32_t GetKeyBlobFromFile(const char *path, const char *fileName, struct
         return HKS_ERROR_INSUFFICIENT_DATA;
     }
 
+#ifdef HKS_SUPPORT_THREAD
+    char fullPath[HKS_MAX_FILE_NAME_LEN] = {0};
+    int32_t ret = HksGetFileName(path, fileName, fullPath, HKS_MAX_FILE_NAME_LEN);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("get full path failed, ret = %d.", ret);
+        return ret;
+    }
+
+    HksStorageFileLock *lock = HksStorageFileLockCreate(fullPath);
+    HksStorageFileLockRead(lock);
     size = HksFileRead(path, fileName, 0, keyBlob->data, keyBlob->size);
+    HksStorageFileUnlockRead(lock);
+    HksStorageFileLockRelease(lock);
+#else
+    size = HksFileRead(path, fileName, 0, keyBlob->data, keyBlob->size);
+#endif
     if (size == 0) {
         HKS_LOG_E("file read failed, ret = %u.", size);
         return HKS_ERROR_READ_FILE_FAIL;
@@ -418,7 +434,23 @@ static int32_t SaveKeyBlob(const char *processPath, const char *path, const char
         return ret;
     }
 
+#ifdef HKS_SUPPORT_THREAD
+    char fullPath[HKS_MAX_FILE_NAME_LEN] = {0};
+    ret = HksGetFileName(path, fileName, fullPath, HKS_MAX_FILE_NAME_LEN);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("get full path failed, ret = %d.", ret);
+        return ret;
+    }
+
+    HksStorageFileLock *lock = HksStorageFileLockCreate(fullPath);
+    HksStorageFileLockWrite(lock);
+    ret = HksFileWrite(path, fileName, 0, keyBlob->data, keyBlob->size);
+    HksStorageFileUnlockWrite(lock);
+    HksStorageFileLockRelease(lock);
+    return ret;
+#else
     return HksFileWrite(path, fileName, 0, keyBlob->data, keyBlob->size);
+#endif
 }
 
 static int32_t DeleteKeyBlob(const struct HksStoreFileInfo *fileInfo)
@@ -429,7 +461,22 @@ static int32_t DeleteKeyBlob(const struct HksStoreFileInfo *fileInfo)
         return HKS_ERROR_NOT_EXIST;
     }
 
+#ifdef HKS_SUPPORT_THREAD
+    char fullPath[HKS_MAX_FILE_NAME_LEN] = {0};
+    int32_t ret = HksGetFileName(fileInfo->mainPath.path, fileInfo->mainPath.fileName, fullPath, HKS_MAX_FILE_NAME_LEN);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("get full path failed, ret = %d.", ret);
+        return ret;
+    }
+
+    HksStorageFileLock *lock = HksStorageFileLockCreate(fullPath);
+    HksStorageFileLockWrite(lock);
+    ret = HksFileRemove(fileInfo->mainPath.path, fileInfo->mainPath.fileName);
+    HksStorageFileUnlockWrite(lock);
+    HksStorageFileLockRelease(lock);
+#else
     int32_t ret = HksFileRemove(fileInfo->mainPath.path, fileInfo->mainPath.fileName);
+#endif
     if (ret != HKS_SUCCESS) {
         HKS_LOG_E("delete key remove file failed, ret = %d.", ret);
         return ret;

@@ -28,6 +28,46 @@
 #include "hks_common_check.h"
 #include "hks_log.h"
 #include "hks_mbedtls_common.h"
+#include "hks_mem.h"
+
+int32_t HksMbedtlsHmacGenerateKey(const struct HksKeySpec *spec, struct HksBlob *key)
+{
+    if (spec->keyLen % HKS_BITS_PER_BYTE != 0) {
+        return HKS_ERROR_INVALID_ARGUMENT;
+    }
+
+    const uint32_t keyByteLen = spec->keyLen / HKS_BITS_PER_BYTE;
+
+    uint8_t *outKey = (uint8_t *)HksMalloc(keyByteLen);
+    if (outKey == NULL) {
+        return HKS_ERROR_MALLOC_FAIL;
+    }
+
+    mbedtls_entropy_context entropy;
+    mbedtls_ctr_drbg_context ctrDrbg;
+    int32_t ret = HksCtrDrbgSeed(&ctrDrbg, &entropy);
+    if (ret != HKS_SUCCESS) {
+        HKS_FREE_PTR(outKey);
+        return ret;
+    }
+
+    do {
+        ret = mbedtls_ctr_drbg_random(&ctrDrbg, outKey, keyByteLen);
+        if (ret != HKS_MBEDTLS_SUCCESS) {
+            HKS_LOG_E("Mbedtls ctr drbg random failed! mbedtls ret = 0x%X", ret);
+            (void)memset_s(outKey, keyByteLen, 0, keyByteLen);
+            HKS_FREE_PTR(outKey);
+            break;
+        }
+
+        key->data = outKey;
+        key->size = keyByteLen;
+    } while (0);
+
+    mbedtls_ctr_drbg_free(&ctrDrbg);
+    mbedtls_entropy_free(&entropy);
+    return ret;
+}
 
 int32_t HksMbedtlsHmac(const struct HksBlob *key,
     uint32_t digestAlg, const struct HksBlob *msg, struct HksBlob *mac)

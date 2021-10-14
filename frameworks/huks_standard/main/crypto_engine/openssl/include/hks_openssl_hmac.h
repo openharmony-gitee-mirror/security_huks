@@ -26,6 +26,8 @@ extern "C" {
 #define HKS_DIGEST_SHA384_LEN 48
 #define HKS_DIGEST_SHA512_LEN 64
 
+int32_t HksOpensslHmacGenerateKey(const struct HksKeySpec *spec, struct HksBlob *key);
+
 int32_t HksOpensslHmac(const struct HksBlob *key, uint32_t digestAlg, const struct HksBlob *msg,
     struct HksBlob *mac);
 

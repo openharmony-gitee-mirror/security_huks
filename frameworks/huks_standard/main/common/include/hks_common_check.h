@@ -19,6 +19,9 @@
 #include "hks_param.h"
 #include "hks_type_inner.h"
 
+#define HKS_DIGEST_MD5_LEN 16
+#define HKS_DIGEST_SHA1_LEN 20
+#define HKS_DIGEST_SHA224_LEN 28
 #define HKS_DIGEST_SHA256_LEN 32
 #define HKS_DIGEST_SHA384_LEN 48
 #define HKS_DIGEST_SHA512_LEN 64

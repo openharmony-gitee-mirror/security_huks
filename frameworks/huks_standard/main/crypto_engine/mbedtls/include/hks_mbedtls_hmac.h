@@ -22,11 +22,14 @@
 #include "hks_config.h"
 #endif
 
-#include "hks_type.h"
+#include "hks_crypto_hal.h"
+#include "hks_type_inner.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+int32_t HksMbedtlsHmacGenerateKey(const struct HksKeySpec *spec, struct HksBlob *key);
 
 int32_t HksMbedtlsHmac(const struct HksBlob *key,
     uint32_t digestAlg, const struct HksBlob *msg, struct HksBlob *mac);

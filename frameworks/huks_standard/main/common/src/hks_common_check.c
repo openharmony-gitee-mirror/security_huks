@@ -137,6 +137,15 @@ int32_t HksCheckBlobAndParamSet(const struct HksBlob *data, const struct HksPara
 int32_t HksGetDigestLen(uint32_t digest, uint32_t *digestLen)
 {
     switch (digest) {
+        case HKS_DIGEST_MD5:
+            *digestLen = HKS_DIGEST_MD5_LEN;
+            break;
+        case HKS_DIGEST_SHA1:
+            *digestLen = HKS_DIGEST_SHA1_LEN;
+            break;
+        case HKS_DIGEST_SHA224:
+            *digestLen = HKS_DIGEST_SHA224_LEN;
+            break;
         case HKS_DIGEST_SHA256:
             *digestLen = HKS_DIGEST_SHA256_LEN;
             break;

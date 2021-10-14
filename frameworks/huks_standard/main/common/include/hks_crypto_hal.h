@@ -88,6 +88,16 @@ struct KeyMaterialEcc {
     uint32_t zSize;
 };
 
+struct KeyMaterialDsa {
+    enum HksKeyAlg keyAlg;
+    uint32_t keySize;
+    uint32_t xSize;
+    uint32_t ySize;
+    uint32_t pSize;
+    uint32_t qSize;
+    uint32_t gSize;
+};
+
 struct KeyMaterial25519 {
     enum HksKeyAlg keyAlg;
     uint32_t keySize;

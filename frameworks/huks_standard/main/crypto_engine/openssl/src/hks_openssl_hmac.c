@@ -17,8 +17,11 @@
 
 #include <openssl/evp.h>
 #include <openssl/hmac.h>
+#include <openssl/rand.h>
 
+#include "hks_common_check.h"
 #include "hks_log.h"
+#include "hks_mem.h"
 #include "hks_openssl_engine.h"
 #include "hks_type_inner.h"
 
@@ -49,6 +52,48 @@ static uint32_t HmacGetDigestLen(uint32_t alg)
         default:
             return HKS_DIGEST_SHA512_LEN;
     }
+}
+
+static int32_t HmacGenKeyCheckParam(const struct HksKeySpec *spec)
+{
+    if (spec->keyLen % BIT_NUM_OF_UINT8 != 0) {
+        return HKS_ERROR_INVALID_ARGUMENT;
+    }
+    return HKS_SUCCESS;
+}
+
+int32_t HksOpensslHmacGenerateKey(const struct HksKeySpec *spec, struct HksBlob *key)
+{
+    if (HmacGenKeyCheckParam(spec) != HKS_SUCCESS) {
+        HKS_LOG_E("aes generate key invalid params!");
+        return HKS_ERROR_INVALID_ARGUMENT;
+    }
+
+    uint32_t keySizeByte = spec->keyLen / BIT_NUM_OF_UINT8;
+    int32_t ret = HKS_FAILURE;
+
+    uint8_t *tmpKey = (uint8_t *)HksMalloc(keySizeByte);
+    if (tmpKey == NULL) {
+        HKS_LOG_E("malloc buffer failed");
+        return HKS_ERROR_MALLOC_FAIL;
+    }
+
+    do {
+        if (RAND_bytes(tmpKey, keySizeByte) <= 0) {
+            HKS_LOG_E("generate key is failed:0x%x", ret);
+            break;
+        }
+
+        key->data = tmpKey;
+        key->size = keySizeByte;
+        ret = HKS_SUCCESS;
+    } while (0);
+
+    if (ret != HKS_SUCCESS) {
+        (void)memset_s(tmpKey, keySizeByte, 0, keySizeByte);
+        HksFree(tmpKey);
+    }
+    return ret;
 }
 
 static int32_t HmacCheckParam(const struct HksBlob *key, uint32_t alg,

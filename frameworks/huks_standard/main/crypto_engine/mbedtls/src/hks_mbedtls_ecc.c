@@ -51,11 +51,17 @@ static int32_t HksMbedtlsEccCheckKeySize(const uint32_t keySize)
 int32_t GetEccGroupId(const uint32_t keyLen, mbedtls_ecp_group_id *grpId)
 {
     switch (keyLen) {
+        case HKS_ECC_KEY_SIZE_224:
+            *grpId = MBEDTLS_ECP_DP_SECP224R1;
+            break;
         case HKS_ECC_KEY_SIZE_256:
             *grpId = MBEDTLS_ECP_DP_SECP256R1;
             break;
         case HKS_ECC_KEY_SIZE_384:
             *grpId = MBEDTLS_ECP_DP_SECP384R1;
+            break;
+        case HKS_ECC_KEY_SIZE_521:
+            *grpId = MBEDTLS_ECP_DP_SECP521R1;
             break;
         default:
             HKS_LOG_E("Unsupported key length! keyLen: 0x%X", keyLen);
@@ -157,7 +163,7 @@ static int32_t EccSaveKeyMaterial(const mbedtls_ecp_keypair *ecp,
     const uint32_t keySize, struct HksBlob *key)
 {
     /* public exponent x and y, and private exponent, so need size is: key_size / 8 * 3 */
-    const uint32_t keyByteLen = keySize / HKS_BITS_PER_BYTE;
+    const uint32_t keyByteLen = HKS_KEY_BYTES(keySize);
     const uint32_t rawMaterialLen = sizeof(struct KeyMaterialEcc) + keyByteLen * HKS_ECC_KEYPAIR_CNT;
     uint8_t *rawMaterial = (uint8_t *)HksMalloc(rawMaterialLen);
     if (rawMaterial == NULL) {

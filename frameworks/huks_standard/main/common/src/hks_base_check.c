@@ -46,14 +46,23 @@
 
 #ifdef HKS_SUPPORT_RSA_C
 static uint32_t g_rsaKeySize[] = {
+    HKS_RSA_KEY_SIZE_512,
+    HKS_RSA_KEY_SIZE_768,
+    HKS_RSA_KEY_SIZE_1024,
     HKS_RSA_KEY_SIZE_2048,
-    HKS_RSA_KEY_SIZE_3072
+    HKS_RSA_KEY_SIZE_3072,
+    HKS_RSA_KEY_SIZE_4096
 };
 static uint32_t g_rsaPadding[] = {
+    HKS_PADDING_NONE,
     HKS_PADDING_PSS,
-    HKS_PADDING_OAEP
+    HKS_PADDING_OAEP,
+    HKS_PADDING_PKCS1_V1_5
 };
 static uint32_t g_rsaDigest[] = {
+    HKS_DIGEST_NONE,
+    HKS_DIGEST_SHA1,
+    HKS_DIGEST_SHA224,
     HKS_DIGEST_SHA256,
     HKS_DIGEST_SHA384,
     HKS_DIGEST_SHA512
@@ -62,13 +71,16 @@ static uint32_t g_rsaSignPadding[] = {
     HKS_PADDING_PSS,
 };
 static uint32_t g_rsaCipherPadding[] = {
-    HKS_PADDING_OAEP
+    HKS_PADDING_OAEP,
+    HKS_PADDING_NONE,
+    HKS_PADDING_PKCS1_V1_5
 };
 #endif
 
 #ifdef HKS_SUPPORT_AES_C
 static uint32_t g_aesKeySize[] = {
     HKS_AES_KEY_SIZE_128,
+    HKS_AES_KEY_SIZE_192,
     HKS_AES_KEY_SIZE_256
 };
 static uint32_t g_aesMacKeySize[] = {
@@ -81,6 +93,8 @@ static uint32_t g_aesPadding[] = {
 static uint32_t g_aesMode[] = {
     HKS_MODE_CBC,
     HKS_MODE_CCM,
+    HKS_MODE_CTR,
+    HKS_MODE_ECB,
     HKS_MODE_GCM
 };
 static uint32_t g_aesCbcPadding[] = {
@@ -90,12 +104,30 @@ static uint32_t g_aesCbcPadding[] = {
 static uint32_t g_aesAeadPadding[] = {
     HKS_PADDING_NONE
 };
+static uint32_t g_aesCtrPadding[] = {
+    HKS_PADDING_NONE
+};
+static uint32_t g_aesEcbPadding[] = {
+    HKS_PADDING_NONE,
+    HKS_PADDING_PKCS7
+};
 #endif
 
 #ifdef HKS_SUPPORT_ECC_C
 static uint32_t g_eccKeySize[] = {
+    HKS_ECC_KEY_SIZE_224,
     HKS_ECC_KEY_SIZE_256,
     HKS_ECC_KEY_SIZE_384,
+    HKS_ECC_KEY_SIZE_521
+};
+
+static uint32_t g_eccDigest[] = {
+    HKS_DIGEST_NONE,
+    HKS_DIGEST_SHA1,
+    HKS_DIGEST_SHA224,
+    HKS_DIGEST_SHA256,
+    HKS_DIGEST_SHA384,
+    HKS_DIGEST_SHA512
 };
 #endif
 
@@ -111,8 +143,10 @@ static uint32_t g_macDigest[] = {
 
 #ifdef HKS_SUPPORT_ECDH_C
 static uint32_t g_ecdhKeySize[] = {
+    HKS_ECC_KEY_SIZE_224,
     HKS_ECC_KEY_SIZE_256,
     HKS_ECC_KEY_SIZE_384,
+    HKS_ECC_KEY_SIZE_521
 };
 #endif
 
@@ -121,11 +155,29 @@ static const uint32_t g_curve25519KeySize[] = {
     HKS_CURVE25519_KEY_SIZE_256,
 };
 #endif
+#ifdef HKS_SUPPORT_HMAC_C
+static uint32_t g_hmacDigest[] = {
+    HKS_DIGEST_SHA1,
+    HKS_DIGEST_SHA224,
+    HKS_DIGEST_SHA256,
+    HKS_DIGEST_SHA384,
+    HKS_DIGEST_SHA512
+};
+#endif
+#ifdef HKS_SUPPORT_DSA_C
+static uint32_t g_dsaDigest[] = {
+    HKS_DIGEST_SHA1,
+    HKS_DIGEST_SHA224,
+    HKS_DIGEST_SHA256,
+    HKS_DIGEST_SHA384,
+    HKS_DIGEST_SHA512
+};
+#endif
 
 #ifdef HKS_SUPPORT_RSA_C
 static const struct ParamsValuesChecker g_rsaParamSet[] = {
     { HKS_CHECK_TYPE_GEN_KEY, { { true, 0 }, { true, 0 }, { true, 0 }, { true, 0 }, { false, 0 } } },
-    { HKS_CHECK_TYPE_USE_KEY, { { false, 0 }, { true, 0 }, { true, 0 }, { true, 0 }, { false, 0 } } }
+    { HKS_CHECK_TYPE_USE_KEY, { { true, 0 }, { true, 0 }, { true, 0 }, { true, 0 }, { false, 0 } } }
 };
 static const struct ExpectParamsValuesChecker g_expectRsaParams[] = {
     { HKS_CHECK_TYPE_GEN_KEY, {
@@ -137,7 +189,7 @@ static const struct ExpectParamsValuesChecker g_expectRsaParams[] = {
         }
     },
     { HKS_CHECK_TYPE_USE_KEY, {
-        { false, NULL, 0 },
+        { true, g_rsaKeySize, HKS_ARRAY_SIZE(g_rsaKeySize) },
         { true, g_rsaPadding, HKS_ARRAY_SIZE(g_rsaPadding) },
         { false, NULL, 0 },
         { true, g_rsaDigest, HKS_ARRAY_SIZE(g_rsaDigest) },
@@ -151,6 +203,7 @@ static const struct ExpectParamsValuesChecker g_expectRsaParams[] = {
 static const struct ParamsValuesChecker g_aesParamSet[] = {
     { HKS_CHECK_TYPE_GEN_KEY, { { true, 0 }, { true, 0 }, { true, 0 }, { false, 0 }, { true, 0 } } },
     { HKS_CHECK_TYPE_USE_KEY, { { false, 0 }, { true, 0 }, { true, 0 }, { false, 0 }, { true, 0 } } },
+    { HKS_CHECK_TYPE_GEN_MAC_KEY, { { true, 0 }, { false, 0 }, { false, 0 }, { true, 0 }, { false, 0 } } },
     { HKS_CHECK_TYPE_GEN_DERIVE_KEY, { { true, 0 }, { false, 0 }, { false, 0 }, { true, 0 }, { false, 0 } } }
 };
 
@@ -200,7 +253,7 @@ static const struct ExpectParamsValuesChecker g_expectEccParams[] = {
         { true, g_eccKeySize, HKS_ARRAY_SIZE(g_eccKeySize) },
         { false, NULL, 0 },
         { false, NULL, 0 },
-        { true, g_digest, HKS_ARRAY_SIZE(g_digest) },
+        { true, g_eccDigest, HKS_ARRAY_SIZE(g_eccDigest) },
         { false, NULL, 0 }
         }
     },
@@ -208,7 +261,7 @@ static const struct ExpectParamsValuesChecker g_expectEccParams[] = {
         { false, NULL, 0 },
         { false, NULL, 0 },
         { false, NULL, 0 },
-        { true, g_digest, HKS_ARRAY_SIZE(g_digest) },
+        { true, g_eccDigest, HKS_ARRAY_SIZE(g_eccDigest) },
         { false, NULL, 0 }
         }
     }
@@ -234,6 +287,65 @@ static const struct ExpectParamsValuesChecker g_expectCurve25519Params[] = {
         { false, NULL, 0 },
         { false, NULL, 0 },
         { false, NULL, 0 },
+        { false, NULL, 0 }
+        }
+    }
+};
+#endif
+
+#ifdef HKS_SUPPORT_HMAC_C
+static const struct ParamsValuesChecker g_hmacParamSet[] = {
+    { HKS_CHECK_TYPE_GEN_KEY, { { true, 0 }, { false, 0 }, { true, 0 }, { true, 0 }, { false, 0 } } },
+    { HKS_CHECK_TYPE_USE_KEY, { { false, 0 }, { false, 0 }, { true, 0 }, { true, 0 }, { false, 0 } } },
+    { HKS_CHECK_TYPE_GEN_MAC_KEY, { { true, 0 }, { false, 0 }, { true, 0 }, { true, 0 }, { false, 0 } } }
+};
+static const struct ExpectParamsValuesChecker g_expectHmacParams[] = {
+    { HKS_CHECK_TYPE_GEN_KEY, {
+        { false, NULL, 0 },
+        { false, NULL, 0 },
+        { false, NULL, 0 },
+        { true, g_hmacDigest, sizeof(g_hmacDigest) / sizeof(g_hmacDigest[0]) },
+        { false, NULL, 0 }
+        }
+    },
+    { HKS_CHECK_TYPE_USE_KEY, {
+        { false, NULL, 0 },
+        { false, NULL, 0 },
+        { false, NULL, 0 },
+        { true, g_hmacDigest, sizeof(g_hmacDigest) / sizeof(g_hmacDigest[0]) },
+        { false, NULL, 0 }
+        }
+    },
+    { HKS_CHECK_TYPE_GEN_MAC_KEY, {
+        { false, NULL, 0 },
+        { false, NULL, 0 },
+        { false, NULL, 0 },
+        { true, g_hmacDigest, sizeof(g_hmacDigest) / sizeof(g_hmacDigest[0]) },
+        { false, NULL, 0 }
+        }
+    }
+};
+#endif
+
+#ifdef HKS_SUPPORT_DSA_C
+static const struct ParamsValuesChecker g_dsaParamSet[] = {
+    { HKS_CHECK_TYPE_GEN_KEY, { { true, 0 }, { false, 0 }, { true, 0 }, { true, 0 }, { false, 0 } } },
+    { HKS_CHECK_TYPE_USE_KEY, { { false, 0 }, { false, 0 }, { true, 0 }, { true, 0 }, { false, 0 } } }
+};
+static const struct ExpectParamsValuesChecker g_expectDsaParams[] = {
+    { HKS_CHECK_TYPE_GEN_KEY, {
+        { false, NULL, 0 },
+        { false, NULL, 0 },
+        { false, NULL, 0 },
+        { true, g_dsaDigest, sizeof(g_dsaDigest) / sizeof(g_dsaDigest[0]) },
+        { false, NULL, 0 }
+        }
+    },
+    { HKS_CHECK_TYPE_USE_KEY, {
+        { false, NULL, 0 },
+        { false, NULL, 0 },
+        { false, NULL, 0 },
+        { true, g_dsaDigest, sizeof(g_dsaDigest) / sizeof(g_dsaDigest[0]) },
         { false, NULL, 0 }
         }
     }
@@ -344,6 +456,18 @@ static int32_t CheckPurposeValid(uint32_t alg, uint32_t inputPurpose)
                 HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT;
             break;
 #endif
+#ifdef HKS_SUPPORT_HMAC_C
+        case HKS_ALG_HMAC:
+            invalidPurpose = HKS_KEY_PURPOSE_DERIVE | HKS_KEY_PURPOSE_SIGN | HKS_KEY_PURPOSE_VERIFY |
+                HKS_KEY_PURPOSE_WRAP | HKS_KEY_PURPOSE_UNWRAP | HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT;
+            break;
+#endif
+#ifdef HKS_SUPPORT_DSA_C
+        case HKS_ALG_DSA:
+            invalidPurpose = HKS_KEY_PURPOSE_DERIVE | HKS_KEY_PURPOSE_MAC | HKS_KEY_PURPOSE_WRAP |
+                HKS_KEY_PURPOSE_UNWRAP | HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT;
+            break;
+#endif
         default:
             return HKS_ERROR_INVALID_ALGORITHM;
     }
@@ -407,7 +531,6 @@ static int32_t GetInputParams(const struct HksParamSet *paramSet, struct ParamsV
     return ret;
 }
 
-
 static int32_t InitInputParams(enum CheckKeyType checkType, struct ParamsValues *inputParams,
     const struct ParamsValuesChecker *checkSet, uint32_t checkSetSize)
 {
@@ -443,6 +566,14 @@ static int32_t InitInputParamsByAlg(uint32_t alg, enum CheckKeyType checkType, s
         case HKS_ALG_X25519:
         case HKS_ALG_ED25519:
             return InitInputParams(checkType, inputParams, g_curve25519ParamSet, HKS_ARRAY_SIZE(g_curve25519ParamSet));
+#endif
+#ifdef HKS_SUPPORT_HMAC_C
+        case HKS_ALG_HMAC:
+            return InitInputParams(checkType, inputParams, g_hmacParamSet, HKS_ARRAY_SIZE(g_hmacParamSet));
+#endif
+#ifdef HKS_SUPPORT_DSA_C
+        case HKS_ALG_DSA:
+            return InitInputParams(checkType, inputParams, g_dsaParamSet, HKS_ARRAY_SIZE(g_hmacParamSet));
 #endif
         default:
             return HKS_ERROR_INVALID_ALGORITHM;
@@ -485,6 +616,14 @@ static int32_t GetExpectParams(uint32_t alg, enum CheckKeyType checkType, struct
         case HKS_ALG_ED25519:
             return InitExpectParams(checkType, expectValues, g_expectCurve25519Params,
                 HKS_ARRAY_SIZE(g_expectCurve25519Params));
+#endif
+#ifdef HKS_SUPPORT_HMAC_C
+        case HKS_ALG_HMAC:
+            return InitExpectParams(checkType, expectValues, g_expectHmacParams, HKS_ARRAY_SIZE(g_expectHmacParams));
+#endif
+#ifdef HKS_SUPPORT_DSA_C
+        case HKS_ALG_DSA:
+            return InitExpectParams(checkType, expectValues, g_expectDsaParams, HKS_ARRAY_SIZE(g_expectDsaParams));
 #endif
         default:
             return HKS_ERROR_INVALID_ALGORITHM;
@@ -557,6 +696,7 @@ static int32_t CheckRsaGenKeyPadding(const struct ParamsValues *inputParams)
     return HKS_SUCCESS;
 }
 
+#ifdef HKS_SUPPORT_RSA_SIGN_VERIFY
 static int32_t CheckRsaSignature(uint32_t cmdId, uint32_t keySize, const struct HksBlob *signature)
 {
     /*
@@ -582,7 +722,9 @@ static int32_t CheckRsaSignature(uint32_t cmdId, uint32_t keySize, const struct 
 
     return HKS_SUCCESS;
 }
+#endif
 
+#ifdef HKS_SUPPORT_RSA_CRYPT
 static int32_t CheckRsaNoPadCipherData(uint32_t keySize, const struct HksBlob *inData,
     const struct HksBlob *outData)
 {
@@ -604,6 +746,9 @@ static int32_t CheckRsaOaepCipherData(uint32_t cmdId, uint32_t keySize, uint32_t
     const struct HksBlob *inData, const struct HksBlob *outData)
 {
     uint32_t digestLen;
+    if (digest == HKS_DIGEST_NONE) {
+        digest = HKS_DIGEST_SHA1;
+    }
     int32_t ret = HksGetDigestLen(digest, &digestLen);
     if (ret != HKS_SUCCESS) {
         HKS_LOG_E("GetDigestLen failed, ret = %x", ret);
@@ -614,7 +759,7 @@ static int32_t CheckRsaOaepCipherData(uint32_t cmdId, uint32_t keySize, uint32_t
      * encrypt: inSize no greater than keySize - 2*digestLen - 2, outSize no less than keySize (in: plain; out: cipher)
      * decrypt: inSize no greater than keySize, outSize no less than keySize - 2*digestLen - 2 (in: cipher; out: plain)
      */
-    if (keySize <= (HKS_RSA_OAEP_DIGEST_NUM * digestLen - HKS_RSA_OAEP_DIGEST_NUM)) {
+    if (keySize <= (HKS_RSA_OAEP_DIGEST_NUM * digestLen + HKS_RSA_OAEP_DIGEST_NUM)) {
         return HKS_ERROR_INVALID_KEY_FILE;
     }
     uint32_t size = keySize - HKS_RSA_OAEP_DIGEST_NUM * digestLen - HKS_RSA_OAEP_DIGEST_NUM;
@@ -661,12 +806,21 @@ static int32_t CheckRsaCipherData(uint32_t cmdId, const struct ParamsValues *inp
     return ret;
 }
 #endif
+#endif
 
 #ifdef HKS_SUPPORT_AES_C
 static int32_t CheckAesPadding(uint32_t mode, uint32_t padding)
 {
     if (mode == HKS_MODE_CBC) {
         return HksCheckValue(padding, g_aesCbcPadding, HKS_ARRAY_SIZE(g_aesCbcPadding));
+    }
+
+    if (mode == HKS_MODE_CTR) {
+        return HksCheckValue(padding, g_aesCtrPadding, HKS_ARRAY_SIZE(g_aesCbcPadding));
+    }
+
+    if (mode == HKS_MODE_ECB) {
+        return HksCheckValue(padding, g_aesEcbPadding, HKS_ARRAY_SIZE(g_aesCbcPadding));
     }
 
     if ((mode == HKS_MODE_GCM) || (mode == HKS_MODE_CCM)) {
@@ -761,7 +915,7 @@ static int32_t CheckAesCipherData(uint32_t cmdId, const struct ParamsValues *inp
 {
     uint32_t mode = inputParams->mode.value;
 
-    if (mode == HKS_MODE_CBC) {
+    if ((mode == HKS_MODE_CBC) || (mode == HKS_MODE_CTR) || (mode == HKS_MODE_ECB)) {
         uint32_t padding = inputParams->padding.value;
         return CheckAesCbcCipherData(cmdId, padding, inData, outData);
     } else if ((mode == HKS_MODE_GCM) || (mode == HKS_MODE_CCM)) {
@@ -1013,6 +1167,38 @@ int32_t HksCheckGenKeyMutableParams(uint32_t alg, const struct ParamsValues *inp
     return ret;
 }
 
+int32_t CheckImportMutableParams(uint32_t alg, const struct ParamsValues *params)
+{
+    if (alg == HKS_ALG_AES) {
+        return HKS_SUCCESS;
+    }
+
+    if (((alg == HKS_ALG_ECC) || (alg == HKS_ALG_ED25519)) && (params->purpose.value != HKS_KEY_PURPOSE_VERIFY)) {
+        HKS_LOG_E("Import key check purpose failed.");
+        return HKS_ERROR_INVALID_PURPOSE;
+    }
+
+    if ((alg == HKS_ALG_RSA) &&
+        ((params->purpose.value != HKS_KEY_PURPOSE_VERIFY) && (params->purpose.value != HKS_KEY_PURPOSE_ENCRYPT))) {
+        HKS_LOG_E("Import key check purpose failed.");
+        return HKS_ERROR_INVALID_PURPOSE;
+    }
+
+    if (alg == HKS_ALG_RSA) {
+#ifdef HKS_SUPPORT_RSA_C
+        if (params->purpose.value == HKS_KEY_PURPOSE_ENCRYPT) {
+            return HksCheckValue(params->padding.value, g_rsaCipherPadding, HKS_ARRAY_SIZE(g_rsaCipherPadding));
+        } else if (params->purpose.value == HKS_KEY_PURPOSE_VERIFY) {
+            return HksCheckValue(params->padding.value, g_rsaSignPadding, HKS_ARRAY_SIZE(g_rsaSignPadding));
+        }
+#else
+        return HKS_ERROR_NOT_SUPPORTED;
+#endif
+    }
+
+    return HKS_SUCCESS;
+}
+
 int32_t HksCheckSignature(uint32_t cmdId, uint32_t alg, const struct HksBlob *key, const struct HksBlob *signature)
 {
     uint32_t keySize = 0;
@@ -1023,7 +1209,7 @@ int32_t HksCheckSignature(uint32_t cmdId, uint32_t alg, const struct HksBlob *ke
     }
 
     switch (alg) {
-#ifdef HKS_SUPPORT_RSA_C
+#if defined(HKS_SUPPORT_RSA_C) && defined (HKS_SUPPORT_RSA_SIGN_VERIFY)
         case HKS_ALG_RSA:
             return CheckRsaSignature(cmdId, keySize, signature);
 #endif
@@ -1116,7 +1302,7 @@ int32_t HksCheckCihperData(uint32_t cmdId, uint32_t alg, const struct ParamsValu
     const struct HksBlob *inData, const struct HksBlob *outData)
 {
     switch (alg) {
-#ifdef HKS_SUPPORT_RSA_C
+#if defined(HKS_SUPPORT_RSA_C) && defined (HKS_SUPPORT_RSA_CRYPT)
         case HKS_ALG_RSA:
             return CheckRsaCipherData(cmdId, inputParams, inData, outData);
 #endif

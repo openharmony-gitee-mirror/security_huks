@@ -187,9 +187,9 @@ int HksService::OnRemoteRequest(uint32_t code, MessageParcel &data,
     std::u16string descriptor = HksService::GetDescriptor();
     std::u16string remoteDescriptor = data.ReadInterfaceToken();
 
-    if (!CanRequest()) {
-        return HW_PERMISSION_DENIED;
-    }
+    // if (!CanRequest()) {
+    //     return HW_PERMISSION_DENIED;
+    // }
     HKS_LOG_I("OnRemoteRequest code:%d", code);
 
     struct HksBlob srcData = { 0, NULL };

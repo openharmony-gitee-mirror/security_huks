@@ -38,7 +38,7 @@ int32_t HksCoreCheckCipherParams(uint32_t cmdId, const struct HksBlob *key, cons
 int32_t HksCoreCheckAgreeKeyParams(const struct HksParamSet *paramSet, const struct HksBlob *privateKey,
     const struct HksBlob *peerPublicKey, const struct HksBlob *agreedKey, bool isLocalCheck);
 
-int32_t HksLocalCheckCipherParams(uint32_t cmdId, const struct HksBlob *key, const struct HksParamSet *paramSet,
+int32_t HksLocalCheckCipherParams(uint32_t cmdId, uint32_t keySize, const struct HksParamSet *paramSet,
     const struct HksBlob *inData, const struct HksBlob *outData);
 
 int32_t HksCoreCheckDeriveKeyParams(const struct HksParamSet *paramSet, const struct HksBlob *mainKey,
