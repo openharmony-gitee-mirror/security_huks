@@ -50,7 +50,7 @@ ohos_static_library("libhuks_os_dependency_standard_static") {
   external_deps = [
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
-    "samgr_L2:samgr_proxy",
+    "samgr_standard:samgr_proxy",
   ]
   cflags_cc = [ "-DHILOG_ENABLE" ]
   cflags = [ "-DHILOG_ENABLE" ]
