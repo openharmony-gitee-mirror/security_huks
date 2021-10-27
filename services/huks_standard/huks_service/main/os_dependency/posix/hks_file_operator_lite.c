@@ -145,12 +145,13 @@ static int32_t FileWrite(const char *fileName, uint32_t offset, const uint8_t *b
     }
 
     int32_t size = write(fd, buf, len);
-    close(fd);
     if (size < 0) {
         HKS_LOG_E("write file size failed, errno = 0x%x", errno);
+        close(fd);
         return HKS_ERROR_WRITE_FILE_FAIL;
     }
-
+    fsync(fd);
+    close(fd);
     return HKS_SUCCESS;
 }
 
