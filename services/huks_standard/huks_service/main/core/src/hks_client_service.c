@@ -1220,13 +1220,67 @@ int32_t HksServiceSignWithDeviceKey(const struct HksBlob *processName, uint32_t 
 int32_t HksServiceAttestKey(const struct HksBlob *processName, const struct HksBlob *keyAlias,
     const struct HksParamSet *paramSet, struct HksBlob *certChain)
 {
-    return 0;
+#ifdef HKS_SUPPORT_API_ATTEST_KEY
+    int32_t ret = HksCheckAttestKeyParams(processName, keyAlias, paramSet, certChain);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E(check attest key param fail);
+        return ret;
+    }
+
+    struct HksParamSet *newParamSet = NULL;
+    struct HksBlob keyFromFile = { 0, NULL };
+    ret = GetKeyAndNewParamSet(processName, keyAlias, paramSet, &keyFromFile, &newParamSet);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("GetKeyAndNewParamSet failed, ret = %d.", ret);
+        return ret;
+    }
+
+    do {
+        ret = HksAccessAttestKey(&keyFromFile, newParamSet, certChain);
+        if (ret != HKS_SUCCESS) {
+            HKS_LOG_E("HksAccessAttestKey fail, ret = %d.", ret);
+            break;
+        }
+
+        ret = HksStoreKeyBlob(processName, keyAlias, HKS_STORAGE_TYPE_CERTCHAIN, certChain);
+        if (ret != HKS_SUCCESS) {
+            HKS_LOG_E("store attest cert chain failed");
+        }
+    } while (0);
+
+    HKS_FREE_BLOB(keyFromFile);
+    HksFreeParamSet(&newParamSet)
+    return ret;
+#else
+    return HKS_ERROR_NOT_SUPPORTED;
+#endif
 }
 
 int32_t HksServiceGetCertificateChain(const struct HksBlob *processName, const struct HksBlob *keyAlias,
     const struct HksParamSet *paramSet, struct HksBlob *certChain)
 {
-    return 0;
+#ifdef HKS_SUPPORT_API_GET_CERTIFICATE_CHAIN
+    int32_t ret = HksCheckGetCertificateChainParams(processName, keyAlias, paramSet, certChain);
+    if (ret != HKS_SUCCESS) {
+        return ret;
+    }
+
+    struct HksBlob certFromFile = { 0, NULL };
+    ret = GetKeyData(processName, keyAlias, &certFromFile, HKS_STORAGE_TYPE_CERTCHAIN);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("HksGetKeyData fail, ret = %d.", ret);
+        return ret;
+    }
+    if (memcpy_s(certChain->data, certChain->size, certFromFile.data, certFromFile.size) != EOK) {
+        HKS_LOG_E("memcpy certChain fail.");
+        ret = HKS_ERROR_INSUFFICIENT_MEMORY;
+    }
+    certChain->size = certFromFile.size;
+    HKS_FREE_BLOB(certFromFile);
+    return ret;
+#else
+    return HKS_ERROR_NOT_SUPPORTED;
+#endif
 }
 
 int32_t HksServiceWrapKey(const struct HksBlob *processName, const struct HksBlob *keyAlias,
