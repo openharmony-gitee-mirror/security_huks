@@ -137,3 +137,10 @@ int32_t HksAccessGenerateRandom(const struct HksParamSet *paramSet, struct HksBl
 {
     return HksCoreGenerateRandom(paramSet, random);
 }
+
+#ifdef HKS_SUPPORT_API_ATTEST_KEY
+int32_t HksAccessAttestKey(const struct HksBlob *key, const struct HksParamSet *paramSet, struct HksBlob *certChain)
+{
+    return HKS_ERROR_NOT_SUPPORTED;
+}
+#endif
