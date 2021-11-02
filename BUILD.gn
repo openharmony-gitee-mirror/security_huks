@@ -11,10 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 group("huks_sdk_test") {
   testonly = true
   deps = [
+    "//base/security/huks/frameworks/huks_standard/main/crypto_engine/test:crypto_engine_test",
     "//base/security/huks/interfaces/innerkits/huks_standard/test:hukssdk_test",
   ]
 }

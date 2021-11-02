@@ -421,10 +421,11 @@ static int32_t GetHksInnerKeyFormat(const struct HksParamSet *paramSet, const st
         case HKS_ALG_X25519:
             return TranslateToInnerCurve25519Format(algParam->uint32Param, key, outKey);
 #endif
-#if defined(HKS_SUPPORT_RSA_C) || defined(HKS_SUPPORT_ECC_C)
+#if defined(HKS_SUPPORT_RSA_C) || defined(HKS_SUPPORT_ECC_C) || defined(HKS_SUPPORT_DSA_C)
         case HKS_ALG_RSA:
         case HKS_ALG_ECC:
         case HKS_ALG_ECDH:
+        case HKS_ALG_DSA:
             return TranslateFromX509PublicKey(key, outKey);
 #endif
         default:

@@ -84,6 +84,8 @@ bool HksOldVersionIsFileExist(const char *fileName);
 
 int32_t HksGetStoragePath(enum HksStoragePathType pathType, char *path, uint32_t *len);
 
+int32_t HksGetFileName(const char *path, const char *fileName, char *fullFileName, uint32_t fullFileNameLen);
+
 #ifdef __cplusplus
 }
 #endif

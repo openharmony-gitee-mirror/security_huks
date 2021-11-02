@@ -13,6 +13,13 @@
  * limitations under the License.
  */
 
+#ifdef HKS_CONFIG_FILE
+#include HKS_CONFIG_FILE
+#else
+#include "hks_config.h"
+#endif
+
+#ifdef HKS_SUPPORT_ECC_C
 #include "hks_openssl_ecc.h"
 
 #include <openssl/bio.h>
@@ -25,17 +32,42 @@
 #include "hks_mem.h"
 #include "hks_openssl_engine.h"
 
-int32_t HksOpensslEccCheckKeyLen(uint32_t keyLen)
+static int32_t HksOpensslEccCheckKeyLen(uint32_t keyLen)
 {
-    if ((keyLen != HKS_ECC_KEY_SIZE_256) && (keyLen != HKS_ECC_KEY_SIZE_384)) {
+    if ((keyLen != HKS_ECC_KEY_SIZE_224) && (keyLen != HKS_ECC_KEY_SIZE_256) && (keyLen != HKS_ECC_KEY_SIZE_384) &&
+        (keyLen != HKS_ECC_KEY_SIZE_521)) {
         HKS_LOG_E("invalid param keyLen(0x%x)!", keyLen);
         return HKS_ERROR_INVALID_ARGUMENT;
     }
     return HKS_SUCCESS;
 }
 
-static int32_t TransEccKeyToKeyBlob(const EC_KEY *eccKey, struct KeyMaterialEcc *keyMaterial, BIGNUM *pubX,
-    BIGNUM *pubY, uint8_t *rawMaterial)
+static int32_t HksOpensslGetCurveId(const struct HksKeySpec *spec, int *nid)
+{
+    switch (spec->keyLen) {
+        case HKS_ECC_KEY_SIZE_224:
+            *nid = NID_secp224r1;
+            break;
+        case HKS_ECC_KEY_SIZE_256:
+            *nid = NID_X9_62_prime256v1;
+            break;
+        case HKS_ECC_KEY_SIZE_384:
+            *nid = NID_secp384r1;
+            break;
+        case HKS_ECC_KEY_SIZE_521:
+            *nid = NID_secp521r1;
+            break;
+        default:
+            HKS_LOG_E("invalid key size.");
+            return HKS_ERROR_INVALID_AE_TAG;
+    }
+
+    return HKS_SUCCESS;
+}
+
+#ifdef HKS_SUPPORT_ECC_GENERATE_KEY
+static int32_t TransEccKeyToKeyBlob(
+    const EC_KEY *eccKey, const struct KeyMaterialEcc *keyMaterial, BIGNUM *pubX, BIGNUM *pubY, uint8_t *rawMaterial)
 {
     const EC_GROUP *ecGroup = EC_KEY_get0_group(eccKey);
     int retCode = EC_POINT_get_affine_coordinates_GFp(ecGroup, EC_KEY_get0_public_key(eccKey), pubX, pubY, NULL);
@@ -45,26 +77,23 @@ static int32_t TransEccKeyToKeyBlob(const EC_KEY *eccKey, struct KeyMaterialEcc 
     }
 
     const BIGNUM *priv = EC_KEY_get0_private_key(eccKey);
-    keyMaterial->xSize = BN_num_bytes(pubX);
-    keyMaterial->ySize = BN_num_bytes(pubY);
-    keyMaterial->zSize = BN_num_bytes(priv);
     uint32_t offset = sizeof(struct KeyMaterialEcc);
 
-    retCode = BN_bn2bin(pubX, rawMaterial + offset);
+    retCode = BN_bn2bin(pubX, rawMaterial + offset + (keyMaterial->xSize - BN_num_bytes(pubX)));
     if (retCode <= 0) {
         HksLogOpensslError();
         return HKS_FAILURE;
     }
     offset += keyMaterial->xSize;
 
-    retCode = BN_bn2bin(pubY, rawMaterial + offset);
+    retCode = BN_bn2bin(pubY, rawMaterial + offset + (keyMaterial->ySize - BN_num_bytes(pubY)));
     if (retCode <= 0) {
         HksLogOpensslError();
         return HKS_FAILURE;
     }
     offset += keyMaterial->ySize;
 
-    retCode = BN_bn2bin(priv, rawMaterial + offset);
+    retCode = BN_bn2bin(priv, rawMaterial + offset + (keyMaterial->zSize - BN_num_bytes(priv)));
     if (retCode <= 0) {
         HksLogOpensslError();
         return HKS_FAILURE;
@@ -73,11 +102,10 @@ static int32_t TransEccKeyToKeyBlob(const EC_KEY *eccKey, struct KeyMaterialEcc 
     return HKS_SUCCESS;
 }
 
-static int32_t EccSaveKeyMaterial(const EC_KEY *eccKey, const uint32_t keySize, uint8_t **output,
-    uint32_t *outputSize)
+static int32_t EccSaveKeyMaterial(const EC_KEY *eccKey, const uint32_t keySize, uint8_t **output, uint32_t *outputSize)
 {
     /* public exponent x and y, and private exponent, so need size is: keySize / 8 * 3 */
-    uint32_t rawMaterialLen = sizeof(struct KeyMaterialEcc) + keySize / BIT_NUM_OF_UINT8 * ECC_KEYPAIR_CNT;
+    uint32_t rawMaterialLen = sizeof(struct KeyMaterialEcc) + HKS_KEY_BYTES(keySize) * ECC_KEYPAIR_CNT;
     uint8_t *rawMaterial = (uint8_t *)HksMalloc(rawMaterialLen);
     if (rawMaterial == NULL) {
         HKS_LOG_E("malloc buffer failed!");
@@ -90,6 +118,9 @@ static int32_t EccSaveKeyMaterial(const EC_KEY *eccKey, const uint32_t keySize, 
     struct KeyMaterialEcc *keyMaterial = (struct KeyMaterialEcc *)rawMaterial;
     keyMaterial->keyAlg = HKS_ALG_ECC;
     keyMaterial->keySize = keySize;
+    keyMaterial->xSize = HKS_KEY_BYTES(keySize);
+    keyMaterial->ySize = HKS_KEY_BYTES(keySize);
+    keyMaterial->zSize = HKS_KEY_BYTES(keySize);
 
     BIGNUM *pubX = BN_new();
     BIGNUM *pubY = BN_new();
@@ -133,7 +164,13 @@ int32_t HksOpensslEccGenerateKey(const struct HksKeySpec *spec, struct HksBlob *
     EC_KEY *eccKey = NULL;
     int32_t ret = HKS_FAILURE;
     do {
-        eccKey = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+        int curveId;
+        ret = HksOpensslGetCurveId(spec, &curveId);
+        if (ret != HKS_SUCCESS) {
+            break;
+        }
+
+        eccKey = EC_KEY_new_by_curve_name(curveId);
         if (eccKey == NULL) {
             HksLogOpensslError();
             break;
@@ -157,9 +194,38 @@ int32_t HksOpensslEccGenerateKey(const struct HksKeySpec *spec, struct HksBlob *
 
     return ret;
 }
+#endif
 
-static int GetEccModules(const uint8_t *key, uint32_t *keySize, uint32_t *publicXSize,
-    uint32_t *publicYSize, uint32_t *privateXSize)
+#ifdef HKS_SUPPORT_ECC_GET_PUBLIC_KEY
+int32_t HksOpensslGetEccPubKey(const struct HksBlob *input, struct HksBlob *output)
+{
+    struct KeyMaterialEcc *keyMaterial = (struct KeyMaterialEcc *)input->data;
+
+    output->size = sizeof(struct KeyMaterialEcc) + keyMaterial->xSize + keyMaterial->ySize;
+    output->data = (uint8_t *)HksMalloc(output->size);
+    if (output->data == NULL) {
+        HKS_LOG_E("malloc buffer failed");
+        return HKS_ERROR_MALLOC_FAIL;
+    }
+
+    struct KeyMaterialEcc *publickeyMaterial = (struct KeyMaterialEcc *)output->data;
+    publickeyMaterial->keyAlg = keyMaterial->keyAlg;
+    publickeyMaterial->keySize = keyMaterial->keySize;
+    publickeyMaterial->xSize = keyMaterial->xSize;
+    publickeyMaterial->ySize = keyMaterial->ySize;
+    publickeyMaterial->zSize = 0;
+
+    memcpy_s(output->data + sizeof(struct KeyMaterialEcc),
+        output->size - sizeof(struct KeyMaterialEcc),
+        input->data + sizeof(struct KeyMaterialEcc),
+        keyMaterial->xSize + keyMaterial->ySize);
+
+    return HKS_SUCCESS;
+}
+#endif
+
+static int GetEccModules(
+    const uint8_t *key, uint32_t *keySize, uint32_t *publicXSize, uint32_t *publicYSize, uint32_t *privateXSize)
 {
     struct KeyMaterialEcc *keyMaterial = (struct KeyMaterialEcc *)key;
     *keySize = keyMaterial->keySize;
@@ -246,8 +312,7 @@ static EC_KEY *EccInitKey(const struct HksBlob *keyBlob, bool private)
     }
 
     if (private) {
-        BIGNUM *pri = BN_bin2bn(keyPair + sizeof(struct KeyMaterialEcc) + publicXSize + publicYSize,
-            privateSize, NULL);
+        BIGNUM *pri = BN_bin2bn(keyPair + sizeof(struct KeyMaterialEcc) + publicXSize + publicYSize, privateSize, NULL);
         if (pri == NULL || EC_KEY_set_private_key(eccKey, pri) <= 0) {
             HKS_LOG_E("build ecc key failed");
             BN_free(pri);
@@ -260,7 +325,7 @@ static EC_KEY *EccInitKey(const struct HksBlob *keyBlob, bool private)
     return eccKey;
 }
 
-int32_t GetEvpKey(const struct HksBlob *keyBlob, EVP_PKEY *key, bool private)
+static int32_t GetEvpKey(const struct HksBlob *keyBlob, EVP_PKEY *key, bool private)
 {
     EC_KEY *eccKey = EccInitKey(keyBlob, private);
     if (eccKey == NULL) {
@@ -327,8 +392,7 @@ int32_t EcdhDerive(EVP_PKEY_CTX *ctx, EVP_PKEY *peerKey, struct HksBlob *sharedK
     return HKS_SUCCESS;
 }
 
-int32_t AgreeKeyEcdh(const struct HksBlob *nativeKey, const struct HksBlob *pubKey,
-    struct HksBlob *sharedKey)
+int32_t AgreeKeyEcdh(const struct HksBlob *nativeKey, const struct HksBlob *pubKey, struct HksBlob *sharedKey)
 {
     int32_t res = HKS_FAILURE;
     EVP_PKEY *pKey = EVP_PKEY_new();
@@ -444,8 +508,8 @@ static EVP_MD_CTX *InitEccMdCtx(const struct HksBlob *mainKey, bool sign)
     return ctx;
 }
 
-int32_t HksOpensslEcdsaVerify(const struct HksBlob *key, const struct HksBlob *message,
-    const struct HksBlob *signature)
+#ifdef HKS_SUPPORT_ECDSA_SIGN_VERIFY
+int32_t HksOpensslEcdsaVerify(const struct HksBlob *key, const struct HksBlob *message, const struct HksBlob *signature)
 {
     EVP_MD_CTX *ctx = InitEccMdCtx(key, false);
     if (ctx == NULL) {
@@ -502,3 +566,5 @@ int32_t HksOpensslEcdsaSign(const struct HksBlob *key, const struct HksUsageSpec
     EVP_MD_CTX_free(ctx);
     return HKS_SUCCESS;
 }
+#endif
+#endif

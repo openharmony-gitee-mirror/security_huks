@@ -38,6 +38,7 @@ hctest_suite("huks_3.0_test") {
   ]
   include_dirs = [
     "//base/security/huks/interfaces/innerkits/huks_lite",
+    "//base/security/huks/interfaces/innerkits/huks_standard/main/include",
     "../common/include",
   ]
 

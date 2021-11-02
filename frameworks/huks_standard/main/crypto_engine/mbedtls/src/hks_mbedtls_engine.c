@@ -13,6 +13,8 @@
  * limitations under the License.
  */
 
+#include "hks_mbedtls_engine.h"
+
 #ifdef HKS_CONFIG_FILE
 #include HKS_CONFIG_FILE
 #else
@@ -29,6 +31,7 @@
 #include "hks_mbedtls_aes.h"
 #include "hks_mbedtls_bn.h"
 #include "hks_mbedtls_common.h"
+#include "hks_mbedtls_dsa.h"
 #include "hks_mbedtls_ecc.h"
 #include "hks_mbedtls_ecdh.h"
 #include "hks_mbedtls_ecdsa.h"
@@ -37,7 +40,10 @@
 #include "hks_mbedtls_kdf.h"
 #include "hks_mbedtls_rsa.h"
 #include "hks_mbedtls_x25519.h"
+
+#ifndef _HARDWARE_ROOT_KEY_
 #include "hks_rkc.h"
+#endif
 
 #ifdef _CUT_AUTHENTICATE_
 #undef HKS_SUPPORT_HASH_C
@@ -47,6 +53,36 @@
 #undef HKS_SUPPORT_ED25519_C
 #undef HKS_SUPPORT_KDF_PBKDF2
 #endif
+
+static inline int32_t HksMbedtlsCheckBlob(const struct HksBlob *blob)
+{
+    if ((blob == NULL) || (blob->data == NULL) || (blob->size == 0)) {
+        return HKS_ERROR_INVALID_ARGUMENT;
+    }
+    return HKS_SUCCESS;
+}
+
+static int32_t EncryptCheckParam(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
+    const struct HksBlob *message, struct HksBlob *cipherText)
+{
+    if (HksMbedtlsCheckBlob(key) != HKS_SUCCESS) {
+        HKS_LOG_E("Invalid param key!");
+        return HKS_ERROR_INVALID_ARGUMENT;
+    }
+    if (HksMbedtlsCheckBlob(message) != HKS_SUCCESS) {
+        HKS_LOG_E("Invalid param message!");
+        return HKS_ERROR_INVALID_ARGUMENT;
+    }
+    if (HksMbedtlsCheckBlob(cipherText) != HKS_SUCCESS) {
+        HKS_LOG_E("Invalid param cipherText!");
+        return HKS_ERROR_INVALID_ARGUMENT;
+    }
+    if (usageSpec == NULL) {
+        HKS_LOG_E("Invalid param usageSpec!");
+        return HKS_ERROR_INVALID_ARGUMENT;
+    }
+    return HKS_SUCCESS;
+}
 
 int32_t HksCryptoHalHmac(const struct HksBlob *key, uint32_t digestAlg, const struct HksBlob *msg,
     struct HksBlob *mac)
@@ -85,6 +121,10 @@ int32_t HksCryptoHalBnExpMod(struct HksBlob *x, const struct HksBlob *a,
 #ifndef _CUT_AUTHENTICATE_
 int32_t HksCryptoHalGenerateKey(const struct HksKeySpec *spec, struct HksBlob *key)
 {
+    if (spec == NULL || key == NULL) {
+        return HKS_ERROR_INVALID_ARGUMENT;
+    }
+
     switch (spec->algType) {
 #if defined(HKS_SUPPORT_AES_C) && defined(HKS_SUPPORT_AES_GENERATE_KEY)
         case HKS_ALG_AES:
@@ -105,6 +145,14 @@ int32_t HksCryptoHalGenerateKey(const struct HksKeySpec *spec, struct HksBlob *k
 #if defined(HKS_SUPPORT_ED25519_C) && defined(HKS_SUPPORT_ED25519_GENERATE_KEY)
         case HKS_ALG_ED25519:
             return HksEd25519GenerateKey(key);
+#endif
+#if defined(HKS_SUPPORT_HMAC_C) && defined(HKS_SUPPORT_HMAC_GENERATE_KEY)
+        case HKS_ALG_HMAC:
+            return HksMbedtlsHmacGenerateKey(spec, key);
+#endif
+#if defined(HKS_SUPPORT_DSA_C) && defined(HKS_SUPPORT_DSA_GENERATE_KEY)
+        case HKS_ALG_DSA:
+            return HksMbedtlsDsaGenerateKey(spec, key);
 #endif
         default:
             HKS_LOG_E("Unsupport alg type or macro is not on! type = 0x%X", spec->algType);
@@ -274,6 +322,11 @@ int32_t HksCryptoHalFillRandom(struct HksBlob *randomData)
 int32_t HksCryptoHalEncrypt(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
     const struct HksBlob *message, struct HksBlob *cipherText, struct HksBlob *tagAead)
 {
+    int32_t ret = EncryptCheckParam(key, usageSpec, message, cipherText);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("Invalid params!");
+        return HKS_ERROR_INVALID_ARGUMENT;
+    }
     switch (usageSpec->algType) {
 #ifdef HKS_SUPPORT_AES_C
         case HKS_ALG_AES:
@@ -292,6 +345,11 @@ int32_t HksCryptoHalEncrypt(const struct HksBlob *key, const struct HksUsageSpec
 int32_t HksCryptoHalDecrypt(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
     const struct HksBlob *message, struct HksBlob *cipherText)
 {
+    int32_t ret = EncryptCheckParam(key, usageSpec, message, cipherText);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("Invalid params!");
+        return HKS_ERROR_INVALID_ARGUMENT;
+    }
     switch (usageSpec->algType) {
 #ifdef HKS_SUPPORT_AES_C
         case HKS_ALG_AES:

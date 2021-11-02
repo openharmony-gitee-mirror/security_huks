@@ -39,6 +39,11 @@
 #ifdef HKS_SUPPORT_AES_GENERATE_KEY
 int32_t HksMbedtlsAesGenerateKey(const struct HksKeySpec *spec, struct HksBlob *key)
 {
+    if (spec->keyLen != HKS_AES_KEY_SIZE_128 && spec->keyLen != HKS_AES_KEY_SIZE_192 &&
+        spec->keyLen != HKS_AES_KEY_SIZE_256) {
+        return HKS_ERROR_INVALID_ARGUMENT;
+    }
+
     const uint32_t keyByteLen = spec->keyLen / HKS_BITS_PER_BYTE;
 
     uint8_t *outKey = (uint8_t *)HksMalloc(keyByteLen);
@@ -96,11 +101,16 @@ static int32_t AesCbcNoPaddingCrypt(const struct HksBlob *key, const struct HksC
         uint8_t tmpIv[HKS_AES_CBC_NOPADDING_IV_SIZE];
         if (memcpy_s(tmpIv, HKS_AES_CBC_NOPADDING_IV_SIZE, cipherParam->iv.data, cipherParam->iv.size) != EOK) {
             HKS_LOG_E("Memcpy temp iv failed!");
+            ret = HKS_ERROR_INVALID_IV;
             break;
         }
 
-        ret = mbedtls_aes_crypt_cbc(&ctx, (encrypt ? MBEDTLS_AES_ENCRYPT : MBEDTLS_AES_DECRYPT),
-            message->size, tmpIv, message->data, cipherText->data);
+        ret = mbedtls_aes_crypt_cbc(&ctx,
+            (encrypt ? MBEDTLS_AES_ENCRYPT : MBEDTLS_AES_DECRYPT),
+            message->size,
+            tmpIv,
+            message->data,
+            cipherText->data);
         if (ret != HKS_MBEDTLS_SUCCESS) {
             HKS_LOG_E("Mbedtks aes cbc crypt failed! mbedtls ret = 0x%X", ret);
             (void)memset_s(cipherText->data, cipherText->size, 0, cipherText->size);
@@ -139,8 +149,13 @@ static int32_t AesCbcPkcs7Crypt(const struct HksBlob *key, const struct HksCiphe
             break;
         }
 
-        ret = mbedtls_cipher_crypt(&ctx, cipherParam->iv.data, cipherParam->iv.size,
-            message->data, message->size, cipherText->data, (size_t *)&(cipherText->size));
+        ret = mbedtls_cipher_crypt(&ctx,
+            cipherParam->iv.data,
+            cipherParam->iv.size,
+            message->data,
+            message->size,
+            cipherText->data,
+            (size_t *)&(cipherText->size));
         if (ret != HKS_MBEDTLS_SUCCESS) {
             HKS_LOG_E("Mbedtls cbc pkcs7 crypt failed! mbedtls ret = 0x%X", ret);
             (void)memset_s(cipherText->data, cipherText->size, 0, cipherText->size);
@@ -190,9 +205,17 @@ static int32_t AesEncryptGcm(const struct HksBlob *key, const struct HksUsageSpe
         }
 
         const struct HksAeadParam *aeadParam = (struct HksAeadParam *)(usageSpec->algParam);
-        ret = mbedtls_gcm_crypt_and_tag(&ctx, MBEDTLS_GCM_ENCRYPT, message->size,
-            aeadParam->nonce.data, aeadParam->nonce.size, aeadParam->aad.data, aeadParam->aad.size,
-            message->data, cipherText->data, tagAead->size, tagAead->data);
+        ret = mbedtls_gcm_crypt_and_tag(&ctx,
+            MBEDTLS_GCM_ENCRYPT,
+            message->size,
+            aeadParam->nonce.data,
+            aeadParam->nonce.size,
+            aeadParam->aad.data,
+            aeadParam->aad.size,
+            message->data,
+            cipherText->data,
+            tagAead->size,
+            tagAead->data);
         if (ret != HKS_MBEDTLS_SUCCESS) {
             HKS_LOG_E("Mbedtls aes gcm encryot failed! mbedtls ret = 0x%X", ret);
             (void)memset_s(cipherText->data, cipherText->size, 0, cipherText->size);
@@ -221,9 +244,16 @@ static int32_t AesDecryptGcm(const struct HksBlob *key, const struct HksUsageSpe
         }
 
         const struct HksAeadParam *aeadParam = (struct HksAeadParam *)(usageSpec->algParam);
-        ret = mbedtls_gcm_auth_decrypt(&ctx, message->size, aeadParam->nonce.data, aeadParam->nonce.size,
-            aeadParam->aad.data, aeadParam->aad.size, aeadParam->tagDec.data, aeadParam->tagDec.size,
-            message->data, cipherText->data);
+        ret = mbedtls_gcm_auth_decrypt(&ctx,
+            message->size,
+            aeadParam->nonce.data,
+            aeadParam->nonce.size,
+            aeadParam->aad.data,
+            aeadParam->aad.size,
+            aeadParam->tagDec.data,
+            aeadParam->tagDec.size,
+            message->data,
+            cipherText->data);
         if (ret != HKS_MBEDTLS_SUCCESS) {
             HKS_LOG_E("Mbedtls aes gcm decrypt failed! mbedtls ret = 0x%X", ret);
             (void)memset_s(cipherText->data, cipherText->size, 0, cipherText->size);
@@ -253,9 +283,16 @@ static int32_t AesEncryptCcm(const struct HksBlob *key, const struct HksUsageSpe
         }
 
         const struct HksAeadParam *aeadParam = (struct HksAeadParam *)(usageSpec->algParam);
-        ret = mbedtls_ccm_encrypt_and_tag(&ctx, message->size,
-            aeadParam->nonce.data, aeadParam->nonce.size, aeadParam->aad.data, aeadParam->aad.size,
-            message->data, cipherText->data, tagAead->data, tagAead->size);
+        ret = mbedtls_ccm_encrypt_and_tag(&ctx,
+            message->size,
+            aeadParam->nonce.data,
+            aeadParam->nonce.size,
+            aeadParam->aad.data,
+            aeadParam->aad.size,
+            message->data,
+            cipherText->data,
+            tagAead->data,
+            tagAead->size);
         if (ret != HKS_MBEDTLS_SUCCESS) {
             HKS_LOG_E("Mbedtls aes ccm encrypt failed! mbedtls ret = 0x%X", ret);
             (void)memset_s(cipherText->data, cipherText->size, 0, cipherText->size);
@@ -284,9 +321,16 @@ static int32_t AesDecryptCcm(const struct HksBlob *key, const struct HksUsageSpe
         }
 
         const struct HksAeadParam *aeadParam = (struct HksAeadParam *)(usageSpec->algParam);
-        ret = mbedtls_ccm_auth_decrypt(&ctx, message->size, aeadParam->nonce.data, aeadParam->nonce.size,
-            aeadParam->aad.data, aeadParam->aad.size, message->data, cipherText->data,
-            aeadParam->tagDec.data, aeadParam->tagDec.size);
+        ret = mbedtls_ccm_auth_decrypt(&ctx,
+            message->size,
+            aeadParam->nonce.data,
+            aeadParam->nonce.size,
+            aeadParam->aad.data,
+            aeadParam->aad.size,
+            message->data,
+            cipherText->data,
+            aeadParam->tagDec.data,
+            aeadParam->tagDec.size);
         if (ret != HKS_MBEDTLS_SUCCESS) {
             HKS_LOG_E("Mbedtls aes ccm decrypt failed! mbedtls ret = 0x%X", ret);
             (void)memset_s(cipherText->data, cipherText->size, 0, cipherText->size);
@@ -299,6 +343,98 @@ static int32_t AesDecryptCcm(const struct HksBlob *key, const struct HksUsageSpe
     return ret;
 }
 #endif /* HKS_SUPPORT_AES_CCM */
+
+static int32_t AesCtrCrypt(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
+    const struct HksBlob *message, const bool encrypt, struct HksBlob *cipherText)
+{
+    const struct HksCipherParam *cipherParam = (struct HksCipherParam *)(usageSpec->algParam);
+    mbedtls_cipher_context_t ctx;
+    mbedtls_cipher_init(&ctx);
+
+    int32_t ret;
+    do {
+        const mbedtls_cipher_info_t *info =
+            mbedtls_cipher_info_from_values(MBEDTLS_CIPHER_ID_AES, key->size * HKS_BITS_PER_BYTE, MBEDTLS_MODE_CTR);
+
+        ret = mbedtls_cipher_setup(&ctx, info);
+        if (ret != HKS_MBEDTLS_SUCCESS) {
+            HKS_LOG_E("Mbedtls failed ret = %d", ret);
+            break;
+        }
+
+        ret = mbedtls_cipher_setkey(
+            &ctx, key->data, key->size * HKS_BITS_PER_BYTE, encrypt ? MBEDTLS_ENCRYPT : MBEDTLS_DECRYPT);
+        if (ret != HKS_MBEDTLS_SUCCESS) {
+            HKS_LOG_E("Mbedtls failed ret = %d", ret);
+            break;
+        }
+
+        size_t olen;
+        ret = mbedtls_cipher_crypt(
+            &ctx, cipherParam->iv.data, cipherParam->iv.size, message->data, message->size, cipherText->data, &olen);
+        if (ret != HKS_MBEDTLS_SUCCESS) {
+            HKS_LOG_E("Mbedtls failed ret = 0x%X", ret);
+            break;
+        }
+        cipherText->size = olen;
+
+        return HKS_SUCCESS;
+    } while (0);
+
+    return HKS_ERROR_CRYPTO_ENGINE_ERROR;
+}
+
+static int32_t AesEcbNoPaddingCrypt(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
+    const struct HksBlob *message, const bool encrypt, struct HksBlob *cipherText)
+{
+    mbedtls_cipher_context_t ctx;
+    mbedtls_cipher_init(&ctx);
+
+    int32_t ret;
+    do {
+        const mbedtls_cipher_info_t *info =
+            mbedtls_cipher_info_from_values(MBEDTLS_CIPHER_ID_AES, key->size * HKS_BITS_PER_BYTE, MBEDTLS_MODE_ECB);
+
+        ret = mbedtls_cipher_setup(&ctx, info);
+        if (ret != HKS_MBEDTLS_SUCCESS) {
+            HKS_LOG_E("Mbedtls failed ret = %d", ret);
+            break;
+        }
+
+        ret = mbedtls_cipher_setkey(
+            &ctx, key->data, key->size * HKS_BITS_PER_BYTE, encrypt ? MBEDTLS_ENCRYPT : MBEDTLS_DECRYPT);
+        if (ret != HKS_MBEDTLS_SUCCESS) {
+            HKS_LOG_E("Mbedtls failed ret = %d", ret);
+            break;
+        }
+
+        size_t olen;
+        ret = mbedtls_cipher_crypt(&ctx, NULL, 0, message->data, message->size, cipherText->data, &olen);
+        if (ret != HKS_MBEDTLS_SUCCESS) {
+            HKS_LOG_E("Mbedtls failed ret = 0x%X", ret);
+            break;
+        }
+        cipherText->size = olen;
+
+        return HKS_SUCCESS;
+    } while (0);
+
+    return HKS_ERROR_CRYPTO_ENGINE_ERROR;
+}
+
+static int32_t AesEcbCrypt(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
+    const struct HksBlob *message, const bool encrypt, struct HksBlob *cipherText)
+{
+    switch (usageSpec->padding) {
+        case HKS_PADDING_NONE:
+            return AesEcbNoPaddingCrypt(key, usageSpec, message, encrypt, cipherText);
+        case HKS_PADDING_PKCS7:
+            return HKS_ERROR_NOT_SUPPORTED;
+        default:
+            HKS_LOG_E("Unsupport padding! mode = 0x%X", usageSpec->padding);
+            return HKS_ERROR_INVALID_PADDING;
+    }
+}
 
 static int32_t CheckKeySize(const struct HksBlob *key)
 {
@@ -331,6 +467,10 @@ int32_t HksMbedtlsAesEncrypt(const struct HksBlob *key, const struct HksUsageSpe
         case HKS_MODE_CCM:
             return AesEncryptCcm(key, usageSpec, message, cipherText, tagAead);
 #endif
+        case HKS_MODE_CTR:
+            return AesCtrCrypt(key, usageSpec, message, true, cipherText);
+        case HKS_MODE_ECB:
+            return AesEcbCrypt(key, usageSpec, message, true, cipherText);
         default:
             HKS_LOG_E("Unsupport key alg! mode = 0x%X", usageSpec->mode);
             return HKS_ERROR_INVALID_ARGUMENT;
@@ -358,6 +498,10 @@ int32_t HksMbedtlsAesDecrypt(const struct HksBlob *key, const struct HksUsageSpe
         case HKS_MODE_CCM:
             return AesDecryptCcm(key, usageSpec, message, cipherText);
 #endif
+        case HKS_MODE_CTR:
+            return AesCtrCrypt(key, usageSpec, message, false, cipherText);
+        case HKS_MODE_ECB:
+            return AesEcbCrypt(key, usageSpec, message, false, cipherText);
         default:
             HKS_LOG_E("Unsupport key alg! mode = 0x%X", usageSpec->mode);
             return HKS_ERROR_INVALID_ARGUMENT;

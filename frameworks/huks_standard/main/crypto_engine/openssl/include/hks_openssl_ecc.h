@@ -22,9 +22,16 @@
 extern "C" {
 #endif
 
-#define ECC_KEYPAIR_CNT  3
+#define ECC_KEYPAIR_CNT 3
 
+#if defined(HKS_SUPPORT_ECC_GENERATE_KEY) || defined(HKS_SUPPORT_ECDH_GENERATE_KEY) || \
+    defined(HKS_SUPPORT_ECDSA_GENERATE_KEY)
 int32_t HksOpensslEccGenerateKey(const struct HksKeySpec *spec, struct HksBlob *key);
+#endif
+#if defined(HKS_SUPPORT_ECC_GET_PUBLIC_KEY) || defined(HKS_SUPPORT_ECDH_GET_PUBLIC_KEY) || \
+    defined(HKS_SUPPORT_EDDSA_GET_PUBLIC_KEY)
+int32_t HksOpensslGetEccPubKey(const struct HksBlob *input, struct HksBlob *output);
+#endif
 
 int32_t HksOpensslEcdhAgreeKey(const struct HksBlob *nativeKey, const struct HksBlob *pubKey,
     const struct HksKeySpec *spec, struct HksBlob *sharedKey);
@@ -32,8 +39,8 @@ int32_t HksOpensslEcdhAgreeKey(const struct HksBlob *nativeKey, const struct Hks
 int32_t HksOpensslEcdsaSign(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
     const struct HksBlob *message, struct HksBlob *signature);
 
-int32_t HksOpensslEcdsaVerify(const struct HksBlob *key, const struct HksBlob *message,
-    const struct HksBlob *signature);
+int32_t HksOpensslEcdsaVerify(
+    const struct HksBlob *key, const struct HksBlob *message, const struct HksBlob *signature);
 
 #ifdef __cplusplus
 }

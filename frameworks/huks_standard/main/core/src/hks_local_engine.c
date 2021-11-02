@@ -90,33 +90,17 @@ int32_t HksLocalBnExpMod(struct HksBlob *x, const struct HksBlob *a, const struc
 #ifndef _CUT_AUTHENTICATE_
 static int32_t CheckLocalGenerateKeyParams(const struct HksParamSet *paramSetIn, struct HksParamSet *paramSetOut)
 {
+    int32_t ret;
     if ((HksCheckParamSetValidity(paramSetIn) != HKS_SUCCESS) || (paramSetOut == NULL)) {
         return HKS_ERROR_INVALID_ARGUMENT;
     }
 
-    struct HksParam *algParam = NULL;
-    int32_t ret = HksGetParam(paramSetIn, HKS_TAG_ALGORITHM, &algParam);
+    ret = HksCoreCheckGenKeyParams(NULL, paramSetIn, NULL, NULL);
     if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("get param alg failed");
-        return HKS_ERROR_CHECK_GET_ALG_FAIL;
+        HKS_LOG_E("check generate key parameter failed ret = %x.", ret);
+        return HKS_ERROR_INVALID_ARGUMENT;
     }
 
-    if (algParam->uint32Param != HKS_ALG_X25519) {
-        HKS_LOG_E("invalid alg: %u", algParam->uint32Param);
-        return HKS_ERROR_INVALID_ALGORITHM;
-    }
-
-    struct HksParam *keySizeParam = NULL;
-    ret = HksGetParam(paramSetIn, HKS_TAG_KEY_SIZE, &keySizeParam);
-    if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("get param key size failed");
-        return HKS_ERROR_CHECK_GET_KEY_SIZE_FAIL;
-    }
-
-    if (keySizeParam->uint32Param != HKS_CURVE25519_KEY_SIZE_256) {
-        HKS_LOG_E("invalid key size: %u", keySizeParam->uint32Param);
-        return HKS_ERROR_INVALID_KEY_SIZE;
-    }
     return HKS_SUCCESS;
 }
 
@@ -213,7 +197,24 @@ static int32_t CheckLocalCipherParams(uint32_t cmdId, const struct HksBlob *key,
     if (HksCheckBlob3AndParamSet(key, inputText, outputText, paramSet) != HKS_SUCCESS) {
         return HKS_ERROR_INVALID_ARGUMENT;
     }
-    return HksLocalCheckCipherParams(cmdId, key, paramSet, inputText, outputText);
+
+    struct HksParam *outParam = NULL;
+    if (HksGetParam(paramSet, HKS_TAG_ALGORITHM, &outParam) != HKS_SUCCESS) {
+        HKS_LOG_E("get tag algorithm failed.");
+        return HKS_ERROR_CHECK_GET_ALG_FAIL;
+    }
+
+    uint32_t keySize = 0;
+    if (outParam->uint32Param == HKS_ALG_AES) {
+        keySize = key->size * HKS_BITS_PER_BYTE;
+    } else if (outParam->uint32Param == HKS_ALG_RSA) {
+        const struct KeyMaterialRsa *keyMaterial = (struct KeyMaterialRsa *)key->data;
+        keySize = keyMaterial->keySize;
+    } else {
+        return HKS_ERROR_INVALID_ALGORITHM;
+    }
+
+    return HksLocalCheckCipherParams(cmdId, keySize, paramSet, inputText, outputText);
 }
 
 static int32_t EncryptAndDecrypt(uint32_t cmdId, const struct HksBlob *key, const struct HksParamSet *paramSet,

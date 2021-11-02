@@ -20,10 +20,13 @@
       "module_list": [
         "//base/security/huks/frameworks/huks_standard/main:huks_standard_frameworks",
         "//base/security/huks/services/huks_standard:huks_service",
-        "//base/security/huks/services/huks_standard/huks_service/main/os_dependency/sa/sa_profile:huks_sa_profile"
+        "//base/security/huks/services/huks_standard/huks_service/main/os_dependency/sa/sa_profile:huks_sa_profile",
+        "//base/security/huks/interfaces/kits/napi:huks"
       ],
       "test_list": [
-        "//base/security/huks:huks_sdk_test"
+        "//base/security/huks:huks_sdk_test",
+        "//base/security/huks/services/huks_standard/huks_service/main/test/unittest:huks_multithread_test",
+        "//base/security/huks/interfaces/innerkits/huks_standard/test/moduletest:huks_mt_test"
       ]
     }
   }

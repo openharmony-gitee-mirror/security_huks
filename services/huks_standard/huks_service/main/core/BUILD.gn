@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("//base/security/huks/huks.gni")
 import("//build/ohos.gni")
 
 config("huks_config") {
@@ -37,7 +38,14 @@ ohos_static_library("libhuks_service_core_standard_static") {
     "src/hks_double_list.c",
     "src/hks_operation.c",
     "src/hks_storage.c",
+    "src/hks_storage_file_lock.c",
   ]
+  if (non_rwlock_support) {
+    sources += [ "src/hks_lock_lite.c" ]
+  } else {
+    sources += [ "src/hks_lock.c" ]
+  }
+
   deps = [
     "//base/security/huks/frameworks/huks_standard/main:huks_standard_frameworks",
     "//third_party/openssl:libcrypto_static",

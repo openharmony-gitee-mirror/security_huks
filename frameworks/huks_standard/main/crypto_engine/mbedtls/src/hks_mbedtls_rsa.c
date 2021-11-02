@@ -42,6 +42,9 @@
 static int32_t RsaCheckKeySize(const uint32_t keySize)
 {
     switch (keySize) {
+        case HKS_RSA_KEY_SIZE_512:
+        case HKS_RSA_KEY_SIZE_768:
+        case HKS_RSA_KEY_SIZE_1024:
         case HKS_RSA_KEY_SIZE_2048:
         case HKS_RSA_KEY_SIZE_3072:
         case HKS_RSA_KEY_SIZE_4096:
@@ -60,7 +63,9 @@ static int32_t RsaKeyMaterialNedSizeCheck(const struct KeyMaterialRsa *keyMateri
     if ((keyMaterial->nSize > maxKeyByteLen) || (keyMaterial->eSize > maxKeyByteLen) ||
         (keyMaterial->dSize > maxKeyByteLen)) {
         HKS_LOG_E("Invalid rsa keyMaterial! nSize = 0x%X, eSize = 0x%X, dSize = 0x%X",
-            keyMaterial->nSize, keyMaterial->eSize, keyMaterial->dSize);
+            keyMaterial->nSize,
+            keyMaterial->eSize,
+            keyMaterial->dSize);
         return HKS_ERROR_INVALID_ARGUMENT;
     }
 
@@ -90,8 +95,7 @@ static int32_t RsaKeyCheck(const struct HksBlob *key)
 }
 
 #ifdef HKS_SUPPORT_RSA_GENERATE_KEY
-static int32_t RsaSaveKeyMaterial(const mbedtls_rsa_context *ctx,
-    const uint32_t keySize, struct HksBlob *key)
+static int32_t RsaSaveKeyMaterial(const mbedtls_rsa_context *ctx, const uint32_t keySize, struct HksBlob *key)
 {
     const uint32_t keyByteLen = keySize / HKS_BITS_PER_BYTE;
     const uint32_t rawMaterialLen = sizeof(struct KeyMaterialRsa) + keyByteLen * HKS_RSA_KEYPAIR_CNT;
@@ -176,8 +180,7 @@ int32_t HksMbedtlsRsaGenerateKey(const struct HksKeySpec *spec, struct HksBlob *
 #endif /* HKS_SUPPORT_RSA_GENERATE_KEY */
 
 #if defined(HKS_SUPPORT_RSA_CRYPT) || defined(HKS_SUPPORT_RSA_SIGN_VERIFY)
-static int32_t RsaKeyMaterialToCtx(const struct HksBlob *key,
-    const bool needPrivateExponent, mbedtls_rsa_context *ctx)
+static int32_t RsaKeyMaterialToCtx(const struct HksBlob *key, const bool needPrivateExponent, mbedtls_rsa_context *ctx)
 {
     const struct KeyMaterialRsa *keyMaterial = (struct KeyMaterialRsa *)(key->data);
 
@@ -234,6 +237,21 @@ static int32_t RsaKeyMaterialToCtx(const struct HksBlob *key,
 #endif /* HKS_SUPPORT_RSA_CRYPT or HKS_SUPPORT_RSA_SIGN_VERIFY */
 
 #ifdef HKS_SUPPORT_RSA_CRYPT
+int32_t HksToMbedtlsPadding(uint32_t hksPadding, int32_t *padding)
+{
+    switch (hksPadding) {
+        case HKS_PADDING_PKCS1_V1_5:
+            *padding = MBEDTLS_RSA_PKCS_V15;
+            break;
+        case HKS_PADDING_OAEP:
+            *padding = MBEDTLS_RSA_PKCS_V21;
+            break;
+        default:
+            return HKS_ERROR_NOT_SUPPORTED;
+    }
+    return HKS_SUCCESS;
+}
+
 int32_t HksMbedtlsRsaCrypt(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
     const struct HksBlob *message, const bool encrypt, struct HksBlob *cipherText)
 {
@@ -242,10 +260,18 @@ int32_t HksMbedtlsRsaCrypt(const struct HksBlob *key, const struct HksUsageSpec 
         return ret;
     }
 
-    uint32_t mbedtlsAlg;
-    ret = HksToMbedtlsDigestAlg(usageSpec->digest, &mbedtlsAlg);
+    int32_t padding;
+    ret = HksToMbedtlsPadding(usageSpec->padding, &padding);
     if (ret != HKS_SUCCESS) {
         return ret;
+    }
+
+    uint32_t mbedtlsAlg;
+    if (padding == MBEDTLS_RSA_PKCS_V21) {
+        ret = HksToMbedtlsDigestAlg(usageSpec->digest, &mbedtlsAlg);
+        if (ret != HKS_SUCCESS) {
+            return ret;
+        }
     }
 
     mbedtls_ctr_drbg_context ctrDrbg;
@@ -256,7 +282,7 @@ int32_t HksMbedtlsRsaCrypt(const struct HksBlob *key, const struct HksUsageSpec 
     }
 
     mbedtls_rsa_context ctx;
-    mbedtls_rsa_init(&ctx, MBEDTLS_RSA_PKCS_V21, mbedtlsAlg); /* only support oaep padding */
+    mbedtls_rsa_init(&ctx, padding, mbedtlsAlg); /* only support oaep padding */
 
     do {
         ret = RsaKeyMaterialToCtx(key, !encrypt, &ctx); /* encrypt don't need private exponent (d) */
@@ -289,8 +315,8 @@ int32_t HksMbedtlsRsaCrypt(const struct HksBlob *key, const struct HksUsageSpec 
 #endif /* HKS_SUPPORT_RSA_CRYPT */
 
 #ifdef HKS_SUPPORT_RSA_SIGN_VERIFY
-static int32_t HksMbedtlsRsaSignVerify(const struct HksBlob *key,
-    const struct HksUsageSpec *usageSpec, const struct HksBlob *message, const bool sign, struct HksBlob *signature)
+static int32_t HksMbedtlsRsaSignVerify(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
+    const struct HksBlob *message, const bool sign, struct HksBlob *signature)
 {
     uint32_t mbedtlsAlg;
     int32_t ret = HksToMbedtlsDigestAlg(usageSpec->digest, &mbedtlsAlg);
@@ -315,11 +341,23 @@ static int32_t HksMbedtlsRsaSignVerify(const struct HksBlob *key,
         }
 
         if (sign) {
-            ret = mbedtls_rsa_pkcs1_sign(&ctx, mbedtls_ctr_drbg_random, &ctrDrbg,
-                MBEDTLS_RSA_PRIVATE, mbedtlsAlg, message->size, message->data, signature->data);
+            ret = mbedtls_rsa_pkcs1_sign(&ctx,
+                mbedtls_ctr_drbg_random,
+                &ctrDrbg,
+                MBEDTLS_RSA_PRIVATE,
+                mbedtlsAlg,
+                message->size,
+                message->data,
+                signature->data);
         } else {
-            ret = mbedtls_rsa_pkcs1_verify(&ctx, mbedtls_ctr_drbg_random, &ctrDrbg,
-                MBEDTLS_RSA_PUBLIC, mbedtlsAlg, message->size, message->data, signature->data);
+            ret = mbedtls_rsa_pkcs1_verify(&ctx,
+                mbedtls_ctr_drbg_random,
+                &ctrDrbg,
+                MBEDTLS_RSA_PUBLIC,
+                mbedtlsAlg,
+                message->size,
+                message->data,
+                signature->data);
         }
         if (ret != HKS_SUCCESS) {
             HKS_LOG_E("Mbedtls rsa sign/verify failed! mbedtls ret = 0x%X", ret);
@@ -337,8 +375,8 @@ static int32_t HksMbedtlsRsaSignVerify(const struct HksBlob *key,
     return ret;
 }
 
-int32_t HksMbedtlsRsaSign(const struct HksBlob *key,
-    const struct HksUsageSpec *usageSpec, const struct HksBlob *message, struct HksBlob *signature)
+int32_t HksMbedtlsRsaSign(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
+    const struct HksBlob *message, struct HksBlob *signature)
 {
     int32_t ret = RsaKeyCheck(key);
     if (ret != HKS_SUCCESS) {
@@ -348,8 +386,8 @@ int32_t HksMbedtlsRsaSign(const struct HksBlob *key,
     return HksMbedtlsRsaSignVerify(key, usageSpec, message, true, signature); /* true: is sign */
 }
 
-int32_t HksMbedtlsRsaVerify(const struct HksBlob *key,
-    const struct HksUsageSpec *usageSpec, const struct HksBlob *message, const struct HksBlob *signature)
+int32_t HksMbedtlsRsaVerify(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
+    const struct HksBlob *message, const struct HksBlob *signature)
 {
     int32_t ret = RsaKeyCheck(key);
     if (ret != HKS_SUCCESS) {

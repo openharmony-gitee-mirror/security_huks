@@ -32,6 +32,8 @@ ohos_static_library("libhuks_service_os_dependency_standard_static") {
   ]
   sources = [
     "posix/hks_file_operator.c",
+    "posix/hks_mutex.c",
+    "posix/hks_rwlock.c",
     "sa/hks_sa.cpp",
   ]
   deps = [

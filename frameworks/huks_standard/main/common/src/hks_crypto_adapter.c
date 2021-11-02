@@ -13,6 +13,12 @@
  * limitations under the License.
  */
 
+#ifdef HKS_CONFIG_FILE
+#include HKS_CONFIG_FILE
+#else
+#include "hks_config.h"
+#endif
+
 #include "hks_crypto_adapter.h"
 
 #include "hks_common_check.h"
@@ -97,8 +103,8 @@ void HksFillKeyDerivationParam(const struct HksParamSet *paramSet, struct HksKey
     }
 }
 
-int32_t HksFillAeadParam(const struct HksParamSet *paramSet, struct HksBlob *inputText, struct HksUsageSpec *usageSpec,
-    bool isEncrypt)
+int32_t HksFillAeadParam(
+    const struct HksParamSet *paramSet, struct HksBlob *inputText, struct HksUsageSpec *usageSpec, bool isEncrypt)
 {
     struct HksParam *nonceParam = NULL;
     int32_t ret = HksGetParam(paramSet, HKS_TAG_NONCE, &nonceParam);
@@ -165,8 +171,8 @@ int32_t HksFillIvParam(const struct HksParamSet *paramSet, struct HksUsageSpec *
     return HKS_SUCCESS;
 }
 
-int32_t HksBuildCipherUsageSpec(const struct HksParamSet *paramSet, bool isEncrypt, struct HksBlob *inputText,
-    struct HksUsageSpec **outUsageSpec)
+int32_t HksBuildCipherUsageSpec(
+    const struct HksParamSet *paramSet, bool isEncrypt, struct HksBlob *inputText, struct HksUsageSpec **outUsageSpec)
 {
     bool isAes = false;
     bool isAeMode = false;
@@ -183,6 +189,11 @@ int32_t HksBuildCipherUsageSpec(const struct HksParamSet *paramSet, bool isEncry
     }
 
     HksFillUsageSpec(paramSet, usageSpec);
+
+    if (usageSpec->algType == HKS_ALG_RSA && usageSpec->digest == HKS_DIGEST_NONE) {
+        usageSpec->digest = HKS_DIGEST_SHA1;
+    }
+
     if (!isAes) {
         *outUsageSpec = usageSpec;
         return HKS_SUCCESS;
@@ -204,8 +215,8 @@ int32_t HksBuildCipherUsageSpec(const struct HksParamSet *paramSet, bool isEncry
     return HKS_SUCCESS;
 }
 
-int32_t HksGetEncryptAeTag(const struct HksParamSet *paramSet, const struct HksBlob *inData,
-    struct HksBlob *outData, struct HksBlob *tagAead)
+int32_t HksGetEncryptAeTag(
+    const struct HksParamSet *paramSet, const struct HksBlob *inData, struct HksBlob *outData, struct HksBlob *tagAead)
 {
     bool isAes = false;
     bool isAeMode = false;
@@ -349,12 +360,12 @@ static int32_t FormatCurve25519Key(const struct HksBlob *keyIn, struct HksParamS
     struct HksParam params[] = {
         {
             .tag = HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA,
-            .blob = { keyMaterial->pubKeySize, keyIn->data + sizeof(struct KeyMaterial25519) }
+            .blob = {keyMaterial->pubKeySize, keyIn->data + sizeof(struct KeyMaterial25519)},
         },
         {
             .tag = HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA,
-            .blob = { keyMaterial->priKeySize, keyIn->data + sizeof(struct KeyMaterial25519) + keyMaterial->pubKeySize }
-        }
+            .blob = {keyMaterial->priKeySize, keyIn->data + sizeof(struct KeyMaterial25519) + keyMaterial->pubKeySize},
+        },
     };
 
     return BuildParamSetOut(params, HKS_ARRAY_SIZE(params), paramSetOut);
@@ -392,6 +403,189 @@ int32_t GetCurve25519FromKeyMaterial(const bool isPubKey, const struct HksBlob *
     return HKS_SUCCESS;
 }
 
+#ifdef HKS_SUPPORT_AES_C
+static int32_t FormatAesKey(const struct HksBlob *keyIn, struct HksParamSet *paramSetOut)
+{
+    struct HksParam params[] = {
+        {
+            .tag = HKS_TAG_SYMMETRIC_KEY_DATA,
+            .blob = {keyIn->size, keyIn->data},
+        },
+    };
+    return BuildParamSetOut(params, HKS_ARRAY_SIZE(params), paramSetOut);
+}
+#endif
+
+#if defined(HKS_SUPPORT_RSA_C) && defined(HKS_SUPPORT_RSA_GENERATE_KEY)
+static int32_t FormatRsaKey(const struct HksBlob *keyIn, struct HksParamSet *paramSetOut)
+{
+    struct KeyMaterialRsa *keyMaterial = (struct KeyMaterialRsa *)keyIn->data;
+    uint32_t publicKeySize = sizeof(struct KeyMaterialRsa) + keyMaterial->nSize + keyMaterial->eSize;
+    if (keyIn->size < publicKeySize) {
+        HKS_LOG_E("invalid key info.");
+        return HKS_ERROR_INVALID_KEY_INFO;
+    }
+
+    uint8_t *publicKey = (uint8_t *)HksMalloc(publicKeySize);
+    if (publicKey == NULL) {
+        HKS_LOG_E("malloc public key failed.");
+        return HKS_ERROR_MALLOC_FAIL;
+    }
+
+    memcpy_s(publicKey, publicKeySize, keyIn->data, publicKeySize);
+    ((struct KeyMaterialRsa *)publicKey)->dSize = 0;
+
+    struct HksParam params[] = {
+        {
+            .tag = HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA,
+            .blob = {publicKeySize, publicKey},
+        },
+        {
+            .tag = HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA,
+            .blob = {keyIn->size, keyIn->data},
+        },
+    };
+    int32_t ret = BuildParamSetOut(params, HKS_ARRAY_SIZE(params), paramSetOut);
+    memset_s(publicKey, publicKeySize, 0x00, publicKeySize);
+    HksFree(publicKey);
+    return ret;
+}
+#endif
+
+#if defined(HKS_SUPPORT_HMAC_C) && defined(HKS_SUPPORT_HMAC_GENERATE_KEY)
+static int32_t FormatHmacKey(const struct HksBlob *keyIn, struct HksParamSet *paramSetOut)
+{
+    struct HksParam params[] = {
+        {
+            .tag = HKS_TAG_SYMMETRIC_KEY_DATA,
+            .blob = {keyIn->size, keyIn->data},
+        },
+    };
+    return BuildParamSetOut(params, HKS_ARRAY_SIZE(params), paramSetOut);
+}
+#endif
+
+#if defined(HKS_SUPPORT_DSA_C) && defined(HKS_SUPPORT_DSA_GENERATE_KEY)
+static void DivideDsaKey(const struct HksBlob *keyIn, struct HksBlob *pubKey, struct HksBlob *priKey)
+{
+    struct KeyMaterialDsa *keyMaterial = (struct KeyMaterialDsa *)keyIn->data;
+    uint32_t inOffset = 0;
+    uint32_t outOffset = 0;
+
+    memcpy_s(pubKey->data + outOffset, pubKey->size - outOffset, keyIn->data + inOffset, sizeof(struct KeyMaterialDsa));
+    inOffset += sizeof(struct KeyMaterialDsa);
+    outOffset += sizeof(struct KeyMaterialDsa);
+    inOffset += keyMaterial->xSize;
+    memcpy_s(pubKey->data + outOffset, pubKey->size - outOffset, keyIn->data + inOffset, keyMaterial->ySize);
+    inOffset += keyMaterial->ySize;
+    outOffset += keyMaterial->ySize;
+    memcpy_s(pubKey->data + outOffset, pubKey->size - outOffset, keyIn->data + inOffset, keyMaterial->pSize);
+    inOffset += keyMaterial->pSize;
+    outOffset += keyMaterial->pSize;
+    memcpy_s(pubKey->data + outOffset, pubKey->size - outOffset, keyIn->data + inOffset, keyMaterial->qSize);
+    inOffset += keyMaterial->qSize;
+    outOffset += keyMaterial->qSize;
+    memcpy_s(pubKey->data + outOffset, pubKey->size - outOffset, keyIn->data + inOffset, keyMaterial->gSize);
+    ((struct KeyMaterialDsa *)pubKey->data)->xSize = 0;
+
+    inOffset = 0;
+    outOffset = 0;
+    memcpy_s(priKey->data + outOffset, priKey->size - outOffset, keyIn->data + inOffset, sizeof(struct KeyMaterialDsa));
+    inOffset += sizeof(struct KeyMaterialDsa);
+    outOffset += sizeof(struct KeyMaterialDsa);
+    memcpy_s(priKey->data + outOffset, priKey->size - outOffset, keyIn->data + inOffset, keyMaterial->xSize);
+    inOffset += keyMaterial->xSize;
+    outOffset += keyMaterial->xSize;
+    inOffset += keyMaterial->ySize;
+    memcpy_s(priKey->data + outOffset, priKey->size - outOffset, keyIn->data + inOffset, keyMaterial->pSize);
+    inOffset += keyMaterial->pSize;
+    outOffset += keyMaterial->pSize;
+    memcpy_s(priKey->data + outOffset, priKey->size - outOffset, keyIn->data + inOffset, keyMaterial->qSize);
+    inOffset += keyMaterial->qSize;
+    outOffset += keyMaterial->qSize;
+    memcpy_s(priKey->data + outOffset, priKey->size - outOffset, keyIn->data + inOffset, keyMaterial->gSize);
+    ((struct KeyMaterialDsa *)pubKey->data)->ySize = 0;
+}
+
+static int32_t FormatDsaKey(const struct HksBlob *keyIn, struct HksParamSet *paramSetOut)
+{
+    struct KeyMaterialDsa *keyMaterial = (struct KeyMaterialDsa *)keyIn->data;
+    uint32_t publicKeySize = sizeof(struct KeyMaterialDsa) + keyMaterial->ySize + keyMaterial->pSize +
+                             keyMaterial->qSize + keyMaterial->gSize;
+    uint32_t privateKeySize = sizeof(struct KeyMaterialDsa) + keyMaterial->xSize + keyMaterial->pSize +
+                              keyMaterial->qSize + keyMaterial->gSize;
+    if (keyIn->size < publicKeySize || keyIn->size < privateKeySize) {
+        HKS_LOG_E("invalid key info.");
+        return HKS_ERROR_INVALID_KEY_INFO;
+    }
+
+    uint8_t *publicKey = (uint8_t *)HksMalloc(publicKeySize);
+    uint8_t *privateKey = (uint8_t *)HksMalloc(privateKeySize);
+    if (publicKey == NULL || privateKey == NULL) {
+        HKS_LOG_E("malloc key failed.");
+        HKS_FREE_PTR(publicKey);
+        HKS_FREE_PTR(privateKey);
+        return HKS_ERROR_MALLOC_FAIL;
+    }
+
+    struct HksParam params[] = {
+        {
+            .tag = HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA,
+            .blob = {publicKeySize, publicKey},
+        },
+        {
+            .tag = HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA,
+            .blob = {privateKeySize, privateKey},
+        },
+    };
+
+    DivideDsaKey(keyIn, &params[0].blob, &params[1].blob);
+
+    int32_t ret = BuildParamSetOut(params, HKS_ARRAY_SIZE(params), paramSetOut);
+    memset_s(publicKey, publicKeySize, 0x00, publicKeySize);
+    memset_s(privateKey, privateKeySize, 0x00, privateKeySize);
+    HksFree(publicKey);
+    HksFree(privateKey);
+    return ret;
+}
+#endif
+
+#if defined(HKS_SUPPORT_ECC_C) && defined(HKS_SUPPORT_ECC_GENERATE_KEY)
+static int32_t FormatEccKey(const struct HksBlob *keyIn, struct HksParamSet *paramSetOut)
+{
+    struct KeyMaterialEcc *keyMaterial = (struct KeyMaterialEcc *)keyIn->data;
+    uint32_t publicKeySize = sizeof(struct KeyMaterialEcc) + keyMaterial->xSize + keyMaterial->ySize;
+    if (keyIn->size < publicKeySize) {
+        HKS_LOG_E("invalid key info.");
+        return HKS_ERROR_INVALID_KEY_INFO;
+    }
+
+    uint8_t *publicKey = (uint8_t *)HksMalloc(publicKeySize);
+    if (publicKey == NULL) {
+        HKS_LOG_E("malloc public key failed.");
+        return HKS_ERROR_MALLOC_FAIL;
+    }
+
+    memcpy_s(publicKey, publicKeySize, keyIn->data, publicKeySize);
+    ((struct KeyMaterialEcc *)publicKey)->zSize = 0;
+
+    struct HksParam params[] = {
+        {
+            .tag = HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA,
+            .blob = {publicKeySize, publicKey},
+        },
+        {
+            .tag = HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA,
+            .blob = {keyIn->size, keyIn->data},
+        },
+    };
+    int32_t ret = BuildParamSetOut(params, HKS_ARRAY_SIZE(params), paramSetOut);
+    memset_s(publicKey, publicKeySize, 0x00, publicKeySize);
+    HksFree(publicKey);
+    return ret;
+}
+#endif
+
 int32_t HksSetKeyToMaterial(uint32_t alg, bool isPubKey, const struct HksBlob *key, struct HksBlob *keyMaterial)
 {
     switch (alg) {
@@ -422,6 +616,26 @@ int32_t HksFormatKeyFromMaterial(uint32_t alg, const struct HksBlob *keyMaterial
         case HKS_ALG_X25519:
         case HKS_ALG_ED25519:
             return FormatCurve25519Key(keyMaterial, paramSetOut);
+#if defined(HKS_SUPPORT_AES_C) && defined(HKS_SUPPORT_AES_GENERATE_KEY)
+        case HKS_ALG_AES:
+            return FormatAesKey(keyMaterial, paramSetOut);
+#endif
+#if defined(HKS_SUPPORT_RSA_C) && defined(HKS_SUPPORT_RSA_GENERATE_KEY)
+        case HKS_ALG_RSA:
+            return FormatRsaKey(keyMaterial, paramSetOut);
+#endif
+#if defined(HKS_SUPPORT_HMAC_C) && defined(HKS_SUPPORT_HMAC_GENERATE_KEY)
+        case HKS_ALG_HMAC:
+            return FormatHmacKey(keyMaterial, paramSetOut);
+#endif
+#if defined(HKS_SUPPORT_DSA_C) && defined(HKS_SUPPORT_DSA_GENERATE_KEY)
+        case HKS_ALG_DSA:
+            return FormatDsaKey(keyMaterial, paramSetOut);
+#endif
+#if defined(HKS_SUPPORT_ECC_C) && defined(HKS_SUPPORT_ECC_GENERATE_KEY)
+        case HKS_ALG_ECC:
+            return FormatEccKey(keyMaterial, paramSetOut);
+#endif
         default:
             HKS_LOG_E("alg not support");
             return HKS_ERROR_INVALID_ALGORITHM;

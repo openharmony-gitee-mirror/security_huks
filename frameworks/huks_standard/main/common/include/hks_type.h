@@ -51,7 +51,7 @@ extern "C" {
 #define HKS_MAX_KEY_ALIAS_LEN 64
 #define HKS_MAX_PROCESS_NAME_LEN 50
 #define HKS_MAX_RANDOM_LEN 1024
-#define HKS_KEY_BYTES(keySize) ((keySize) / HKS_BITS_PER_BYTE)
+#define HKS_KEY_BYTES(keySize) (((keySize) + HKS_BITS_PER_BYTE - 1) / HKS_BITS_PER_BYTE)
 #define HKS_SIGNATURE_MIN_SIZE 64
 #define HKS_ARRAY_SIZE(arr) ((sizeof(arr)) / (sizeof((arr)[0])))
 #define MAX_OUT_BLOB_SIZE (5 * 1024 * 1024)
@@ -121,11 +121,14 @@ enum HksCipherMode {
 };
 
 enum HksKeySize {
+    HKS_RSA_KEY_SIZE_512 = 512,
+    HKS_RSA_KEY_SIZE_768 = 768,
     HKS_RSA_KEY_SIZE_1024 = 1024,
     HKS_RSA_KEY_SIZE_2048 = 2048,
     HKS_RSA_KEY_SIZE_3072 = 3072,
     HKS_RSA_KEY_SIZE_4096 = 4096,
 
+    HKS_ECC_KEY_SIZE_224 = 224,
     HKS_ECC_KEY_SIZE_256 = 256,
     HKS_ECC_KEY_SIZE_384 = 384,
     HKS_ECC_KEY_SIZE_521 = 521,
@@ -141,6 +144,7 @@ enum HksKeySize {
 enum HksKeyAlg {
     HKS_ALG_RSA = 1,
     HKS_ALG_ECC = 2,
+    HKS_ALG_DSA = 3,
 
     HKS_ALG_AES = 20,
     HKS_ALG_HMAC = 50,
@@ -150,6 +154,7 @@ enum HksKeyAlg {
     HKS_ALG_ECDH = 100,
     HKS_ALG_X25519 = 101,
     HKS_ALG_ED25519 = 102,
+    HKS_ALG_DH = 103,
 };
 
 enum HksKeyGenerateType {

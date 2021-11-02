@@ -31,7 +31,7 @@
 #include "hks_log.h"
 #include "hks_mem.h"
 
-static int32_t GetFileName(const char *path, const char *fileName, char *fullFileName, uint32_t fullFileNameLen)
+int32_t HksGetFileName(const char *path, const char *fileName, char *fullFileName, uint32_t fullFileNameLen)
 {
     if (path != NULL) {
         if (strncpy_s(fullFileName, fullFileNameLen, path, strlen(path)) != EOK) {
@@ -65,7 +65,7 @@ static int32_t GetFullFileName(const char *path, const char *fileName, char **fu
     }
     (void)memset_s(tmpFileName, nameLen, 0, nameLen);
 
-    int32_t ret = GetFileName(path, fileName, tmpFileName, nameLen);
+    int32_t ret = HksGetFileName(path, fileName, tmpFileName, nameLen);
     if (ret != HKS_SUCCESS) {
         HKS_LOG_E("get full fileName failed");
         HKS_FREE_PTR(tmpFileName);
