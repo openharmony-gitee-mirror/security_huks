@@ -88,6 +88,8 @@ HKS_API_EXPORT int32_t HksUnwrapKey(const struct HksBlob *keyAlias, const struct
 HKS_API_EXPORT int32_t HksBnExpMod(struct HksBlob *x, const struct HksBlob *a,
     const struct HksBlob *e, const struct HksBlob *n);
 
+HKS_API_EXPORT int32_t HcmIsDeviceKeyExist(const struct HksParamSet *paramSet);
+
 #ifdef __cplusplus
 }
 #endif

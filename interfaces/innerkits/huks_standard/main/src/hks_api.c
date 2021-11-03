@@ -568,3 +568,10 @@ HKS_API_EXPORT int32_t HksBnExpMod(struct HksBlob *x, const struct HksBlob *a,
     return HKS_ERROR_NOT_SUPPORTED;
 #endif
 }
+
+HKS_API_EXPORT int32_t HcmIsDeviceKeyExist(const struct HksParamSet *paramSet)
+{
+    (void)paramSet;
+    return HKS_ERROR_NOT_SUPPORTED;
+}
+
