@@ -31,6 +31,7 @@
 #include "hks_mbedtls_aes.h"
 #include "hks_mbedtls_bn.h"
 #include "hks_mbedtls_common.h"
+#include "hks_mbedtls_dh.h"
 #include "hks_mbedtls_dsa.h"
 #include "hks_mbedtls_ecc.h"
 #include "hks_mbedtls_ecdh.h"
@@ -54,26 +55,18 @@
 #undef HKS_SUPPORT_KDF_PBKDF2
 #endif
 
-static inline int32_t HksMbedtlsCheckBlob(const struct HksBlob *blob)
-{
-    if ((blob == NULL) || (blob->data == NULL) || (blob->size == 0)) {
-        return HKS_ERROR_INVALID_ARGUMENT;
-    }
-    return HKS_SUCCESS;
-}
-
 static int32_t EncryptCheckParam(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
     const struct HksBlob *message, struct HksBlob *cipherText)
 {
-    if (HksMbedtlsCheckBlob(key) != HKS_SUCCESS) {
+    if (CheckBlob(key) != HKS_SUCCESS) {
         HKS_LOG_E("Invalid param key!");
         return HKS_ERROR_INVALID_ARGUMENT;
     }
-    if (HksMbedtlsCheckBlob(message) != HKS_SUCCESS) {
+    if (CheckBlob(message) != HKS_SUCCESS) {
         HKS_LOG_E("Invalid param message!");
         return HKS_ERROR_INVALID_ARGUMENT;
     }
-    if (HksMbedtlsCheckBlob(cipherText) != HKS_SUCCESS) {
+    if (CheckBlob(cipherText) != HKS_SUCCESS) {
         HKS_LOG_E("Invalid param cipherText!");
         return HKS_ERROR_INVALID_ARGUMENT;
     }
@@ -136,6 +129,7 @@ int32_t HksCryptoHalGenerateKey(const struct HksKeySpec *spec, struct HksBlob *k
 #endif
 #if defined(HKS_SUPPORT_ECC_C) && defined(HKS_SUPPORT_ECC_GENERATE_KEY)
         case HKS_ALG_ECC:
+        case HKS_ALG_ECDH:
             return HksMbedtlsEccGenerateKey(spec, key);
 #endif
 #if defined(HKS_SUPPORT_X25519_C) && defined(HKS_SUPPORT_X25519_GENERATE_KEY)
@@ -153,6 +147,10 @@ int32_t HksCryptoHalGenerateKey(const struct HksKeySpec *spec, struct HksBlob *k
 #if defined(HKS_SUPPORT_DSA_C) && defined(HKS_SUPPORT_DSA_GENERATE_KEY)
         case HKS_ALG_DSA:
             return HksMbedtlsDsaGenerateKey(spec, key);
+#endif
+#if defined(HKS_SUPPORT_DH_C) && defined(HKS_SUPPORT_DH_GENERATE_KEY)
+        case HKS_ALG_DH:
+            return HksMbedtlsDhGenerateKey(spec, key);
 #endif
         default:
             HKS_LOG_E("Unsupport alg type or macro is not on! type = 0x%X", spec->algType);
@@ -211,6 +209,10 @@ int32_t HksCryptoHalGetPubKey(const struct HksBlob *keyIn, struct HksBlob *keyOu
         case HKS_ALG_X25519:
             return HksMbedtlsGetX25519PubKey(keyIn, keyOut);
 #endif
+#if defined(HKS_SUPPORT_DH_C) && defined(HKS_SUPPORT_DH_GET_PUBLIC_KEY)
+        case HKS_ALG_DH:
+            return HksMbedtlsGetDhPubKey(keyIn, keyOut);
+#endif
         default:
             HKS_LOG_E("Unsupport key mode or macro is not on! mode = 0x%X", key->keyAlg);
             return HKS_ERROR_INVALID_ARGUMENT;
@@ -234,7 +236,7 @@ int32_t HksCryptoHalAgreeKey(const struct HksBlob *nativeKey, const struct HksBl
     const struct HksKeySpec *spec, struct HksBlob *sharedKey)
 {
     switch (spec->algType) {
-#if defined(HKS_SUPPORT_ECC_C) && defined(HKS_SUPPORT_ECDH_C)
+#if defined(HKS_SUPPORT_ECC_C) && defined(HKS_SUPPORT_ECDH_C) && defined(HKS_SUPPORT_ECDH_AGREE_KEY)
         case HKS_ALG_ECDH:
             return HksMbedtlsEcdh(nativeKey, pubKey, spec, sharedKey);
 #endif
@@ -245,6 +247,10 @@ int32_t HksCryptoHalAgreeKey(const struct HksBlob *nativeKey, const struct HksBl
 #ifdef HKS_SUPPORT_ED25519_TO_X25519
         case HKS_ALG_ED25519:
             return HksMbedtlsEd25519KeyAgreement(nativeKey, pubKey, sharedKey);
+#endif
+#if defined(HKS_SUPPORT_DH_C) && defined(HKS_SUPPORT_DH_AGREE_KEY)
+        case HKS_ALG_DH:
+            return HksMbedtlsDhAgreeKey(nativeKey, pubKey, spec, sharedKey);
 #endif
         default:
             HKS_LOG_E("Unsupport alg or macro is not on! alg = 0x%X", spec->algType);
@@ -260,9 +266,9 @@ int32_t HksCryptoHalSign(const struct HksBlob *key, const struct HksUsageSpec *u
         case HKS_ALG_RSA:
             return HksMbedtlsRsaSign(key, usageSpec, message, signature);
 #endif
-#if defined(HKS_SUPPORT_ECC_C) && defined(HKS_SUPPORT_ECDSA_C)
+#if defined(HKS_SUPPORT_ECC_C) && defined(HKS_SUPPORT_ECDSA_C) && defined(HKS_SUPPORT_ECDSA_SIGN_VERIFY)
         case HKS_ALG_ECC:
-            return HksMbedtlsEcdsaSign(key, usageSpec, message, signature);
+            return HksMbedtlsEcdsaSignVerify(key, usageSpec, message, signature, false);
 #endif
 #if defined(HKS_SUPPORT_ED25519_C) && defined(HKS_SUPPORT_ED25519_SIGN_VERIFY)
         case HKS_ALG_ED25519:
@@ -282,9 +288,9 @@ int32_t HksCryptoHalVerify(const struct HksBlob *key, const struct HksUsageSpec 
         case HKS_ALG_RSA:
             return HksMbedtlsRsaVerify(key, usageSpec, message, signature);
 #endif
-#if defined(HKS_SUPPORT_ECC_C) && defined(HKS_SUPPORT_ECDSA_C)
+#if defined(HKS_SUPPORT_ECC_C) && defined(HKS_SUPPORT_ECDSA_C) && defined(HKS_SUPPORT_ECDSA_SIGN_VERIFY)
         case HKS_ALG_ECC:
-            return HksMbedtlsEcdsaVerify(key, usageSpec, message, signature);
+            return HksMbedtlsEcdsaSignVerify(key, usageSpec, message, signature, true);
 #endif
 #if defined(HKS_SUPPORT_ED25519_C) && defined(HKS_SUPPORT_ED25519_SIGN_VERIFY)
         case HKS_ALG_ED25519:

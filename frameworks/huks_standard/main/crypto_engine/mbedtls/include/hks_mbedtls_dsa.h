@@ -29,8 +29,23 @@
 extern "C" {
 #endif
 
+#ifdef HKS_SUPPORT_DSA_C
+#ifdef HKS_SUPPORT_DSA_GENERATE_KEY
 int32_t HksMbedtlsDsaGenerateKey(const struct HksKeySpec *spec, struct HksBlob *key);
+#endif /* HKS_SUPPORT_DSA_GENERATE_KEY */
 
+#ifdef HKS_SUPPORT_DSA_GET_PUBLIC_KEY
+int32_t HksMbedtlsGetDsaPubKey(const struct HksBlob *input, struct HksBlob *output);
+#endif /* HKS_SUPPORT_DSA_GET_PUBLIC_KEY */
+
+#ifdef HKS_SUPPORT_DSA_SIGN_VERIFY
+int32_t HksMbedtlsDsaSign(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
+    const struct HksBlob *message, struct HksBlob *signature);
+
+int32_t HksMbedtlsDsaVerify(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
+    const struct HksBlob *message, const struct HksBlob *signature);
+#endif /* HKS_SUPPORT_DSA_SIGN_VERIFY */
+#endif /* HKS_SUPPORT_DSA_C */
 
 #ifdef __cplusplus
 }

@@ -13,14 +13,12 @@
  * limitations under the License.
  */
 
+#include "hks_openssl_rsa_test_mt.h"
+
 #include <gtest/gtest.h>
 
 #include "hks_api.h"
 #include "hks_mem.h"
-#include "hks_openssl_rsa_test_mt.h"
-#include "hks_param.h"
-#include "hks_test_common.h"
-#include "hks_test_log.h"
 
 using namespace testing::ext;
 namespace {
@@ -37,15 +35,15 @@ const int KEY_SIZE_3072 = 3072;
 class HksRsaEcbOaepPaddingMt : public testing::Test {};
 
 static const struct HksParam RSA_03100_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_512},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_512 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -71,29 +69,29 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest03100, TestSize.Level1)
 
     HksParam *pubKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA, &pubKeyExport), HKS_SUCCESS);
-    HksBlob publicKey = {.size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size)};
+    HksBlob publicKey = { .size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size) };
     ASSERT_NE(publicKey.data, nullptr);
     (void)memcpy_s(publicKey.data, pubKeyExport->blob.size, pubKeyExport->blob.data, pubKeyExport->blob.size);
 
     HksParam *priKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA, &priKeyExport), HKS_SUCCESS);
-    HksBlob privateKey = {.size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size)};
+    HksBlob privateKey = { .size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size) };
     ASSERT_NE(privateKey.data, nullptr);
     (void)memcpy_s(privateKey.data, priKeyExport->blob.size, priKeyExport->blob.data, priKeyExport->blob.size);
 
     const char *hexData = "00112233445566778899";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
 
     EXPECT_EQ(EncryptRSA(&plainText, &cipherText, &publicKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
     EXPECT_EQ(DecryptRSA(&cipherText, &decryptedText, &privateKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
 
@@ -108,15 +106,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest03100, TestSize.Level1)
 }
 
 static const struct HksParam RSA_03200_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_768},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_768 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -144,29 +142,29 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest03200, TestSize.Level1)
 
     HksParam *pubKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA, &pubKeyExport), HKS_SUCCESS);
-    HksBlob publicKey = {.size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size)};
+    HksBlob publicKey = { .size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size) };
     ASSERT_NE(publicKey.data, nullptr);
     (void)memcpy_s(publicKey.data, pubKeyExport->blob.size, pubKeyExport->blob.data, pubKeyExport->blob.size);
 
     HksParam *priKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA, &priKeyExport), HKS_SUCCESS);
-    HksBlob privateKey = {.size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size)};
+    HksBlob privateKey = { .size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size) };
     ASSERT_NE(privateKey.data, nullptr);
     (void)memcpy_s(privateKey.data, priKeyExport->blob.size, priKeyExport->blob.data, priKeyExport->blob.size);
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
 
     EXPECT_EQ(EncryptRSA(&plainText, &cipherText, &publicKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
     EXPECT_EQ(DecryptRSA(&cipherText, &decryptedText, &privateKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
 
@@ -181,15 +179,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest03200, TestSize.Level1)
 }
 
 static const struct HksParam RSA_03300_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_1024},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_1024 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -218,30 +216,30 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest03300, TestSize.Level1)
     HksParam *pubKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA, &pubKeyExport), HKS_SUCCESS);
 
-    HksBlob publicKey = {.size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size)};
+    HksBlob publicKey = { .size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size) };
     ASSERT_NE(publicKey.data, nullptr);
     (void)memcpy_s(publicKey.data, pubKeyExport->blob.size, pubKeyExport->blob.data, pubKeyExport->blob.size);
 
     HksParam *priKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA, &priKeyExport), HKS_SUCCESS);
 
-    HksBlob privateKey = {.size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size)};
+    HksBlob privateKey = { .size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size) };
     ASSERT_NE(privateKey.data, nullptr);
     (void)memcpy_s(privateKey.data, priKeyExport->blob.size, priKeyExport->blob.data, priKeyExport->blob.size);
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
 
     EXPECT_EQ(EncryptRSA(&plainText, &cipherText, &publicKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
     EXPECT_EQ(DecryptRSA(&cipherText, &decryptedText, &privateKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
 
@@ -256,15 +254,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest03300, TestSize.Level1)
 }
 
 static const struct HksParam RSA_03400_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_2048},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_2048 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 /**
  * @tc.number    : HksRsaMtTest03400
@@ -292,30 +290,30 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest03400, TestSize.Level1)
     HksParam *pubKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA, &pubKeyExport), HKS_SUCCESS);
 
-    HksBlob publicKey = {.size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size)};
+    HksBlob publicKey = { .size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size) };
     ASSERT_NE(publicKey.data, nullptr);
     (void)memcpy_s(publicKey.data, pubKeyExport->blob.size, pubKeyExport->blob.data, pubKeyExport->blob.size);
 
     HksParam *priKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA, &priKeyExport), HKS_SUCCESS);
 
-    HksBlob privateKey = {.size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size)};
+    HksBlob privateKey = { .size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size) };
     ASSERT_NE(privateKey.data, nullptr);
     (void)memcpy_s(privateKey.data, priKeyExport->blob.size, priKeyExport->blob.data, priKeyExport->blob.size);
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
 
     EXPECT_EQ(EncryptRSA(&plainText, &cipherText, &publicKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
     EXPECT_EQ(DecryptRSA(&cipherText, &decryptedText, &privateKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
 
@@ -330,15 +328,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest03400, TestSize.Level1)
 }
 
 static const struct HksParam RSA_03500_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_3072},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_3072 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -367,30 +365,30 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest03500, TestSize.Level1)
     HksParam *pubKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA, &pubKeyExport), HKS_SUCCESS);
 
-    HksBlob publicKey = {.size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size)};
+    HksBlob publicKey = { .size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size) };
     ASSERT_NE(publicKey.data, nullptr);
     (void)memcpy_s(publicKey.data, pubKeyExport->blob.size, pubKeyExport->blob.data, pubKeyExport->blob.size);
 
     HksParam *priKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA, &priKeyExport), HKS_SUCCESS);
 
-    HksBlob privateKey = {.size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size)};
+    HksBlob privateKey = { .size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size) };
     ASSERT_NE(privateKey.data, nullptr);
     (void)memcpy_s(privateKey.data, priKeyExport->blob.size, priKeyExport->blob.data, priKeyExport->blob.size);
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
 
     EXPECT_EQ(EncryptRSA(&plainText, &cipherText, &publicKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
     EXPECT_EQ(DecryptRSA(&cipherText, &decryptedText, &privateKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
 
@@ -405,15 +403,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest03500, TestSize.Level1)
 }
 
 static const struct HksParam RSA_03600_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_4096},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_4096 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -442,30 +440,30 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest03600, TestSize.Level1)
     HksParam *pubKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA, &pubKeyExport), HKS_SUCCESS);
 
-    HksBlob publicKey = {.size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size)};
+    HksBlob publicKey = { .size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size) };
     ASSERT_NE(publicKey.data, nullptr);
     (void)memcpy_s(publicKey.data, pubKeyExport->blob.size, pubKeyExport->blob.data, pubKeyExport->blob.size);
 
     HksParam *priKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA, &priKeyExport), HKS_SUCCESS);
 
-    HksBlob privateKey = {.size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size)};
+    HksBlob privateKey = { .size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size) };
     ASSERT_NE(privateKey.data, nullptr);
     (void)memcpy_s(privateKey.data, priKeyExport->blob.size, priKeyExport->blob.data, priKeyExport->blob.size);
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
 
     EXPECT_EQ(EncryptRSA(&plainText, &cipherText, &publicKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
     EXPECT_EQ(DecryptRSA(&cipherText, &decryptedText, &privateKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
 
@@ -480,15 +478,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest03600, TestSize.Level1)
 }
 
 static const struct HksParam RSA_03700_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_512},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_512 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -517,30 +515,30 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest03700, TestSize.Level1)
     HksParam *pubKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA, &pubKeyExport), HKS_SUCCESS);
 
-    HksBlob publicKey = {.size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size)};
+    HksBlob publicKey = { .size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size) };
     ASSERT_NE(publicKey.data, nullptr);
     (void)memcpy_s(publicKey.data, pubKeyExport->blob.size, pubKeyExport->blob.data, pubKeyExport->blob.size);
 
     HksParam *priKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA, &priKeyExport), HKS_SUCCESS);
 
-    HksBlob privateKey = {.size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size)};
+    HksBlob privateKey = { .size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size) };
     ASSERT_NE(privateKey.data, nullptr);
     (void)memcpy_s(privateKey.data, priKeyExport->blob.size, priKeyExport->blob.data, priKeyExport->blob.size);
 
     const char *hexData = "00112233445566778899";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
 
     EXPECT_EQ(HksEncrypt(&publicKey, paramInSet, &plainText, &cipherText), HKS_SUCCESS);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
 
     EXPECT_EQ(DecryptRSA(&cipherText, &decryptedText, &privateKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
@@ -556,15 +554,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest03700, TestSize.Level1)
 }
 
 static const struct HksParam RSA_03800_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_512},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_512 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -574,7 +572,7 @@ static const struct HksParam RSA_03800_PARAMS[] = {
  */
 HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest03800, TestSize.Level1)
 {
-    struct HksBlob authId = {strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID};
+    struct HksBlob authId = { strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID };
 
     struct HksParamSet *paramInSet = NULL;
     HksInitParamSet(&paramInSet);
@@ -587,21 +585,21 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest03800, TestSize.Level1)
 
     const char *hexData = "00112233445566778899";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLen = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLen, .data = (uint8_t *)malloc(inLen)};
+    HksBlob cipherText = { .size = inLen, .data = (uint8_t *)malloc(inLen) };
     ASSERT_NE(cipherText.data, nullptr);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
 
-    struct HksBlob opensslRsaKeyInfo = {.size = SET_SIZE_4096, .data = (uint8_t *)calloc(1, SET_SIZE_4096)};
+    struct HksBlob opensslRsaKeyInfo = { .size = SET_SIZE_4096, .data = (uint8_t *)calloc(1, SET_SIZE_4096) };
     ASSERT_NE(opensslRsaKeyInfo.data, nullptr);
 
-    struct HksBlob x509Key = {0, NULL};
+    struct HksBlob x509Key = { 0, NULL };
 
     EVP_PKEY *pkey = GenerateRSAKey(KEY_SIZE_512);
     ASSERT_NE(pkey, nullptr);
@@ -626,15 +624,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest03800, TestSize.Level1)
 }
 
 static const struct HksParam RSA_03900_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_768},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_768 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -663,30 +661,30 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest03900, TestSize.Level1)
     HksParam *pubKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA, &pubKeyExport), HKS_SUCCESS);
 
-    HksBlob publicKey = {.size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size)};
+    HksBlob publicKey = { .size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size) };
     ASSERT_NE(publicKey.data, nullptr);
     (void)memcpy_s(publicKey.data, pubKeyExport->blob.size, pubKeyExport->blob.data, pubKeyExport->blob.size);
 
     HksParam *priKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA, &priKeyExport), HKS_SUCCESS);
 
-    HksBlob privateKey = {.size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size)};
+    HksBlob privateKey = { .size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size) };
     ASSERT_NE(privateKey.data, nullptr);
     (void)memcpy_s(privateKey.data, priKeyExport->blob.size, priKeyExport->blob.data, priKeyExport->blob.size);
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
 
     EXPECT_EQ(HksEncrypt(&publicKey, paramInSet, &plainText, &cipherText), HKS_SUCCESS);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
 
     EXPECT_EQ(DecryptRSA(&cipherText, &decryptedText, &privateKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
@@ -702,15 +700,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest03900, TestSize.Level1)
 }
 
 static const struct HksParam RSA_04000_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_768},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_768 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -720,7 +718,7 @@ static const struct HksParam RSA_04000_PARAMS[] = {
  */
 HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04000, TestSize.Level1)
 {
-    struct HksBlob authId = {strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID};
+    struct HksBlob authId = { strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID };
 
     struct HksParamSet *paramInSet = NULL;
     HksInitParamSet(&paramInSet);
@@ -733,21 +731,21 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04000, TestSize.Level1)
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLen = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLen, .data = (uint8_t *)malloc(inLen)};
+    HksBlob cipherText = { .size = inLen, .data = (uint8_t *)malloc(inLen) };
     ASSERT_NE(cipherText.data, nullptr);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
 
-    struct HksBlob opensslRsaKeyInfo = {.size = SET_SIZE_4096, .data = (uint8_t *)calloc(1, SET_SIZE_4096)};
+    struct HksBlob opensslRsaKeyInfo = { .size = SET_SIZE_4096, .data = (uint8_t *)calloc(1, SET_SIZE_4096) };
     ASSERT_NE(opensslRsaKeyInfo.data, nullptr);
 
-    struct HksBlob x509Key = {0, NULL};
+    struct HksBlob x509Key = { 0, NULL };
 
     EVP_PKEY *pkey = GenerateRSAKey(KEY_SIZE_768);
     ASSERT_NE(pkey, nullptr);
@@ -772,15 +770,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04000, TestSize.Level1)
 }
 
 static const struct HksParam RSA_04100_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_1024},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_1024 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -809,30 +807,30 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04100, TestSize.Level1)
     HksParam *pubKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA, &pubKeyExport), HKS_SUCCESS);
 
-    HksBlob publicKey = {.size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size)};
+    HksBlob publicKey = { .size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size) };
     ASSERT_NE(publicKey.data, nullptr);
     (void)memcpy_s(publicKey.data, pubKeyExport->blob.size, pubKeyExport->blob.data, pubKeyExport->blob.size);
 
     HksParam *priKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA, &priKeyExport), HKS_SUCCESS);
 
-    HksBlob privateKey = {.size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size)};
+    HksBlob privateKey = { .size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size) };
     ASSERT_NE(privateKey.data, nullptr);
     (void)memcpy_s(privateKey.data, priKeyExport->blob.size, priKeyExport->blob.data, priKeyExport->blob.size);
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
 
     EXPECT_EQ(HksEncrypt(&publicKey, paramInSet, &plainText, &cipherText), HKS_SUCCESS);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
 
     EXPECT_EQ(DecryptRSA(&cipherText, &decryptedText, &privateKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
@@ -848,15 +846,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04100, TestSize.Level1)
 }
 
 static const struct HksParam RSA_04200_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_1024},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_1024 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -866,7 +864,7 @@ static const struct HksParam RSA_04200_PARAMS[] = {
  */
 HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04200, TestSize.Level1)
 {
-    struct HksBlob authId = {strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID};
+    struct HksBlob authId = { strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID };
 
     struct HksParamSet *paramInSet = NULL;
     HksInitParamSet(&paramInSet);
@@ -879,21 +877,21 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04200, TestSize.Level1)
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLen = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLen, .data = (uint8_t *)malloc(inLen)};
+    HksBlob cipherText = { .size = inLen, .data = (uint8_t *)malloc(inLen) };
     ASSERT_NE(cipherText.data, nullptr);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
 
-    struct HksBlob opensslRsaKeyInfo = {.size = SET_SIZE_4096, .data = (uint8_t *)calloc(1, SET_SIZE_4096)};
+    struct HksBlob opensslRsaKeyInfo = { .size = SET_SIZE_4096, .data = (uint8_t *)calloc(1, SET_SIZE_4096) };
     ASSERT_NE(opensslRsaKeyInfo.data, nullptr);
 
-    struct HksBlob x509Key = {0, NULL};
+    struct HksBlob x509Key = { 0, NULL };
 
     EVP_PKEY *pkey = GenerateRSAKey(KEY_SIZE_1024);
     ASSERT_NE(pkey, nullptr);
@@ -918,15 +916,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04200, TestSize.Level1)
 }
 
 static const struct HksParam RSA_04300_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_2048},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_2048 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -955,30 +953,30 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04300, TestSize.Level1)
     HksParam *pubKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA, &pubKeyExport), HKS_SUCCESS);
 
-    HksBlob publicKey = {.size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size)};
+    HksBlob publicKey = { .size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size) };
     ASSERT_NE(publicKey.data, nullptr);
     (void)memcpy_s(publicKey.data, pubKeyExport->blob.size, pubKeyExport->blob.data, pubKeyExport->blob.size);
 
     HksParam *priKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA, &priKeyExport), HKS_SUCCESS);
 
-    HksBlob privateKey = {.size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size)};
+    HksBlob privateKey = { .size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size) };
     ASSERT_NE(privateKey.data, nullptr);
     (void)memcpy_s(privateKey.data, priKeyExport->blob.size, priKeyExport->blob.data, priKeyExport->blob.size);
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
 
     EXPECT_EQ(HksEncrypt(&publicKey, paramInSet, &plainText, &cipherText), HKS_SUCCESS);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
 
     EXPECT_EQ(DecryptRSA(&cipherText, &decryptedText, &privateKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
@@ -994,15 +992,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04300, TestSize.Level1)
 }
 
 static const struct HksParam RSA_04400_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_2048},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_2048 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -1012,7 +1010,7 @@ static const struct HksParam RSA_04400_PARAMS[] = {
  */
 HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04400, TestSize.Level1)
 {
-    struct HksBlob authId = {strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID};
+    struct HksBlob authId = { strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID };
 
     struct HksParamSet *paramInSet = NULL;
     HksInitParamSet(&paramInSet);
@@ -1025,21 +1023,21 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04400, TestSize.Level1)
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLen = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLen, .data = (uint8_t *)malloc(inLen)};
+    HksBlob cipherText = { .size = inLen, .data = (uint8_t *)malloc(inLen) };
     ASSERT_NE(cipherText.data, nullptr);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
 
-    struct HksBlob opensslRsaKeyInfo = {.size = SET_SIZE_4096, .data = (uint8_t *)calloc(1, SET_SIZE_4096)};
+    struct HksBlob opensslRsaKeyInfo = { .size = SET_SIZE_4096, .data = (uint8_t *)calloc(1, SET_SIZE_4096) };
     ASSERT_NE(opensslRsaKeyInfo.data, nullptr);
 
-    struct HksBlob x509Key = {0, NULL};
+    struct HksBlob x509Key = { 0, NULL };
 
     EVP_PKEY *pkey = GenerateRSAKey(KEY_SIZE_2048);
     ASSERT_NE(pkey, nullptr);
@@ -1064,15 +1062,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04400, TestSize.Level1)
 }
 
 static const struct HksParam RSA_04500_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_3072},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_3072 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -1101,30 +1099,30 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04500, TestSize.Level1)
     HksParam *pubKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA, &pubKeyExport), HKS_SUCCESS);
 
-    HksBlob publicKey = {.size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size)};
+    HksBlob publicKey = { .size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size) };
     ASSERT_NE(publicKey.data, nullptr);
     (void)memcpy_s(publicKey.data, pubKeyExport->blob.size, pubKeyExport->blob.data, pubKeyExport->blob.size);
 
     HksParam *priKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA, &priKeyExport), HKS_SUCCESS);
 
-    HksBlob privateKey = {.size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size)};
+    HksBlob privateKey = { .size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size) };
     ASSERT_NE(privateKey.data, nullptr);
     (void)memcpy_s(privateKey.data, priKeyExport->blob.size, priKeyExport->blob.data, priKeyExport->blob.size);
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
 
     EXPECT_EQ(HksEncrypt(&publicKey, paramInSet, &plainText, &cipherText), HKS_SUCCESS);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
 
     EXPECT_EQ(DecryptRSA(&cipherText, &decryptedText, &privateKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
@@ -1140,15 +1138,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04500, TestSize.Level1)
 }
 
 static const struct HksParam RSA_04600_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_3072},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_3072 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -1158,7 +1156,7 @@ static const struct HksParam RSA_04600_PARAMS[] = {
  */
 HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04600, TestSize.Level1)
 {
-    struct HksBlob authId = {strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID};
+    struct HksBlob authId = { strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID };
 
     struct HksParamSet *paramInSet = NULL;
     HksInitParamSet(&paramInSet);
@@ -1171,21 +1169,21 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04600, TestSize.Level1)
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLen = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLen, .data = (uint8_t *)malloc(inLen)};
+    HksBlob cipherText = { .size = inLen, .data = (uint8_t *)malloc(inLen) };
     ASSERT_NE(cipherText.data, nullptr);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
 
-    struct HksBlob opensslRsaKeyInfo = {.size = SET_SIZE_4096, .data = (uint8_t *)calloc(1, SET_SIZE_4096)};
+    struct HksBlob opensslRsaKeyInfo = { .size = SET_SIZE_4096, .data = (uint8_t *)calloc(1, SET_SIZE_4096) };
     ASSERT_NE(opensslRsaKeyInfo.data, nullptr);
 
-    struct HksBlob x509Key = {0, NULL};
+    struct HksBlob x509Key = { 0, NULL };
 
     EVP_PKEY *pkey = GenerateRSAKey(KEY_SIZE_3072);
     ASSERT_NE(pkey, nullptr);
@@ -1210,15 +1208,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04600, TestSize.Level1)
 }
 
 static const struct HksParam RSA_04700_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_4096},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_4096 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -1247,30 +1245,30 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04700, TestSize.Level1)
     HksParam *pubKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA, &pubKeyExport), HKS_SUCCESS);
 
-    HksBlob publicKey = {.size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size)};
+    HksBlob publicKey = { .size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size) };
     ASSERT_NE(publicKey.data, nullptr);
     (void)memcpy_s(publicKey.data, pubKeyExport->blob.size, pubKeyExport->blob.data, pubKeyExport->blob.size);
 
     HksParam *priKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA, &priKeyExport), HKS_SUCCESS);
 
-    HksBlob privateKey = {.size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size)};
+    HksBlob privateKey = { .size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size) };
     ASSERT_NE(privateKey.data, nullptr);
     (void)memcpy_s(privateKey.data, priKeyExport->blob.size, priKeyExport->blob.data, priKeyExport->blob.size);
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
 
     EXPECT_EQ(HksEncrypt(&publicKey, paramInSet, &plainText, &cipherText), HKS_SUCCESS);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
 
     EXPECT_EQ(DecryptRSA(&cipherText, &decryptedText, &privateKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
@@ -1286,15 +1284,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04700, TestSize.Level1)
 }
 
 static const struct HksParam RSA_04800_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_4096},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_4096 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -1304,7 +1302,7 @@ static const struct HksParam RSA_04800_PARAMS[] = {
  */
 HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04800, TestSize.Level1)
 {
-    struct HksBlob authId = {strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID};
+    struct HksBlob authId = { strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID };
 
     struct HksParamSet *paramInSet = NULL;
     HksInitParamSet(&paramInSet);
@@ -1317,21 +1315,21 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04800, TestSize.Level1)
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLen = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLen, .data = (uint8_t *)malloc(inLen)};
+    HksBlob cipherText = { .size = inLen, .data = (uint8_t *)malloc(inLen) };
     ASSERT_NE(cipherText.data, nullptr);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
 
-    struct HksBlob opensslRsaKeyInfo = {.size = SET_SIZE_4096, .data = (uint8_t *)calloc(1, SET_SIZE_4096)};
+    struct HksBlob opensslRsaKeyInfo = { .size = SET_SIZE_4096, .data = (uint8_t *)calloc(1, SET_SIZE_4096) };
     ASSERT_NE(opensslRsaKeyInfo.data, nullptr);
 
-    struct HksBlob x509Key = {0, NULL};
+    struct HksBlob x509Key = { 0, NULL };
 
     EVP_PKEY *pkey = GenerateRSAKey(SET_SIZE_4096);
     ASSERT_NE(pkey, nullptr);
@@ -1356,15 +1354,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04800, TestSize.Level1)
 }
 
 static const struct HksParam RSA_04900_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_512},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_512 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -1394,30 +1392,30 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04900, TestSize.Level1)
     HksParam *pubKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA, &pubKeyExport), HKS_SUCCESS);
 
-    HksBlob publicKey = {.size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size)};
+    HksBlob publicKey = { .size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size) };
     ASSERT_NE(publicKey.data, nullptr);
     (void)memcpy_s(publicKey.data, pubKeyExport->blob.size, pubKeyExport->blob.data, pubKeyExport->blob.size);
 
     HksParam *priKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA, &priKeyExport), HKS_SUCCESS);
 
-    HksBlob privateKey = {.size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size)};
+    HksBlob privateKey = { .size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size) };
     ASSERT_NE(privateKey.data, nullptr);
     (void)memcpy_s(privateKey.data, priKeyExport->blob.size, priKeyExport->blob.data, priKeyExport->blob.size);
 
     const char *hexData = "00112233445566778899";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
 
     EXPECT_EQ(EncryptRSA(&plainText, &cipherText, &publicKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
     EXPECT_EQ(HksDecrypt(&privateKey, paramInSet, &cipherText, &decryptedText), HKS_SUCCESS);
 
@@ -1432,15 +1430,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest04900, TestSize.Level1)
 }
 
 static const struct HksParam RSA_05000_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_512},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_512 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -1450,7 +1448,7 @@ static const struct HksParam RSA_05000_PARAMS[] = {
  */
 HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05000, TestSize.Level1)
 {
-    struct HksBlob authId = {strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID};
+    struct HksBlob authId = { strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID };
     struct HksParamSet *paramInSet = NULL;
     HksInitParamSet(&paramInSet);
     ASSERT_NE(paramInSet, nullptr);
@@ -1466,26 +1464,26 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05000, TestSize.Level1)
     EXPECT_EQ(HksGenerateKey(&authId, paramInSet, paramSetOut), HKS_SUCCESS);
     uint8_t opensslRsaKey[SET_SIZE_4096] = {0};
     uint32_t opensslRsaKeyLen = SET_SIZE_4096;
-    struct HksBlob opensslRsaKeyInfo = {opensslRsaKeyLen, opensslRsaKey};
+    struct HksBlob opensslRsaKeyInfo = { opensslRsaKeyLen, opensslRsaKey };
     EXPECT_EQ(HksExportPublicKey(&authId, paramInSet, &opensslRsaKeyInfo), HKS_SUCCESS);
 
     uint8_t rsaPublicKey[SET_SIZE_4096] = {0};
     uint32_t rsaPublicKeyLen = SET_SIZE_4096;
-    struct HksBlob rsaPublicKeyInfo = {rsaPublicKeyLen, rsaPublicKey};
+    struct HksBlob rsaPublicKeyInfo = { rsaPublicKeyLen, rsaPublicKey };
     EXPECT_EQ(X509ToRsaPublicKey(&opensslRsaKeyInfo, &rsaPublicKeyInfo), 0);
-    HksBlob publicKey = {.size = rsaPublicKeyInfo.size, .data = (uint8_t *)malloc(rsaPublicKeyInfo.size)};
+    HksBlob publicKey = { .size = rsaPublicKeyInfo.size, .data = (uint8_t *)malloc(rsaPublicKeyInfo.size) };
     (void)memcpy_s(publicKey.data, publicKey.size, rsaPublicKeyInfo.data, rsaPublicKeyInfo.size);
 
     const char *hexData = "00112233445566778899";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
     EXPECT_EQ(EncryptRSA(&plainText, &cipherText, &publicKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
     EXPECT_EQ(HksDecrypt(&authId, paramInSet, &cipherText, &decryptedText), HKS_SUCCESS);
 
@@ -1499,15 +1497,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05000, TestSize.Level1)
 }
 
 static const struct HksParam RSA_05100_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_768},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_768 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -1536,30 +1534,30 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05100, TestSize.Level1)
     HksParam *pubKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA, &pubKeyExport), HKS_SUCCESS);
 
-    HksBlob publicKey = {.size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size)};
+    HksBlob publicKey = { .size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size) };
     ASSERT_NE(publicKey.data, nullptr);
     (void)memcpy_s(publicKey.data, pubKeyExport->blob.size, pubKeyExport->blob.data, pubKeyExport->blob.size);
 
     HksParam *priKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA, &priKeyExport), HKS_SUCCESS);
 
-    HksBlob privateKey = {.size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size)};
+    HksBlob privateKey = { .size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size) };
     ASSERT_NE(privateKey.data, nullptr);
     (void)memcpy_s(privateKey.data, priKeyExport->blob.size, priKeyExport->blob.data, priKeyExport->blob.size);
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
 
     EXPECT_EQ(EncryptRSA(&plainText, &cipherText, &publicKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
     EXPECT_EQ(HksDecrypt(&privateKey, paramInSet, &cipherText, &decryptedText), HKS_SUCCESS);
 
@@ -1574,15 +1572,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05100, TestSize.Level1)
 }
 
 static const struct HksParam RSA_05200_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_768},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_768 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -1592,7 +1590,7 @@ static const struct HksParam RSA_05200_PARAMS[] = {
  */
 HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05200, TestSize.Level1)
 {
-    struct HksBlob authId = {strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID};
+    struct HksBlob authId = { strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID };
     struct HksParamSet *paramInSet = NULL;
     HksInitParamSet(&paramInSet);
     ASSERT_NE(paramInSet, nullptr);
@@ -1608,26 +1606,26 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05200, TestSize.Level1)
     EXPECT_EQ(HksGenerateKey(&authId, paramInSet, paramSetOut), HKS_SUCCESS);
     uint8_t opensslRsaKey[SET_SIZE_4096] = {0};
     uint32_t opensslRsaKeyLen = SET_SIZE_4096;
-    struct HksBlob opensslRsaKeyInfo = {opensslRsaKeyLen, opensslRsaKey};
+    struct HksBlob opensslRsaKeyInfo = { opensslRsaKeyLen, opensslRsaKey };
     EXPECT_EQ(HksExportPublicKey(&authId, paramInSet, &opensslRsaKeyInfo), HKS_SUCCESS);
 
     uint8_t rsaPublicKey[SET_SIZE_4096] = {0};
     uint32_t rsaPublicKeyLen = SET_SIZE_4096;
-    struct HksBlob rsaPublicKeyInfo = {rsaPublicKeyLen, rsaPublicKey};
+    struct HksBlob rsaPublicKeyInfo = { rsaPublicKeyLen, rsaPublicKey };
     EXPECT_EQ(X509ToRsaPublicKey(&opensslRsaKeyInfo, &rsaPublicKeyInfo), 0);
-    HksBlob publicKey = {.size = rsaPublicKeyInfo.size, .data = (uint8_t *)malloc(rsaPublicKeyInfo.size)};
+    HksBlob publicKey = { .size = rsaPublicKeyInfo.size, .data = (uint8_t *)malloc(rsaPublicKeyInfo.size) };
     (void)memcpy_s(publicKey.data, publicKey.size, rsaPublicKeyInfo.data, rsaPublicKeyInfo.size);
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
     EXPECT_EQ(EncryptRSA(&plainText, &cipherText, &publicKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
     EXPECT_EQ(HksDecrypt(&authId, paramInSet, &cipherText, &decryptedText), HKS_SUCCESS);
 
@@ -1641,15 +1639,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05200, TestSize.Level1)
 }
 
 static const struct HksParam RSA_05300_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_1024},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_1024 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -1678,30 +1676,30 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05300, TestSize.Level1)
     HksParam *pubKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA, &pubKeyExport), HKS_SUCCESS);
 
-    HksBlob publicKey = {.size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size)};
+    HksBlob publicKey = { .size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size) };
     ASSERT_NE(publicKey.data, nullptr);
     (void)memcpy_s(publicKey.data, pubKeyExport->blob.size, pubKeyExport->blob.data, pubKeyExport->blob.size);
 
     HksParam *priKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA, &priKeyExport), HKS_SUCCESS);
 
-    HksBlob privateKey = {.size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size)};
+    HksBlob privateKey = { .size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size) };
     ASSERT_NE(privateKey.data, nullptr);
     (void)memcpy_s(privateKey.data, priKeyExport->blob.size, priKeyExport->blob.data, priKeyExport->blob.size);
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
 
     EXPECT_EQ(EncryptRSA(&plainText, &cipherText, &publicKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
     EXPECT_EQ(HksDecrypt(&privateKey, paramInSet, &cipherText, &decryptedText), HKS_SUCCESS);
 
@@ -1716,15 +1714,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05300, TestSize.Level1)
 }
 
 static const struct HksParam RSA_05400_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_1024},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_1024 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -1734,7 +1732,7 @@ static const struct HksParam RSA_05400_PARAMS[] = {
  */
 HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05400, TestSize.Level1)
 {
-    struct HksBlob authId = {strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID};
+    struct HksBlob authId = { strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID };
     struct HksParamSet *paramInSet = NULL;
     HksInitParamSet(&paramInSet);
     ASSERT_NE(paramInSet, nullptr);
@@ -1750,26 +1748,26 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05400, TestSize.Level1)
     EXPECT_EQ(HksGenerateKey(&authId, paramInSet, paramSetOut), HKS_SUCCESS);
     uint8_t opensslRsaKey[SET_SIZE_4096] = {0};
     uint32_t opensslRsaKeyLen = SET_SIZE_4096;
-    struct HksBlob opensslRsaKeyInfo = {opensslRsaKeyLen, opensslRsaKey};
+    struct HksBlob opensslRsaKeyInfo = { opensslRsaKeyLen, opensslRsaKey };
     EXPECT_EQ(HksExportPublicKey(&authId, paramInSet, &opensslRsaKeyInfo), HKS_SUCCESS);
 
     uint8_t rsaPublicKey[SET_SIZE_4096] = {0};
     uint32_t rsaPublicKeyLen = SET_SIZE_4096;
-    struct HksBlob rsaPublicKeyInfo = {rsaPublicKeyLen, rsaPublicKey};
+    struct HksBlob rsaPublicKeyInfo = { rsaPublicKeyLen, rsaPublicKey };
     EXPECT_EQ(X509ToRsaPublicKey(&opensslRsaKeyInfo, &rsaPublicKeyInfo), 0);
-    HksBlob publicKey = {.size = rsaPublicKeyInfo.size, .data = (uint8_t *)malloc(rsaPublicKeyInfo.size)};
+    HksBlob publicKey = { .size = rsaPublicKeyInfo.size, .data = (uint8_t *)malloc(rsaPublicKeyInfo.size) };
     (void)memcpy_s(publicKey.data, publicKey.size, rsaPublicKeyInfo.data, rsaPublicKeyInfo.size);
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
     EXPECT_EQ(EncryptRSA(&plainText, &cipherText, &publicKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
     EXPECT_EQ(HksDecrypt(&authId, paramInSet, &cipherText, &decryptedText), HKS_SUCCESS);
 
@@ -1783,15 +1781,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05400, TestSize.Level1)
 }
 
 static const struct HksParam RSA_05500_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_2048},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_2048 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -1820,30 +1818,30 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05500, TestSize.Level1)
     HksParam *pubKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA, &pubKeyExport), HKS_SUCCESS);
 
-    HksBlob publicKey = {.size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size)};
+    HksBlob publicKey = { .size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size) };
     ASSERT_NE(publicKey.data, nullptr);
     (void)memcpy_s(publicKey.data, pubKeyExport->blob.size, pubKeyExport->blob.data, pubKeyExport->blob.size);
 
     HksParam *priKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA, &priKeyExport), HKS_SUCCESS);
 
-    HksBlob privateKey = {.size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size)};
+    HksBlob privateKey = { .size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size) };
     ASSERT_NE(privateKey.data, nullptr);
     (void)memcpy_s(privateKey.data, priKeyExport->blob.size, priKeyExport->blob.data, priKeyExport->blob.size);
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
 
     EXPECT_EQ(EncryptRSA(&plainText, &cipherText, &publicKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
     EXPECT_EQ(HksDecrypt(&privateKey, paramInSet, &cipherText, &decryptedText), HKS_SUCCESS);
 
@@ -1858,15 +1856,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05500, TestSize.Level1)
 }
 
 static const struct HksParam RSA_05600_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_2048},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_2048 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -1876,7 +1874,7 @@ static const struct HksParam RSA_05600_PARAMS[] = {
  */
 HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05600, TestSize.Level1)
 {
-    struct HksBlob authId = {strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID};
+    struct HksBlob authId = { strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID };
     struct HksParamSet *paramInSet = NULL;
     HksInitParamSet(&paramInSet);
     ASSERT_NE(paramInSet, nullptr);
@@ -1892,26 +1890,26 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05600, TestSize.Level1)
     EXPECT_EQ(HksGenerateKey(&authId, paramInSet, paramSetOut), HKS_SUCCESS);
     uint8_t opensslRsaKey[SET_SIZE_4096] = {0};
     uint32_t opensslRsaKeyLen = SET_SIZE_4096;
-    struct HksBlob opensslRsaKeyInfo = {opensslRsaKeyLen, opensslRsaKey};
+    struct HksBlob opensslRsaKeyInfo = { opensslRsaKeyLen, opensslRsaKey };
     EXPECT_EQ(HksExportPublicKey(&authId, paramInSet, &opensslRsaKeyInfo), HKS_SUCCESS);
 
     uint8_t rsaPublicKey[SET_SIZE_4096] = {0};
     uint32_t rsaPublicKeyLen = SET_SIZE_4096;
-    struct HksBlob rsaPublicKeyInfo = {rsaPublicKeyLen, rsaPublicKey};
+    struct HksBlob rsaPublicKeyInfo = { rsaPublicKeyLen, rsaPublicKey };
     EXPECT_EQ(X509ToRsaPublicKey(&opensslRsaKeyInfo, &rsaPublicKeyInfo), 0);
-    HksBlob publicKey = {.size = rsaPublicKeyInfo.size, .data = (uint8_t *)malloc(rsaPublicKeyInfo.size)};
+    HksBlob publicKey = { .size = rsaPublicKeyInfo.size, .data = (uint8_t *)malloc(rsaPublicKeyInfo.size) };
     (void)memcpy_s(publicKey.data, publicKey.size, rsaPublicKeyInfo.data, rsaPublicKeyInfo.size);
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
     EXPECT_EQ(EncryptRSA(&plainText, &cipherText, &publicKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
     EXPECT_EQ(HksDecrypt(&authId, paramInSet, &cipherText, &decryptedText), HKS_SUCCESS);
 
@@ -1925,15 +1923,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05600, TestSize.Level1)
 }
 
 static const struct HksParam RSA_05700_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_3072},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_3072 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -1962,30 +1960,30 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05700, TestSize.Level1)
     HksParam *pubKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA, &pubKeyExport), HKS_SUCCESS);
 
-    HksBlob publicKey = {.size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size)};
+    HksBlob publicKey = { .size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size) };
     ASSERT_NE(publicKey.data, nullptr);
     (void)memcpy_s(publicKey.data, pubKeyExport->blob.size, pubKeyExport->blob.data, pubKeyExport->blob.size);
 
     HksParam *priKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA, &priKeyExport), HKS_SUCCESS);
 
-    HksBlob privateKey = {.size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size)};
+    HksBlob privateKey = { .size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size) };
     ASSERT_NE(privateKey.data, nullptr);
     (void)memcpy_s(privateKey.data, priKeyExport->blob.size, priKeyExport->blob.data, priKeyExport->blob.size);
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
 
     EXPECT_EQ(EncryptRSA(&plainText, &cipherText, &publicKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
     EXPECT_EQ(HksDecrypt(&privateKey, paramInSet, &cipherText, &decryptedText), HKS_SUCCESS);
 
@@ -2000,15 +1998,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05700, TestSize.Level1)
 }
 
 static const struct HksParam RSA_05800_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_3072},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_3072 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -2018,7 +2016,7 @@ static const struct HksParam RSA_05800_PARAMS[] = {
  */
 HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05800, TestSize.Level1)
 {
-    struct HksBlob authId = {strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID};
+    struct HksBlob authId = { strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID };
     struct HksParamSet *paramInSet = NULL;
     HksInitParamSet(&paramInSet);
     ASSERT_NE(paramInSet, nullptr);
@@ -2034,26 +2032,26 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05800, TestSize.Level1)
     EXPECT_EQ(HksGenerateKey(&authId, paramInSet, paramSetOut), HKS_SUCCESS);
     uint8_t opensslRsaKey[SET_SIZE_4096] = {0};
     uint32_t opensslRsaKeyLen = SET_SIZE_4096;
-    struct HksBlob opensslRsaKeyInfo = {opensslRsaKeyLen, opensslRsaKey};
+    struct HksBlob opensslRsaKeyInfo = { opensslRsaKeyLen, opensslRsaKey };
     EXPECT_EQ(HksExportPublicKey(&authId, paramInSet, &opensslRsaKeyInfo), HKS_SUCCESS);
 
     uint8_t rsaPublicKey[SET_SIZE_4096] = {0};
     uint32_t rsaPublicKeyLen = SET_SIZE_4096;
-    struct HksBlob rsaPublicKeyInfo = {rsaPublicKeyLen, rsaPublicKey};
+    struct HksBlob rsaPublicKeyInfo = { rsaPublicKeyLen, rsaPublicKey };
     EXPECT_EQ(X509ToRsaPublicKey(&opensslRsaKeyInfo, &rsaPublicKeyInfo), 0);
-    HksBlob publicKey = {.size = rsaPublicKeyInfo.size, .data = (uint8_t *)malloc(rsaPublicKeyInfo.size)};
+    HksBlob publicKey = { .size = rsaPublicKeyInfo.size, .data = (uint8_t *)malloc(rsaPublicKeyInfo.size) };
     (void)memcpy_s(publicKey.data, publicKey.size, rsaPublicKeyInfo.data, rsaPublicKeyInfo.size);
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
     EXPECT_EQ(EncryptRSA(&plainText, &cipherText, &publicKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
     EXPECT_EQ(HksDecrypt(&authId, paramInSet, &cipherText, &decryptedText), HKS_SUCCESS);
 
@@ -2067,15 +2065,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05800, TestSize.Level1)
 }
 
 static const struct HksParam RSA_05900_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_4096},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_TEMP },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_4096 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = false },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -2104,30 +2102,30 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05900, TestSize.Level1)
     HksParam *pubKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PUBLIC_KEY_DATA, &pubKeyExport), HKS_SUCCESS);
 
-    HksBlob publicKey = {.size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size)};
+    HksBlob publicKey = { .size = pubKeyExport->blob.size, .data = (uint8_t *)malloc(pubKeyExport->blob.size) };
     ASSERT_NE(publicKey.data, nullptr);
     (void)memcpy_s(publicKey.data, pubKeyExport->blob.size, pubKeyExport->blob.data, pubKeyExport->blob.size);
 
     HksParam *priKeyExport = NULL;
     EXPECT_EQ(HksGetParam(paramSetOut, HKS_TAG_ASYMMETRIC_PRIVATE_KEY_DATA, &priKeyExport), HKS_SUCCESS);
 
-    HksBlob privateKey = {.size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size)};
+    HksBlob privateKey = { .size = priKeyExport->blob.size, .data = (uint8_t *)malloc(priKeyExport->blob.size) };
     ASSERT_NE(privateKey.data, nullptr);
     (void)memcpy_s(privateKey.data, priKeyExport->blob.size, priKeyExport->blob.data, priKeyExport->blob.size);
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
 
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
 
     EXPECT_EQ(EncryptRSA(&plainText, &cipherText, &publicKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
 
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
     EXPECT_EQ(HksDecrypt(&privateKey, paramInSet, &cipherText, &decryptedText), HKS_SUCCESS);
 
@@ -2142,15 +2140,15 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest05900, TestSize.Level1)
 }
 
 static const struct HksParam RSA_06000_PARAMS[] = {
-    {.tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT},
-    {.tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA},
-    {.tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_4096},
-    {.tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT},
-    {.tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE},
-    {.tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP},
-    {.tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true},
-    {.tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT},
-    {.tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB},
+    { .tag = HKS_TAG_KEY_STORAGE_FLAG, .uint32Param = HKS_STORAGE_PERSISTENT },
+    { .tag = HKS_TAG_ALGORITHM, .uint32Param = HKS_ALG_RSA },
+    { .tag = HKS_TAG_KEY_SIZE, .uint32Param = HKS_RSA_KEY_SIZE_4096 },
+    { .tag = HKS_TAG_PURPOSE, .uint32Param = HKS_KEY_PURPOSE_ENCRYPT | HKS_KEY_PURPOSE_DECRYPT },
+    { .tag = HKS_TAG_DIGEST, .uint32Param = HKS_DIGEST_NONE },
+    { .tag = HKS_TAG_PADDING, .uint32Param = HKS_PADDING_OAEP },
+    { .tag = HKS_TAG_IS_KEY_ALIAS, .boolParam = true },
+    { .tag = HKS_TAG_KEY_GENERATE_TYPE, .uint32Param = HKS_KEY_GENERATE_TYPE_DEFAULT },
+    { .tag = HKS_TAG_BLOCK_MODE, .uint32Param = HKS_MODE_ECB },
 };
 
 /**
@@ -2160,7 +2158,7 @@ static const struct HksParam RSA_06000_PARAMS[] = {
  */
 HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest06000, TestSize.Level1)
 {
-    struct HksBlob authId = {strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID};
+    struct HksBlob authId = { strlen(TEST_KEY_AUTH_ID), (uint8_t *)TEST_KEY_AUTH_ID };
     struct HksParamSet *paramInSet = NULL;
     HksInitParamSet(&paramInSet);
     ASSERT_NE(paramInSet, nullptr);
@@ -2176,26 +2174,26 @@ HWTEST_F(HksRsaEcbOaepPaddingMt, HksRsaMtTest06000, TestSize.Level1)
     EXPECT_EQ(HksGenerateKey(&authId, paramInSet, paramSetOut), HKS_SUCCESS);
     uint8_t opensslRsaKey[SET_SIZE_4096] = {0};
     uint32_t opensslRsaKeyLen = SET_SIZE_4096;
-    struct HksBlob opensslRsaKeyInfo = {opensslRsaKeyLen, opensslRsaKey};
+    struct HksBlob opensslRsaKeyInfo = { opensslRsaKeyLen, opensslRsaKey };
     EXPECT_EQ(HksExportPublicKey(&authId, paramInSet, &opensslRsaKeyInfo), HKS_SUCCESS);
 
     uint8_t rsaPublicKey[SET_SIZE_4096] = {0};
     uint32_t rsaPublicKeyLen = SET_SIZE_4096;
-    struct HksBlob rsaPublicKeyInfo = {rsaPublicKeyLen, rsaPublicKey};
+    struct HksBlob rsaPublicKeyInfo = { rsaPublicKeyLen, rsaPublicKey };
     EXPECT_EQ(X509ToRsaPublicKey(&opensslRsaKeyInfo, &rsaPublicKeyInfo), 0);
-    HksBlob publicKey = {.size = rsaPublicKeyInfo.size, .data = (uint8_t *)malloc(rsaPublicKeyInfo.size)};
+    HksBlob publicKey = { .size = rsaPublicKeyInfo.size, .data = (uint8_t *)malloc(rsaPublicKeyInfo.size) };
     (void)memcpy_s(publicKey.data, publicKey.size, rsaPublicKeyInfo.data, rsaPublicKeyInfo.size);
 
     const char *hexData = "00112233445566778899aabbccddeeff";
 
-    HksBlob plainText = {.size = strlen(hexData), .data = (uint8_t *)hexData};
+    HksBlob plainText = { .size = strlen(hexData), .data = (uint8_t *)hexData };
     HksParam *cipherLenBit = NULL;
     HksGetParam(paramInSet, HKS_TAG_KEY_SIZE, &cipherLenBit);
     uint32_t inLength = (cipherLenBit->uint32Param) / BIT_NUM_OF_UINT8;
-    HksBlob cipherText = {.size = inLength, .data = (uint8_t *)malloc(inLength)};
+    HksBlob cipherText = { .size = inLength, .data = (uint8_t *)malloc(inLength) };
     ASSERT_NE(cipherText.data, nullptr);
     EXPECT_EQ(EncryptRSA(&plainText, &cipherText, &publicKey, RSA_PKCS1_OAEP_PADDING, HKS_DIGEST_SHA1), 0);
-    HksBlob decryptedText = {.size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096)};
+    HksBlob decryptedText = { .size = SET_SIZE_4096, .data = (uint8_t *)malloc(SET_SIZE_4096) };
     ASSERT_NE(decryptedText.data, nullptr);
     EXPECT_EQ(HksDecrypt(&authId, paramInSet, &cipherText, &decryptedText), HKS_SUCCESS);
 

@@ -42,9 +42,9 @@ static int32_t HksOpensslEccCheckKeyLen(uint32_t keyLen)
     return HKS_SUCCESS;
 }
 
-static int32_t HksOpensslGetCurveId(const struct HksKeySpec *spec, int *nid)
+static int32_t HksOpensslGetCurveId(uint32_t keyLen, int *nid)
 {
-    switch (spec->keyLen) {
+    switch (keyLen) {
         case HKS_ECC_KEY_SIZE_224:
             *nid = NID_secp224r1;
             break;
@@ -79,21 +79,21 @@ static int32_t TransEccKeyToKeyBlob(
     const BIGNUM *priv = EC_KEY_get0_private_key(eccKey);
     uint32_t offset = sizeof(struct KeyMaterialEcc);
 
-    retCode = BN_bn2bin(pubX, rawMaterial + offset + (keyMaterial->xSize - BN_num_bytes(pubX)));
+    retCode = BN_bn2binpad(pubX, rawMaterial + offset, keyMaterial->xSize);
     if (retCode <= 0) {
         HksLogOpensslError();
         return HKS_FAILURE;
     }
     offset += keyMaterial->xSize;
 
-    retCode = BN_bn2bin(pubY, rawMaterial + offset + (keyMaterial->ySize - BN_num_bytes(pubY)));
+    retCode = BN_bn2binpad(pubY, rawMaterial + offset, keyMaterial->ySize);
     if (retCode <= 0) {
         HksLogOpensslError();
         return HKS_FAILURE;
     }
     offset += keyMaterial->ySize;
 
-    retCode = BN_bn2bin(priv, rawMaterial + offset + (keyMaterial->zSize - BN_num_bytes(priv)));
+    retCode = BN_bn2binpad(priv, rawMaterial + offset, keyMaterial->zSize);
     if (retCode <= 0) {
         HksLogOpensslError();
         return HKS_FAILURE;
@@ -165,7 +165,7 @@ int32_t HksOpensslEccGenerateKey(const struct HksKeySpec *spec, struct HksBlob *
     int32_t ret = HKS_FAILURE;
     do {
         int curveId;
-        ret = HksOpensslGetCurveId(spec, &curveId);
+        ret = HksOpensslGetCurveId(spec->keyLen, &curveId);
         if (ret != HKS_SUCCESS) {
             break;
         }
@@ -202,11 +202,6 @@ int32_t HksOpensslGetEccPubKey(const struct HksBlob *input, struct HksBlob *outp
     struct KeyMaterialEcc *keyMaterial = (struct KeyMaterialEcc *)input->data;
 
     output->size = sizeof(struct KeyMaterialEcc) + keyMaterial->xSize + keyMaterial->ySize;
-    output->data = (uint8_t *)HksMalloc(output->size);
-    if (output->data == NULL) {
-        HKS_LOG_E("malloc buffer failed");
-        return HKS_ERROR_MALLOC_FAIL;
-    }
 
     struct KeyMaterialEcc *publickeyMaterial = (struct KeyMaterialEcc *)output->data;
     publickeyMaterial->keyAlg = keyMaterial->keyAlg;
@@ -299,7 +294,13 @@ static EC_KEY *EccInitKey(const struct HksBlob *keyBlob, bool private)
         return NULL;
     }
 
-    EC_KEY *eccKey = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+    int nid;
+    if (HksOpensslGetCurveId(keySize, &nid) != HKS_SUCCESS) {
+        HKS_LOG_E("get curve id failed");
+        return NULL;
+    }
+
+    EC_KEY *eccKey = EC_KEY_new_by_curve_name(nid);
     if (eccKey == NULL) {
         HksLogOpensslError();
         return NULL;
@@ -384,7 +385,7 @@ int32_t EcdhDerive(EVP_PKEY_CTX *ctx, EVP_PKEY *peerKey, struct HksBlob *sharedK
     }
     if (EVP_PKEY_derive(ctx, buffer, &tmpSharedKeySize) != 1) {
         HksLogOpensslError();
-        HksFree(buffer);
+        HksFree(sharedKey->data);
         return HKS_FAILURE;
     }
     sharedKey->size = (uint32_t)tmpSharedKeySize;
@@ -458,9 +459,9 @@ int32_t HksOpensslEcdhAgreeKey(const struct HksBlob *nativeKey, const struct Hks
     return ret;
 }
 
-static EVP_MD_CTX *InitEccMdCtx(const struct HksBlob *mainKey, bool sign)
+static EVP_MD_CTX *InitEccMdCtx(const struct HksBlob *mainKey, uint32_t digest, bool sign)
 {
-    const EVP_MD *md = EVP_sha256();
+    const EVP_MD *md = GetOpensslAlg(digest);
 
     EC_KEY *eccKey = EccInitKey(mainKey, sign);
     if (eccKey == NULL) {
@@ -509,25 +510,26 @@ static EVP_MD_CTX *InitEccMdCtx(const struct HksBlob *mainKey, bool sign)
 }
 
 #ifdef HKS_SUPPORT_ECDSA_SIGN_VERIFY
-int32_t HksOpensslEcdsaVerify(const struct HksBlob *key, const struct HksBlob *message, const struct HksBlob *signature)
+int32_t HksOpensslEcdsaVerify(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
+    const struct HksBlob *message, const struct HksBlob *signature)
 {
-    EVP_MD_CTX *ctx = InitEccMdCtx(key, false);
+    EVP_MD_CTX *ctx = InitEccMdCtx(key, usageSpec->digest, false);
     if (ctx == NULL) {
         HKS_LOG_E("initialize ecc md context failed");
-        return HKS_FAILURE;
+        return HKS_ERROR_INVALID_KEY_INFO;
     }
 
     if (EVP_DigestVerifyUpdate(ctx, message->data, message->size) <= 0) {
         HksLogOpensslError();
         EVP_MD_CTX_free(ctx);
-        return HKS_FAILURE;
+        return HKS_ERROR_CRYPTO_ENGINE_ERROR;
     }
 
     int32_t ret = EVP_DigestVerifyFinal(ctx, signature->data, signature->size);
     if (ret <= 0) {
         HksLogOpensslError();
         EVP_MD_CTX_free(ctx);
-        return HKS_FAILURE;
+        return HKS_ERROR_CRYPTO_ENGINE_ERROR;
     }
 
     EVP_MD_CTX_free(ctx);
@@ -537,31 +539,37 @@ int32_t HksOpensslEcdsaVerify(const struct HksBlob *key, const struct HksBlob *m
 int32_t HksOpensslEcdsaSign(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
     const struct HksBlob *message, struct HksBlob *signature)
 {
-    EVP_MD_CTX *ctx = InitEccMdCtx(key, true);
+    EVP_MD_CTX *ctx = InitEccMdCtx(key, usageSpec->digest, true);
     if (ctx == NULL) {
         HKS_LOG_E("initialize ecc md context failed");
-        return HKS_FAILURE;
+        return HKS_ERROR_INVALID_KEY_INFO;
     }
 
     if (EVP_DigestSignUpdate(ctx, message->data, message->size) <= 0) {
         HksLogOpensslError();
         EVP_MD_CTX_free(ctx);
-        return HKS_FAILURE;
+        return HKS_ERROR_CRYPTO_ENGINE_ERROR;
     }
-    size_t req = 0;
+    size_t outLen = 0;
 
-    if (EVP_DigestSignFinal(ctx, NULL, &req) <= 0) {
+    if (EVP_DigestSignFinal(ctx, NULL, &outLen) <= 0) {
         HksLogOpensslError();
         EVP_MD_CTX_free(ctx);
-        return HKS_FAILURE;
+        return HKS_ERROR_CRYPTO_ENGINE_ERROR;
     }
 
-    if (EVP_DigestSignFinal(ctx, signature->data, &req) <= 0) {
+    if (outLen > signature->size) {
         HksLogOpensslError();
         EVP_MD_CTX_free(ctx);
-        return HKS_FAILURE;
+        return HKS_ERROR_BUFFER_TOO_SMALL;
     }
-    signature->size = req;
+
+    if (EVP_DigestSignFinal(ctx, signature->data, &outLen) <= 0) {
+        HksLogOpensslError();
+        EVP_MD_CTX_free(ctx);
+        return HKS_ERROR_CRYPTO_ENGINE_ERROR;
+    }
+    signature->size = outLen;
 
     EVP_MD_CTX_free(ctx);
     return HKS_SUCCESS;

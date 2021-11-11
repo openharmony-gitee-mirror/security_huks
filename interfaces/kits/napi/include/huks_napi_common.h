@@ -34,6 +34,7 @@ static const std::string HKS_PARAM_PROPERTY_VALUE = "value";
 static const std::string HKS_RESULT_PROPERTY_ERRORCODE = "errorCode";
 static const std::string HKS_RESULT_PROPERTY_OUTDATA = "outData";
 static const std::string HKS_RESULT_PRPPERTY_PROPERTIES = "properties";
+static const std::string HKS_RESULT_PRPPERTY_CERTCHAINS = "certChains";
 
 static const std::string BUSINESS_ERROR_PROPERTY_CODE = "code";
 
@@ -45,8 +46,11 @@ napi_value ParseHksParamSet(napi_env env, napi_value object, HksParamSet *&param
 
 napi_ref GetCallback(napi_env env, napi_value object);
 
-napi_value GenerateHksResult(
-    napi_env env, int32_t error, uint8_t *data = nullptr, uint32_t size = 0, const HksParamSet *paramSet = nullptr);
+napi_value GenerateHksResult(napi_env env, int32_t error);
+napi_value GenerateHksResult(napi_env env, int32_t error, uint8_t *data, uint32_t size);
+napi_value GenerateHksResult(napi_env env, int32_t error, uint8_t *data, uint32_t size, const HksParamSet &paramSet);
+
+napi_value GenerateStringArray(napi_env env, const struct HksBlob *blob, const uint32_t blobCount);
 
 void CallAsyncCallback(napi_env env, napi_ref callback, int32_t error, napi_value data);
 
@@ -79,6 +83,8 @@ inline void FreeHksBlob(HksBlob *&blob)
     HksFree(blob);
     blob = nullptr;
 }
+
+void FreeHksCertChain(HksCertChain *&certChain);
 }  // namespace HuksNapi
 
 #endif

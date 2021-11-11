@@ -30,7 +30,7 @@ constexpr int HUKS_NAPI_DECRYPT_MIN_ARGS = 2;
 constexpr int HUKS_NAPI_DECRYPT_MAX_ARGS = 3;
 }  // namespace
 
-struct DecryptAsyncContext {
+struct DecryptAsyncContext_t {
     napi_async_work asyncWork = nullptr;
     napi_deferred deferred = nullptr;
     napi_ref callback = nullptr;
@@ -41,17 +41,18 @@ struct DecryptAsyncContext {
     struct HksBlob *cipherText = nullptr;
     struct HksBlob *plainText = nullptr;
 };
+using DecryptAsyncContext = DecryptAsyncContext_t *;
 
-static DecryptAsyncContext *CreateDecryptAsyncContext()
+static DecryptAsyncContext CreateDecryptAsyncContext()
 {
-    DecryptAsyncContext *context = (DecryptAsyncContext *)HksMalloc(sizeof(DecryptAsyncContext));
+    DecryptAsyncContext context = (DecryptAsyncContext)HksMalloc(sizeof(DecryptAsyncContext_t));
     if (context != nullptr) {
-        (void)memset_s(context, sizeof(DecryptAsyncContext), 0, sizeof(DecryptAsyncContext));
+        (void)memset_s(context, sizeof(DecryptAsyncContext_t), 0, sizeof(DecryptAsyncContext_t));
     }
     return context;
 }
 
-static void DeleteDecryptAsyncContext(napi_env env, DecryptAsyncContext *context)
+static void DeleteDecryptAsyncContext(napi_env env, DecryptAsyncContext context)
 {
     if (context == nullptr) {
         return;
@@ -92,7 +93,7 @@ static void DeleteDecryptAsyncContext(napi_env env, DecryptAsyncContext *context
     HksFree(context);
 }
 
-static napi_value DecryptParseParams(napi_env env, napi_callback_info info, DecryptAsyncContext *context)
+static napi_value DecryptParseParams(napi_env env, napi_callback_info info, DecryptAsyncContext context)
 {
     size_t argc = HUKS_NAPI_DECRYPT_MAX_ARGS;
     napi_value argv[HUKS_NAPI_DECRYPT_MAX_ARGS] = {0};
@@ -133,6 +134,10 @@ static napi_value DecryptParseParams(napi_env env, napi_callback_info info, Decr
         return nullptr;
     }
     context->cipherText = (HksBlob *)HksMalloc(sizeof(HksBlob));
+    if (context->cipherText == nullptr) {
+        HKS_LOG_E("could not alloc memory");
+        return nullptr;
+    }
     result = GetUint8Array(env, inData, *context->cipherText);
     if (result == nullptr) {
         HKS_LOG_E("could not get indata");
@@ -147,7 +152,7 @@ static napi_value DecryptParseParams(napi_env env, napi_callback_info info, Decr
     return GetInt32(env, 0);
 }
 
-static napi_value DecryptKeyWriteResult(napi_env env, DecryptAsyncContext *context)
+static napi_value DecryptKeyWriteResult(napi_env env, DecryptAsyncContext context)
 {
     return GenerateHksResult(env,
         context->result,
@@ -155,7 +160,7 @@ static napi_value DecryptKeyWriteResult(napi_env env, DecryptAsyncContext *conte
         (context->result == HKS_SUCCESS && context->plainText != nullptr) ? context->plainText->size : 0);
 }
 
-static napi_value DecryptAsyncWork(napi_env env, DecryptAsyncContext *context)
+static napi_value DecryptAsyncWork(napi_env env, DecryptAsyncContext context)
 {
     napi_value promise = nullptr;
     if (context->callback == nullptr) {
@@ -170,7 +175,7 @@ static napi_value DecryptAsyncWork(napi_env env, DecryptAsyncContext *context)
         nullptr,
         resourceName,
         [](napi_env env, void *data) {
-            DecryptAsyncContext *context = static_cast<DecryptAsyncContext *>(data);
+            DecryptAsyncContext context = static_cast<DecryptAsyncContext>(data);
 
             context->plainText = (HksBlob *)HksMalloc(sizeof(HksBlob));
             if (context->plainText != NULL) {
@@ -181,7 +186,7 @@ static napi_value DecryptAsyncWork(napi_env env, DecryptAsyncContext *context)
             context->result = HksDecrypt(context->keyAlias, context->paramSet, context->cipherText, context->plainText);
         },
         [](napi_env env, napi_status status, void *data) {
-            DecryptAsyncContext *context = static_cast<DecryptAsyncContext *>(data);
+            DecryptAsyncContext context = static_cast<DecryptAsyncContext>(data);
             napi_value result = DecryptKeyWriteResult(env, context);
             if (result == nullptr) {
                 return;
@@ -214,8 +219,7 @@ static napi_value DecryptAsyncWork(napi_env env, DecryptAsyncContext *context)
 
 napi_value HuksNapiDecrypt(napi_env env, napi_callback_info info)
 {
-    DecryptAsyncContext *context = CreateDecryptAsyncContext();
-
+    DecryptAsyncContext context = CreateDecryptAsyncContext();
     if (context == nullptr) {
         HKS_LOG_E("could not create context");
         return nullptr;

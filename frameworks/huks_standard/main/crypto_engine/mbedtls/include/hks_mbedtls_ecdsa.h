@@ -29,11 +29,8 @@
 extern "C" {
 #endif
 
-int32_t HksMbedtlsEcdsaSign(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
-    const struct HksBlob *message, struct HksBlob *signature);
-
-int32_t HksMbedtlsEcdsaVerify(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
-    const struct HksBlob *message, const struct HksBlob *signature);
+int32_t HksMbedtlsEcdsaSignVerify(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
+    const struct HksBlob *message, const struct HksBlob *signature, bool isVerify);
 
 #ifdef __cplusplus
 }

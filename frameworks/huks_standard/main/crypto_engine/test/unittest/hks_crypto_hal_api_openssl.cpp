@@ -37,7 +37,6 @@ HWTEST_F(HksCryptoHalApiOpenssl, HksCryptoHalApiOpenssl_001, Function | SmallTes
     HksKeySpec spec = {
         .algType = HKS_ALG_AES,
         .keyLen = HKS_AES_KEY_SIZE_128,
-        .algParam = nullptr,
     };
 
     ret = HksCryptoHalGenerateKey(&spec, NULL);
@@ -56,7 +55,6 @@ HWTEST_F(HksCryptoHalApiOpenssl, HksCryptoHalApiOpenssl_002, Function | SmallTes
     HksKeySpec spec = {
         .algType = 0xffff,
         .keyLen = 0,
-        .algParam = nullptr,
     };
 
     HksBlob key = {};
@@ -76,8 +74,7 @@ HWTEST_F(HksCryptoHalApiOpenssl, HksCryptoHalApiOpenssl_003, Function | SmallTes
 
     HksKeySpec spec = {
         .algType = HKS_ALG_AES,
-        .keyLen = 0,
-        .algParam = nullptr,
+        .keyLen = 1,
     };
 
     HksBlob key = {};
@@ -88,6 +85,24 @@ HWTEST_F(HksCryptoHalApiOpenssl, HksCryptoHalApiOpenssl_003, Function | SmallTes
     spec.algType = HKS_ALG_RSA;
     ret = HksCryptoHalGenerateKey(&spec, &key);
     ASSERT_EQ(HKS_ERROR_INVALID_ARGUMENT, ret);
+
+    spec.algType = HKS_ALG_ECC;
+    ret = HksCryptoHalGenerateKey(&spec, &key);
+    ASSERT_EQ(HKS_ERROR_INVALID_ARGUMENT, ret);
+
+    spec.algType = HKS_ALG_DSA;
+    ret = HksCryptoHalGenerateKey(&spec, &key);
+    ASSERT_EQ(HKS_ERROR_INVALID_ARGUMENT, ret);
+
+    spec.algType = HKS_ALG_HMAC;
+    ret = HksCryptoHalGenerateKey(&spec, &key);
+    ASSERT_EQ(HKS_ERROR_INVALID_ARGUMENT, ret);
+
+#ifdef HKS_SUPPORT_DH_C
+    spec.algType = HKS_ALG_DH;
+    ret = HksCryptoHalGenerateKey(&spec, &key);
+    ASSERT_EQ(HKS_ERROR_INVALID_KEY_SIZE, ret);
+#endif
 }
 
 /**
@@ -99,25 +114,25 @@ HWTEST_F(HksCryptoHalApiOpenssl, HksCryptoHalApiOpenssl_004, Function | SmallTes
 {
     int32_t ret;
 
-    HksBlob key = {.size = 0, .data = nullptr};
-    HksUsageSpec spec = {.algType = 0xffff};
-    HksBlob message = {.size = 0, .data = nullptr};
-    HksBlob cipherText = {.size = 0, .data = nullptr};
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
+    HksUsageSpec spec = { .algType = 0xffff };
+    HksBlob message = { .size = 0, .data = nullptr };
+    HksBlob cipherText = { .size = 0, .data = nullptr };
+    HksBlob tagAead = { .size = 0, .data = nullptr };
     uint8_t buff[1] = {0};
 
     ret = HksCryptoHalEncrypt(&key, nullptr, &message, &cipherText, &tagAead);
     ASSERT_EQ(HKS_ERROR_INVALID_ARGUMENT, ret);
 
-    key = {.size = 1, .data = buff};
+    key = { .size = 1, .data = buff };
     ret = HksCryptoHalEncrypt(&key, nullptr, &message, &cipherText, &tagAead);
     ASSERT_EQ(HKS_ERROR_INVALID_ARGUMENT, ret);
 
-    message = {.size = 1, .data = buff};
+    message = { .size = 1, .data = buff };
     ret = HksCryptoHalEncrypt(&key, nullptr, &message, &cipherText, &tagAead);
     ASSERT_EQ(HKS_ERROR_INVALID_ARGUMENT, ret);
 
-    cipherText = {.size = 1, .data = buff};
+    cipherText = { .size = 1, .data = buff };
     ret = HksCryptoHalEncrypt(&key, nullptr, &message, &cipherText, &tagAead);
     ASSERT_EQ(HKS_ERROR_INVALID_ARGUMENT, ret);
 
@@ -134,24 +149,24 @@ HWTEST_F(HksCryptoHalApiOpenssl, HksCryptoHalApiOpenssl_005, Function | SmallTes
 {
     int32_t ret;
 
-    HksBlob key = {.size = 0, .data = nullptr};
-    HksUsageSpec spec = {.algType = 0xffff};
-    HksBlob message = {.size = 0, .data = nullptr};
-    HksBlob cipherText = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
+    HksUsageSpec spec = { .algType = 0xffff };
+    HksBlob message = { .size = 0, .data = nullptr };
+    HksBlob cipherText = { .size = 0, .data = nullptr };
     uint8_t buff[1] = {0};
 
     ret = HksCryptoHalDecrypt(&key, nullptr, &message, &cipherText);
     ASSERT_EQ(HKS_ERROR_INVALID_ARGUMENT, ret);
 
-    key = {.size = 1, .data = buff};
+    key = { .size = 1, .data = buff };
     ret = HksCryptoHalDecrypt(&key, nullptr, &message, &cipherText);
     ASSERT_EQ(HKS_ERROR_INVALID_ARGUMENT, ret);
 
-    message = {.size = 1, .data = buff};
+    message = { .size = 1, .data = buff };
     ret = HksCryptoHalDecrypt(&key, nullptr, &message, &cipherText);
     ASSERT_EQ(HKS_ERROR_INVALID_ARGUMENT, ret);
 
-    cipherText = {.size = 1, .data = buff};
+    cipherText = { .size = 1, .data = buff };
     ret = HksCryptoHalDecrypt(&key, nullptr, &message, &cipherText);
     ASSERT_EQ(HKS_ERROR_INVALID_ARGUMENT, ret);
 
@@ -169,11 +184,11 @@ HWTEST_F(HksCryptoHalApiOpenssl, HksCryptoHalApiOpenssl_006, Function | SmallTes
     int32_t ret;
 
     uint8_t buff[HKS_KEY_BYTES(HKS_AES_KEY_SIZE_128)] = {0};
-    HksBlob key = {.size = 1, .data = buff};
-    HksUsageSpec spec = {.algType = HKS_ALG_AES, .mode = 0xffff};
-    HksBlob message = {.size = 1, .data = buff};
-    HksBlob cipherText = {.size = 1, .data = buff};
-    HksBlob tagAead = {.size = 1, .data = buff};
+    HksBlob key = { .size = 1, .data = buff };
+    HksUsageSpec spec = { .algType = HKS_ALG_AES, .mode = 0xffff };
+    HksBlob message = { .size = 1, .data = buff };
+    HksBlob cipherText = { .size = 1, .data = buff };
+    HksBlob tagAead = { .size = 1, .data = buff };
 
     ret = HksCryptoHalEncrypt(&key, &spec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_ERROR_INVALID_ARGUMENT, ret);
@@ -205,10 +220,10 @@ HWTEST_F(HksCryptoHalApiOpenssl, HksCryptoHalApiOpenssl_007, Function | SmallTes
     int32_t ret;
 
     uint8_t buff[HKS_KEY_BYTES(HKS_AES_KEY_SIZE_128)] = {0};
-    HksBlob key = {.size = 1, .data = buff};
-    HksUsageSpec spec = {.algType = HKS_ALG_AES, .mode = 0xffff};
-    HksBlob message = {.size = 1, .data = buff};
-    HksBlob cipherText = {.size = 1, .data = buff};
+    HksBlob key = { .size = 1, .data = buff };
+    HksUsageSpec spec = { .algType = HKS_ALG_AES, .mode = 0xffff };
+    HksBlob message = { .size = 1, .data = buff };
+    HksBlob cipherText = { .size = 1, .data = buff };
 
     ret = HksCryptoHalDecrypt(&key, &spec, &message, &cipherText);
     EXPECT_EQ(HKS_ERROR_INVALID_ARGUMENT, ret);
@@ -233,10 +248,10 @@ HWTEST_F(HksCryptoHalApiOpenssl, HksCryptoHalApiOpenssl_008, Function | SmallTes
     int32_t ret;
 
     uint8_t buff[HKS_KEY_BYTES(HKS_AES_KEY_SIZE_128)] = {0};
-    HksBlob key = {.size = sizeof(buff), .data = buff};
-    HksUsageSpec spec = {.algType = HKS_ALG_AES, .mode = HKS_MODE_CBC, .padding = HKS_PADDING_PSS};
-    HksBlob message = {.size = 1, .data = buff};
-    HksBlob cipherText = {.size = 1, .data = buff};
+    HksBlob key = { .size = sizeof(buff), .data = buff };
+    HksUsageSpec spec = { .algType = HKS_ALG_AES, .mode = HKS_MODE_CBC, .padding = HKS_PADDING_PSS };
+    HksBlob message = { .size = 1, .data = buff };
+    HksBlob cipherText = { .size = 1, .data = buff };
 
     ret = HksCryptoHalDecrypt(&key, &spec, &message, &cipherText);
     EXPECT_EQ(HKS_ERROR_CRYPTO_ENGINE_ERROR, ret);
@@ -248,5 +263,300 @@ HWTEST_F(HksCryptoHalApiOpenssl, HksCryptoHalApiOpenssl_008, Function | SmallTes
     spec.algType = HKS_ALG_RSA;
     ret = HksCryptoHalDecrypt(&key, &spec, &message, &cipherText);
     EXPECT_EQ(HKS_FAILURE, ret);
+}
+
+/**
+ * @tc.number    : HksCryptoHalApiOpenssl_009
+ * @tc.name      : HksCryptoHalApiOpenssl_009
+ * @tc.desc      : Using HksCryptoHalSign -- parameter is invalid.
+ */
+HWTEST_F(HksCryptoHalApiOpenssl, HksCryptoHalApiOpenssl_009, Function | SmallTest | Level1)
+{
+    HksBlob key = { .size = 0, .data = nullptr };
+    HksUsageSpec spec = { .algType = 0xffff };
+    HksBlob message = { .size = 0, .data = nullptr };
+    HksBlob signature = { .size = 0, .data = nullptr };
+    uint8_t buff[1] = {0};
+
+    EXPECT_EQ(HksCryptoHalSign(&key, nullptr, &message, &signature), HKS_ERROR_INVALID_ARGUMENT);
+
+    key = { .size = 1, .data = buff };
+    EXPECT_EQ(HksCryptoHalSign(&key, nullptr, &message, &signature), HKS_ERROR_INVALID_ARGUMENT);
+
+    message = { .size = 1, .data = buff };
+    EXPECT_EQ(HksCryptoHalSign(&key, nullptr, &message, &signature), HKS_ERROR_INVALID_ARGUMENT);
+
+    signature = { .size = 1, .data = buff };
+    EXPECT_EQ(HksCryptoHalSign(&key, nullptr, &message, &signature), HKS_ERROR_INVALID_ARGUMENT);
+
+    EXPECT_EQ(HksCryptoHalSign(&key, &spec, &message, &signature), HKS_ERROR_INVALID_ARGUMENT);
+}
+
+/**
+ * @tc.number    : HksCryptoHalApiOpenssl_010
+ * @tc.name      : HksCryptoHalApiOpenssl_010
+ * @tc.desc      : Using HksCryptoHalVerify -- parameter is invalid.
+ */
+HWTEST_F(HksCryptoHalApiOpenssl, HksCryptoHalApiOpenssl_010, Function | SmallTest | Level1)
+{
+    HksBlob key = { .size = 0, .data = nullptr };
+    HksUsageSpec spec = { .algType = 0xffff };
+    HksBlob message = { .size = 0, .data = nullptr };
+    HksBlob signature = { .size = 0, .data = nullptr };
+    uint8_t buff[1] = {0};
+
+    EXPECT_EQ(HksCryptoHalVerify(&key, nullptr, &message, &signature), HKS_ERROR_INVALID_ARGUMENT);
+
+    key = { .size = 1, .data = buff };
+    EXPECT_EQ(HksCryptoHalVerify(&key, nullptr, &message, &signature), HKS_ERROR_INVALID_ARGUMENT);
+
+    message = { .size = 1, .data = buff };
+    EXPECT_EQ(HksCryptoHalVerify(&key, nullptr, &message, &signature), HKS_ERROR_INVALID_ARGUMENT);
+
+    signature = { .size = 1, .data = buff };
+    EXPECT_EQ(HksCryptoHalVerify(&key, nullptr, &message, &signature), HKS_ERROR_INVALID_ARGUMENT);
+
+    EXPECT_EQ(HksCryptoHalVerify(&key, &spec, &message, &signature), HKS_ERROR_INVALID_ARGUMENT);
+}
+
+/**
+ * @tc.number    : HksCryptoHalApiOpenssl_011
+ * @tc.name      : HksCryptoHalApiOpenssl_011
+ * @tc.desc      : RSA Using HksCryptoHalSign -- parameter is invalid.
+ */
+HWTEST_F(HksCryptoHalApiOpenssl, HksCryptoHalApiOpenssl_011, Function | SmallTest | Level1)
+{
+    HksKeySpec spec = {
+        .algType = HKS_ALG_RSA,
+        .keyLen = HKS_RSA_KEY_SIZE_512,
+    };
+
+    uint8_t buff[HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_512)] = {0};
+    HksBlob key = { .size = sizeof(buff), .data = buff };
+    HksUsageSpec signSpec = { .algType = HKS_ALG_RSA };
+    HksBlob message = { .size = 1, .data = buff };
+    HksBlob signature = { .size = 1, .data = buff };
+
+    EXPECT_EQ(HksCryptoHalSign(&key, &signSpec, &message, &signature), HKS_ERROR_INVALID_KEY_INFO);
+
+    signSpec.padding = HKS_PADDING_PSS;
+    EXPECT_EQ(HksCryptoHalSign(&key, &signSpec, &message, &signature), HKS_ERROR_CRYPTO_ENGINE_ERROR);
+
+    HksCryptoHalGenerateKey(&spec, &key);
+    EXPECT_EQ(HksCryptoHalSign(&key, &signSpec, &message, &signature), HKS_ERROR_BUFFER_TOO_SMALL);
+    HKS_FREE_BLOB(key);
+}
+
+/**
+ * @tc.number    : HksCryptoHalApiOpenssl_012
+ * @tc.name      : HksCryptoHalApiOpenssl_012
+ * @tc.desc      : RSA Using HksCryptoHalVerify -- parameter is invalid.
+ */
+HWTEST_F(HksCryptoHalApiOpenssl, HksCryptoHalApiOpenssl_012, Function | SmallTest | Level1)
+{
+    uint8_t buff[HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_512)] = {0};
+    HksBlob key = { .size = sizeof(buff), .data = buff };
+    HksUsageSpec signSpec = { .algType = HKS_ALG_RSA };
+    HksBlob message = { .size = 1, .data = buff };
+    HksBlob signature = { .size = 1, .data = buff };
+
+    EXPECT_EQ(HksCryptoHalVerify(&key, &signSpec, &message, &signature), HKS_ERROR_INVALID_KEY_INFO);
+
+    signSpec.padding = HKS_PADDING_PSS;
+    EXPECT_EQ(HksCryptoHalVerify(&key, &signSpec, &message, &signature), HKS_ERROR_CRYPTO_ENGINE_ERROR);
+}
+
+/**
+ * @tc.number    : HksCryptoHalApiOpenssl_013
+ * @tc.name      : HksCryptoHalApiOpenssl_013
+ * @tc.desc      : DSA Using HksCryptoHalSign -- parameter is invalid.
+ */
+HWTEST_F(HksCryptoHalApiOpenssl, HksCryptoHalApiOpenssl_013, Function | SmallTest | Level1)
+{
+    HksKeySpec spec = {
+        .algType = HKS_ALG_DSA,
+        .keyLen = 256,
+    };
+
+    uint8_t buff[HKS_KEY_BYTES(256)] = {0};
+    HksBlob key = { .size = sizeof(buff), .data = buff };
+    HksUsageSpec signSpec = { .algType = HKS_ALG_DSA };
+    HksBlob message = { .size = 1, .data = buff };
+    HksBlob signature = { .size = 1, .data = buff };
+
+    EXPECT_EQ(HksCryptoHalSign(&key, &signSpec, &message, &signature), HKS_ERROR_INVALID_KEY_INFO);
+
+    HksCryptoHalGenerateKey(&spec, &key);
+    EXPECT_EQ(HksCryptoHalSign(&key, &signSpec, &message, &signature), HKS_ERROR_BUFFER_TOO_SMALL);
+    HKS_FREE_BLOB(key);
+}
+
+/**
+ * @tc.number    : HksCryptoHalApiOpenssl_014
+ * @tc.name      : HksCryptoHalApiOpenssl_014
+ * @tc.desc      : DSA Using HksCryptoHalVerify -- parameter is invalid.
+ */
+HWTEST_F(HksCryptoHalApiOpenssl, HksCryptoHalApiOpenssl_014, Function | SmallTest | Level1)
+{
+    uint8_t buff[HKS_KEY_BYTES(256)] = {0};
+    HksBlob key = { .size = sizeof(buff), .data = buff };
+    HksUsageSpec signSpec = { .algType = HKS_ALG_DSA };
+    HksBlob message = { .size = 1, .data = buff };
+    HksBlob signature = { .size = 1, .data = buff };
+
+    EXPECT_EQ(HksCryptoHalVerify(&key, &signSpec, &message, &signature), HKS_ERROR_CRYPTO_ENGINE_ERROR);
+}
+
+/**
+ * @tc.number    : HksCryptoHalApiOpenssl_015
+ * @tc.name      : HksCryptoHalApiOpenssl_015
+ * @tc.desc      : ECDSA Using HksCryptoHalSign -- parameter is invalid.
+ */
+HWTEST_F(HksCryptoHalApiOpenssl, HksCryptoHalApiOpenssl_015, Function | SmallTest | Level1)
+{
+    uint8_t buff[HKS_KEY_BYTES(HKS_ECC_KEY_SIZE_256)] = {0};
+    HksBlob key = { .size = sizeof(buff), .data = buff };
+    HksUsageSpec signSpec = { .algType = HKS_ALG_ECC };
+    HksBlob message = { .size = 1, .data = buff };
+    HksBlob signature = { .size = 1, .data = buff };
+
+    EXPECT_EQ(HksCryptoHalSign(&key, &signSpec, &message, &signature), HKS_ERROR_INVALID_KEY_INFO);
+}
+
+/**
+ * @tc.number    : HksCryptoHalApiOpenssl_016
+ * @tc.name      : HksCryptoHalApiOpenssl_016
+ * @tc.desc      : ECDSA Using HksCryptoHalVerify -- parameter is invalid.
+ */
+HWTEST_F(HksCryptoHalApiOpenssl, HksCryptoHalApiOpenssl_016, Function | SmallTest | Level1)
+{
+    HksKeySpec spec = {
+        .algType = HKS_ALG_ECC,
+        .keyLen = HKS_ECC_KEY_SIZE_256,
+    };
+
+    uint8_t buff[HKS_KEY_BYTES(256)] = {0};
+    HksBlob key = { .size = sizeof(buff), .data = buff };
+    HksUsageSpec signSpec = { .algType = HKS_ALG_ECC };
+    HksBlob message = { .size = 1, .data = buff };
+    HksBlob signature = { .size = 1, .data = buff };
+
+    EXPECT_EQ(HksCryptoHalVerify(&key, &signSpec, &message, &signature), HKS_ERROR_INVALID_KEY_INFO);
+
+    HksCryptoHalGenerateKey(&spec, &key);
+    EXPECT_EQ(HksCryptoHalVerify(&key, &signSpec, &message, &signature), HKS_ERROR_CRYPTO_ENGINE_ERROR);
+    HKS_FREE_BLOB(key);
+}
+
+/**
+ * @tc.number    : HksCryptoHalApiOpenssl_017
+ * @tc.name      : HksCryptoHalApiOpenssl_017
+ * @tc.desc      : Using HksCryptoHalAgreeKey -- parameter is invalid.
+ */
+HWTEST_F(HksCryptoHalApiOpenssl, HksCryptoHalApiOpenssl_017, Function | SmallTest | Level1)
+{
+    HksBlob key = { .size = 0, .data = nullptr };
+    HksBlob pubKey = { .size = 0, .data = nullptr };
+    HksKeySpec spec = { .algType = 0xffff };
+    HksBlob agreeKey = { .size = 0, .data = nullptr };
+    uint8_t buff[1] = {0};
+
+    EXPECT_EQ(HksCryptoHalAgreeKey(&key, &pubKey, nullptr, &agreeKey), HKS_ERROR_INVALID_ARGUMENT);
+
+    key = { .size = 1, .data = buff };
+    EXPECT_EQ(HksCryptoHalAgreeKey(&key, &pubKey, nullptr, &agreeKey), HKS_ERROR_INVALID_ARGUMENT);
+
+    pubKey = { .size = 1, .data = buff };
+    EXPECT_EQ(HksCryptoHalAgreeKey(&key, &pubKey, nullptr, &agreeKey), HKS_ERROR_INVALID_ARGUMENT);
+
+    EXPECT_EQ(HksCryptoHalAgreeKey(&key, &pubKey, &spec, &agreeKey), HKS_ERROR_INVALID_ARGUMENT);
+
+    agreeKey = { .size = 1, .data = buff };
+    EXPECT_EQ(HksCryptoHalAgreeKey(&key, &pubKey, &spec, &agreeKey), HKS_ERROR_INVALID_ARGUMENT);
+}
+
+/**
+ * @tc.number    : HksCryptoHalApiOpenssl_018
+ * @tc.name      : HksCryptoHalApiOpenssl_018
+ * @tc.desc      : ECDH Using HksCryptoHalAgreeKey -- parameter is invalid.
+ */
+HWTEST_F(HksCryptoHalApiOpenssl, HksCryptoHalApiOpenssl_018, Function | SmallTest | Level1)
+{
+    HksKeySpec keySpec = {
+        .algType = HKS_ALG_ECC,
+        .keyLen = HKS_ECC_KEY_SIZE_256,
+    };
+
+    uint8_t buff[HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_512)] = {0};
+    HksBlob key = { .size = sizeof(buff), .data = buff };
+    HksBlob pubKey = { .size = sizeof(buff), .data = buff };
+    HksKeySpec spec = { .algType = HKS_ALG_ECDH };
+    HksBlob agreeKey = { .size = sizeof(buff), .data = buff };
+
+    EXPECT_EQ(HksCryptoHalAgreeKey(&key, &pubKey, &spec, &agreeKey), HKS_ERROR_INVALID_ARGUMENT);
+
+    spec.keyLen = HKS_ECC_KEY_SIZE_256;
+    EXPECT_EQ(HksCryptoHalAgreeKey(&key, &pubKey, &spec, &agreeKey), HKS_FAILURE);
+
+    HksCryptoHalGenerateKey(&keySpec, &key);
+    EXPECT_EQ(HksCryptoHalAgreeKey(&key, &pubKey, &spec, &agreeKey), HKS_FAILURE);
+    HKS_FREE_BLOB(key);
+}
+
+#ifdef HKS_SUPPORT_DH_C
+/**
+ * @tc.number    : HksCryptoHalApiOpenssl_019
+ * @tc.name      : HksCryptoHalApiOpenssl_019
+ * @tc.desc      : DH Using HksCryptoHalAgreeKey -- parameter is invalid.
+ */
+HWTEST_F(HksCryptoHalApiOpenssl, HksCryptoHalApiOpenssl_019, Function | SmallTest | Level1)
+{
+    HksKeySpec keySpec = {
+        .algType = HKS_ALG_DH,
+        .keyLen = HKS_DH_KEY_SIZE_2048,
+    };
+
+    uint8_t buff[HKS_KEY_BYTES(HKS_DH_KEY_SIZE_2048)] = {0};
+    HksBlob key = { .size = sizeof(buff), .data = buff };
+    HksBlob pubKey = { .size = sizeof(buff), .data = buff };
+    HksKeySpec spec = { .algType = HKS_ALG_DH, .keyLen = HKS_DH_KEY_SIZE_4096 };
+    HksBlob agreeKey = { .size = sizeof(buff), .data = buff };
+
+    EXPECT_EQ(HksCryptoHalAgreeKey(&key, &pubKey, &spec, &agreeKey), HKS_ERROR_INVALID_KEY_SIZE);
+
+    spec.keyLen = 0;
+    EXPECT_EQ(HksCryptoHalAgreeKey(&key, &pubKey, &spec, &agreeKey), HKS_ERROR_CRYPTO_ENGINE_ERROR);
+
+    HksCryptoHalGenerateKey(&keySpec, &key);
+    EXPECT_EQ(HksCryptoHalAgreeKey(&key, &pubKey, &spec, &agreeKey), HKS_ERROR_CRYPTO_ENGINE_ERROR);
+
+    HKS_FREE_BLOB(key);
+}
+#endif
+
+/**
+ * @tc.number    : HksCryptoHalApiOpenssl_020
+ * @tc.name      : HksCryptoHalApiOpenssl_020
+ * @tc.desc      : Using HksCryptoHalAgreeKey -- parameter is invalid.
+ */
+HWTEST_F(HksCryptoHalApiOpenssl, HksCryptoHalApiOpenssl_020, Function | SmallTest | Level1)
+{
+    HksBlob key = { .size = 0, .data = nullptr };
+    HksBlob message = { .size = 0, .data = nullptr };
+    HksBlob signature = { .size = 0, .data = nullptr };
+    uint8_t buff[1] = {0};
+
+    EXPECT_EQ(HksCryptoHalHmac(&key, NULL, &message, &signature), HKS_ERROR_INVALID_ARGUMENT);
+
+    key = { .size = 1, .data = buff };
+    EXPECT_EQ(HksCryptoHalHmac(&key, NULL, &message, &signature), HKS_ERROR_INVALID_ARGUMENT);
+
+    message = { .size = 1, .data = buff };
+    EXPECT_EQ(HksCryptoHalHmac(&key, NULL, &message, &signature), HKS_ERROR_INVALID_ARGUMENT);
+
+    signature = { .size = 1, .data = buff };
+    EXPECT_EQ(HksCryptoHalHmac(&key, NULL, &message, &signature), HKS_ERROR_INVALID_ARGUMENT);
+
+    EXPECT_EQ(HksCryptoHalHmac(&key, HKS_DIGEST_SHA512, &message, &signature), HKS_ERROR_INVALID_ARGUMENT);
 }
 }  // namespace

@@ -490,4 +490,9 @@ bool HksOldVersionIsFileExist(const char *fileName)
 }
 #endif
 
+int32_t HksGetFileName(const char *path, const char *fileName, char *fullFileName, uint32_t fullFileNameLen)
+{
+    return GetFileName(path, fileName, fullFileName, fullFileNameLen);
+}
+
 #endif /* _CUT_AUTHENTICATE_ */

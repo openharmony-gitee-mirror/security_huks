@@ -19,15 +19,24 @@
 #include "napi/native_node_api.h"
 
 #include "hks_type.h"
+#include "huks_napi_agree_key.h"
+#include "huks_napi_attest_key.h"
 #include "huks_napi_decrypt.h"
 #include "huks_napi_delete_key.h"
+#include "huks_napi_derive_key.h"
 #include "huks_napi_encrypt.h"
 #include "huks_napi_export_key.h"
 #include "huks_napi_generate_key.h"
+#include "huks_napi_get_certificate_chain.h"
 #include "huks_napi_get_key_properties.h"
 #include "huks_napi_get_sdk_version.h"
 #include "huks_napi_import_key.h"
 #include "huks_napi_is_key_exist.h"
+#include "huks_napi_mac.h"
+#include "huks_napi_sign.h"
+#include "huks_napi_unwrap_key.h"
+#include "huks_napi_verify.h"
+#include "huks_napi_wrap_key.h"
 
 namespace HuksNapi {
 inline void AddInt32Property(napi_env env, napi_value object, const char *name, int32_t value)
@@ -188,6 +197,10 @@ static napi_value CreateHksKeySize(napi_env env)
 
     AddInt32Property(env, keySize, "HKS_CURVE25519_KEY_SIZE_256", HKS_CURVE25519_KEY_SIZE_256);
 
+    AddInt32Property(env, keySize, "HKS_DH_KEY_SIZE_2048", HKS_DH_KEY_SIZE_2048);
+    AddInt32Property(env, keySize, "HKS_DH_KEY_SIZE_3072", HKS_DH_KEY_SIZE_3072);
+    AddInt32Property(env, keySize, "HKS_DH_KEY_SIZE_4096", HKS_DH_KEY_SIZE_4096);
+
     return keySize;
 }
 
@@ -226,6 +239,7 @@ static napi_value CreateHksKeyPurpose(napi_env env)
     AddInt32Property(env, keyPurpose, "HKS_KEY_PURPOSE_WRAP", HKS_KEY_PURPOSE_WRAP);
     AddInt32Property(env, keyPurpose, "HKS_KEY_PURPOSE_UNWRAP", HKS_KEY_PURPOSE_UNWRAP);
     AddInt32Property(env, keyPurpose, "HKS_KEY_PURPOSE_MAC", HKS_KEY_PURPOSE_MAC);
+    AddInt32Property(env, keyPurpose, "HKS_KEY_PURPOSE_AGREE", HKS_KEY_PURPOSE_AGREE);
 
     return keyPurpose;
 }
@@ -487,15 +501,15 @@ static napi_value HuksNapiRegister(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("exportKey", HuksNapiExportKey),
         DECLARE_NAPI_FUNCTION("getKeyProperties", HuksNapiGetKeyProperties),
         DECLARE_NAPI_FUNCTION("isKeyExist", HuksNapiIsKeyExist),
-        // DECLARE_NAPI_FUNCTION("sign", HuksNapiSign),
-        // DECLARE_NAPI_FUNCTION("verify", HuksNapiVerify),
-        // DECLARE_NAPI_FUNCTION("agreeKey", HuksNapiAgreeKey),
-        // DECLARE_NAPI_FUNCTION("deriveKey", HuksNapiDeriveKey),
-        // DECLARE_NAPI_FUNCTION("mac", HuksNapiMac),
-        // DECLARE_NAPI_FUNCTION("attestKey", HuksNapiAttestKey),
-        // DECLARE_NAPI_FUNCTION("getCertificateChain", HuksNapiGetCertificateChain),
-        // DECLARE_NAPI_FUNCTION("wrapKey", HuksNapiWrapKey),
-        // DECLARE_NAPI_FUNCTION("unwrapKey", HuksNapiUnwrapKey),
+        DECLARE_NAPI_FUNCTION("sign", HuksNapiSign),
+        DECLARE_NAPI_FUNCTION("verify", HuksNapiVerify),
+        DECLARE_NAPI_FUNCTION("agreeKey", HuksNapiAgreeKey),
+        DECLARE_NAPI_FUNCTION("deriveKey", HuksNapiDeriveKey),
+        DECLARE_NAPI_FUNCTION("mac", HuksNapiMac),
+        DECLARE_NAPI_FUNCTION("attestKey", HuksNapiAttestKey),
+        DECLARE_NAPI_FUNCTION("getCertificateChain", HuksNapiGetCertificateChain),
+        DECLARE_NAPI_FUNCTION("wrapKey", HuksNapiWrapKey),
+        DECLARE_NAPI_FUNCTION("unwrapKey", HuksNapiUnwrapKey),
     };
     NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc));
     return exports;

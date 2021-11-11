@@ -277,6 +277,7 @@ static int32_t OpensslAesCipherInit(
 
     const EVP_CIPHER *cipher = GetCipherType(key->size, usageSpec->mode);
     if (cipher == NULL) {
+        EVP_CIPHER_CTX_free(*ctx);
         return HKS_ERROR_INVALID_ARGUMENT;
     }
 

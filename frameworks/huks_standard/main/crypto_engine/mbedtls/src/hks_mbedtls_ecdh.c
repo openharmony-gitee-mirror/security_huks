@@ -37,6 +37,7 @@
 #include "hks_mbedtls_common.h"
 #include "hks_mbedtls_ecc.h"
 
+#ifdef HKS_SUPPORT_ECDH_AGREE_KEY
 static int32_t EccKeyMaterialToCtx(const struct HksBlob *nativeKey,
     const struct HksBlob *pubKey, mbedtls_ecdh_context *ctx)
 {
@@ -96,7 +97,7 @@ int32_t HksMbedtlsEcdh(const struct HksBlob *nativeKey,
             break;
         }
 
-        const uint32_t keyByteLen = spec->keyLen / HKS_BITS_PER_BYTE;
+        const uint32_t keyByteLen = HKS_KEY_BYTES(spec->keyLen);
         ret = mbedtls_mpi_write_binary(&(ctx.z), sharedKey->data, keyByteLen);
         if (ret != HKS_MBEDTLS_SUCCESS) {
             HKS_LOG_E("Mbedtls ecdh mpi write to sharedKey failed! mbedtls ret = 0x%X", ret);
@@ -111,4 +112,5 @@ int32_t HksMbedtlsEcdh(const struct HksBlob *nativeKey,
     mbedtls_entropy_free(&entropy);
     return ret;
 }
+#endif /* HKS_SUPPORT_ECDH_AGREE_KEY */
 #endif /* HKS_SUPPORT_ECDH_C */

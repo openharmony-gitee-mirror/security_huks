@@ -36,8 +36,14 @@ ohos_unittest("crypto_engine_unit_test") {
     "hks_crypto_hal_aes_key.cpp",
     "hks_crypto_hal_common.cpp",
     "hks_crypto_hal_common.h",
+    "hks_crypto_hal_dh.cpp",
+    "hks_crypto_hal_dh_agree.cpp",
     "hks_crypto_hal_dsa_key.cpp",
+    "hks_crypto_hal_dsa_sign.cpp",
     "hks_crypto_hal_ecc_key.cpp",
+    "hks_crypto_hal_ecdh_agree.cpp",
+    "hks_crypto_hal_ecdsa_sign.cpp",
+    "hks_crypto_hal_hmac_hmac.cpp",
     "hks_crypto_hal_hmac_key.cpp",
     "hks_crypto_hal_rsa_cipher.cpp",
     "hks_crypto_hal_rsa_decrypt.cpp",
@@ -45,6 +51,8 @@ ohos_unittest("crypto_engine_unit_test") {
     "hks_crypto_hal_rsa_key.cpp",
     "hks_crypto_hal_rsa_oaep_decrypt.cpp",
     "hks_crypto_hal_rsa_oaep_encrypt.cpp",
+    "hks_crypto_hal_rsa_pkcs1_sign.cpp",
+    "hks_crypto_hal_rsa_pss_sign.cpp",
   ]
   if (use_crypto_lib == "openssl") {
     sources += [ "hks_crypto_hal_api_openssl.cpp" ]
@@ -74,13 +82,6 @@ ohos_unittest("crypto_engine_unit_test") {
   if (use_crypto_lib == "mbedtls") {
     deps += [ "//base/security/huks/frameworks/huks_standard/main/crypto_engine/mbedtls:libhuks_mbedtls_standard_static" ]
   }
-
-  external_deps = [
-    "hiviewdfx_hilog_native:libhilog",
-    "ipc:ipc_core",
-    "safwk:system_ability_fwk",
-    "samgr_standard:samgr_proxy",
-  ]
 
   subsystem_name = "security"
   part_name = "huks_standard"

@@ -29,15 +29,17 @@
 extern "C" {
 #endif
 
+#ifdef HKS_SUPPORT_AES_C
 #ifdef HKS_SUPPORT_AES_GENERATE_KEY
 int32_t HksMbedtlsAesGenerateKey(const struct HksKeySpec *spec, struct HksBlob *key);
-#endif
+#endif /* HKS_SUPPORT_AES_GENERATE_KEY */
 
 int32_t HksMbedtlsAesEncrypt(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
     const struct HksBlob *message, struct HksBlob *cipherText, struct HksBlob *tagAead);
 
 int32_t HksMbedtlsAesDecrypt(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
     const struct HksBlob *message, struct HksBlob *cipherText);
+#endif /* HKS_SUPPORT_AES_C */
 
 #ifdef __cplusplus
 }

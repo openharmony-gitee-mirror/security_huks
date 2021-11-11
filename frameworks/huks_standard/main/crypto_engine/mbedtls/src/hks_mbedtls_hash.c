@@ -27,6 +27,8 @@
 
 #include "hks_mbedtls_hash.h"
 
+#include <mbedtls/md5.h>
+#include <mbedtls/sha1.h>
 #include <mbedtls/sha256.h>
 #include <mbedtls/sha512.h>
 
@@ -38,6 +40,15 @@ int32_t HksMbedtlsHash(uint32_t alg, const struct HksBlob *msg, struct HksBlob *
 {
     int32_t ret;
     switch (alg) {
+        case HKS_DIGEST_MD5:
+            ret = mbedtls_md5_ret(msg->data, msg->size, hash->data); /* 0 for MD5 */
+            break;
+        case HKS_DIGEST_SHA1:
+            ret = mbedtls_sha1_ret(msg->data, msg->size, hash->data); /* 0 for SHA-1 */
+            break;
+        case HKS_DIGEST_SHA224:
+            ret = mbedtls_sha256_ret(msg->data, msg->size, hash->data, 1); /* 0 for SHA-224 */
+            break;
         case HKS_DIGEST_SHA256:
             ret = mbedtls_sha256_ret(msg->data, msg->size, hash->data, 0); /* 0 for SHA-256 */
             break;

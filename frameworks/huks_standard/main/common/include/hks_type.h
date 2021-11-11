@@ -90,6 +90,7 @@ enum HksKeyPurpose {
     HKS_KEY_PURPOSE_WRAP = 32,                     /* Usable with wrap key. */
     HKS_KEY_PURPOSE_UNWRAP = 64,                   /* Usable with unwrap key. */
     HKS_KEY_PURPOSE_MAC = 128,                     /* Usable with mac. */
+    HKS_KEY_PURPOSE_AGREE = 256,                   /* Usable with agree. */
 };
 
 enum HksKeyDigest {
@@ -139,6 +140,10 @@ enum HksKeySize {
     HKS_AES_KEY_SIZE_512 = 512,
 
     HKS_CURVE25519_KEY_SIZE_256 = 256,
+
+    HKS_DH_KEY_SIZE_2048 = 2048,
+    HKS_DH_KEY_SIZE_3072 = 3072,
+    HKS_DH_KEY_SIZE_4096 = 4096,
 };
 
 enum HksKeyAlg {
@@ -408,6 +413,11 @@ struct HksPubKeyInfo {
     uint32_t nOrXSize;
     uint32_t eOrYSize;
     uint32_t placeHolder;
+};
+
+struct HksKeyMaterialHeader {
+    enum HksKeyAlg keyAlg;
+    uint32_t keySize;
 };
 
 #define HKS_DERIVE_DEFAULT_SALT_LEN 16

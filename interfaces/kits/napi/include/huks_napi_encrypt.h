@@ -23,4 +23,4 @@ namespace HuksNapi {
 napi_value HuksNapiEncrypt(napi_env env, napi_callback_info info);
 }  // namespace HuksNapi
 
-#endif // HUKS_NAPI_ENCRYPT_H
+#endif  // HUKS_NAPI_ENCRYPT_H

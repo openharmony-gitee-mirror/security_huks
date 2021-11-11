@@ -30,7 +30,7 @@ constexpr int HUKS_NAPI_IMPORT_KEY_MIN_ARGS = 2;
 constexpr int HUKS_NAPI_IMPORT_KEY_MAX_ARGS = 3;
 }  // namespace
 
-struct ImportKeyAsyncContext {
+struct ImportKeyAsyncContext_t {
     napi_async_work asyncWork = nullptr;
     napi_deferred deferred = nullptr;
     napi_ref callback = nullptr;
@@ -40,17 +40,18 @@ struct ImportKeyAsyncContext {
     struct HksParamSet *paramSet = nullptr;
     struct HksBlob *key = nullptr;
 };
+using ImportKeyAsyncContext = ImportKeyAsyncContext_t *;
 
-static ImportKeyAsyncContext *CreateImportKeyAsyncContext()
+static ImportKeyAsyncContext CreateImportKeyAsyncContext()
 {
-    ImportKeyAsyncContext *context = (ImportKeyAsyncContext *)HksMalloc(sizeof(ImportKeyAsyncContext));
+    ImportKeyAsyncContext context = (ImportKeyAsyncContext)HksMalloc(sizeof(ImportKeyAsyncContext_t));
     if (context != nullptr) {
-        (void)memset_s(context, sizeof(ImportKeyAsyncContext), 0, sizeof(ImportKeyAsyncContext));
+        (void)memset_s(context, sizeof(ImportKeyAsyncContext_t), 0, sizeof(ImportKeyAsyncContext_t));
     }
     return context;
 }
 
-static void DeleteImportKeyAsyncContext(napi_env env, ImportKeyAsyncContext *context)
+static void DeleteImportKeyAsyncContext(napi_env env, ImportKeyAsyncContext context)
 {
     if (context == nullptr) {
         return;
@@ -84,7 +85,7 @@ static void DeleteImportKeyAsyncContext(napi_env env, ImportKeyAsyncContext *con
     HksFree(context);
 }
 
-static napi_value ImportKeyParseParams(napi_env env, napi_callback_info info, ImportKeyAsyncContext *context)
+static napi_value ImportKeyParseParams(napi_env env, napi_callback_info info, ImportKeyAsyncContext context)
 {
     size_t argc = HUKS_NAPI_IMPORT_KEY_MAX_ARGS;
     napi_value argv[HUKS_NAPI_IMPORT_KEY_MAX_ARGS] = {0};
@@ -125,6 +126,10 @@ static napi_value ImportKeyParseParams(napi_env env, napi_callback_info info, Im
         return nullptr;
     }
     context->key = (HksBlob *)HksMalloc(sizeof(HksBlob));
+    if (context->key == nullptr) {
+        HKS_LOG_E("could not alloc memory");
+        return nullptr;
+    }
     result = GetUint8Array(env, inData, *context->key);
     if (result == nullptr) {
         HKS_LOG_E("could not get indata");
@@ -139,12 +144,12 @@ static napi_value ImportKeyParseParams(napi_env env, napi_callback_info info, Im
     return GetInt32(env, 0);
 }
 
-static napi_value ImportKeyWriteResult(napi_env env, ImportKeyAsyncContext *context)
+static napi_value ImportKeyWriteResult(napi_env env, ImportKeyAsyncContext context)
 {
     return GenerateHksResult(env, context->result, nullptr, 0);
 }
 
-static napi_value ImportKeyAsyncWork(napi_env env, ImportKeyAsyncContext *context)
+static napi_value ImportKeyAsyncWork(napi_env env, ImportKeyAsyncContext context)
 {
     napi_value promise = nullptr;
     if (context->callback == nullptr) {
@@ -159,12 +164,12 @@ static napi_value ImportKeyAsyncWork(napi_env env, ImportKeyAsyncContext *contex
         nullptr,
         resourceName,
         [](napi_env env, void *data) {
-            ImportKeyAsyncContext *context = static_cast<ImportKeyAsyncContext *>(data);
+            ImportKeyAsyncContext context = static_cast<ImportKeyAsyncContext>(data);
 
             context->result = HksImportKey(context->keyAlias, context->paramSet, context->key);
         },
         [](napi_env env, napi_status status, void *data) {
-            ImportKeyAsyncContext *context = static_cast<ImportKeyAsyncContext *>(data);
+            ImportKeyAsyncContext context = static_cast<ImportKeyAsyncContext>(data);
             napi_value result = ImportKeyWriteResult(env, context);
             if (result == nullptr) {
                 return;
@@ -196,8 +201,7 @@ static napi_value ImportKeyAsyncWork(napi_env env, ImportKeyAsyncContext *contex
 
 napi_value HuksNapiImportKey(napi_env env, napi_callback_info info)
 {
-    ImportKeyAsyncContext *context = CreateImportKeyAsyncContext();
-
+    ImportKeyAsyncContext context = CreateImportKeyAsyncContext();
     if (context == nullptr) {
         HKS_LOG_E("could not create context");
         return nullptr;

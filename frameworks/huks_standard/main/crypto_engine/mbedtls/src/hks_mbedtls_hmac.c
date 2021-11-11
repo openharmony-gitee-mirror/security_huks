@@ -30,6 +30,7 @@
 #include "hks_mbedtls_common.h"
 #include "hks_mem.h"
 
+#ifdef HKS_SUPPORT_HMAC_GENERATE_KEY
 int32_t HksMbedtlsHmacGenerateKey(const struct HksKeySpec *spec, struct HksBlob *key)
 {
     if (spec->keyLen % HKS_BITS_PER_BYTE != 0) {
@@ -68,6 +69,7 @@ int32_t HksMbedtlsHmacGenerateKey(const struct HksKeySpec *spec, struct HksBlob 
     mbedtls_entropy_free(&entropy);
     return ret;
 }
+#endif /* HKS_SUPPORT_HMAC_GENERATE_KEY */
 
 int32_t HksMbedtlsHmac(const struct HksBlob *key,
     uint32_t digestAlg, const struct HksBlob *msg, struct HksBlob *mac)

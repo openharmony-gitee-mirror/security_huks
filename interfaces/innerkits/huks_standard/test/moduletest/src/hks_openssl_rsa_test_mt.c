@@ -15,20 +15,10 @@
 
 #include "hks_openssl_rsa_test_mt.h"
 
-#include <stdio.h>
-
-#include "securec.h"
-
-#include <openssl/bn.h>
-#include <openssl/ec.h>
-#include <openssl/err.h>
 #include <openssl/evp.h>
-#include <openssl/ossl_typ.h>
-#include <openssl/rsa.h>
 #include <openssl/x509.h>
 
 #include "hks_crypto_hal.h"
-#include "hks_type.h"
 
 void SaveRsaKeyToHksBlob(EVP_PKEY *pkey, const uint32_t keySize, struct HksBlob *key)
 {
@@ -166,6 +156,8 @@ static RSA *InitRsa(struct HksBlob *key, const bool needPrivateExponent)
 static const EVP_MD *GetOpensslDigestType(enum HksKeyDigest digestType)
 {
     switch (digestType) {
+        case HKS_DIGEST_MD5:
+            return EVP_md5();
         case HKS_DIGEST_SHA1:
             return EVP_sha1();
         case HKS_DIGEST_SHA224:
@@ -267,6 +259,114 @@ int32_t DecryptRSA(const struct HksBlob *inData, struct HksBlob *outData, struct
     outData->size = outLen;
 
     EVP_PKEY_CTX_free(ectx);
+    EVP_PKEY_free(pkey);
+
+    return RSA_SUCCESS;
+}
+
+int32_t OpensslSignRsa(const struct HksBlob *plainText, struct HksBlob *signData, struct HksBlob *key, int padding,
+    enum HksKeyDigest digestType)
+{
+    RSA *rsa = InitRsa(key, true);
+    if (rsa == NULL) {
+        return RSA_FAILED;
+    }
+
+    EVP_PKEY *pkey = EVP_PKEY_new();
+    if (pkey == NULL) {
+        EVP_PKEY_free(pkey);
+        return RSA_FAILED;
+    }
+
+    EVP_PKEY_assign_RSA(pkey, rsa);
+    EVP_MD_CTX *mctx = EVP_MD_CTX_new();
+    if (mctx == NULL) {
+        EVP_MD_CTX_free(mctx);
+        return RSA_FAILED;
+    }
+
+    const EVP_MD *md = GetOpensslDigestType(digestType);
+    if (EVP_DigestSignInit(mctx, NULL, md, NULL, pkey) != 1) {
+        EVP_MD_CTX_free(mctx);
+        EVP_PKEY_free(pkey);
+        return RSA_FAILED;
+    }
+
+    if (padding == RSA_PKCS1_PSS_PADDING) {
+        if (EVP_PKEY_CTX_set_rsa_padding(EVP_MD_CTX_pkey_ctx(mctx), padding) != 1 &&
+            EVP_PKEY_CTX_set_rsa_pss_saltlen(EVP_MD_CTX_pkey_ctx(mctx), EVP_MD_size(md))) {
+            EVP_MD_CTX_free(mctx);
+            return RSA_FAILED;
+        }
+    }
+
+    if (EVP_DigestSignUpdate(mctx, plainText->data, plainText->size) != 1) {
+        EVP_MD_CTX_free(mctx);
+        EVP_PKEY_free(pkey);
+        return RSA_FAILED;
+    }
+
+    size_t signLen = signData->size;
+    if (EVP_DigestSignFinal(mctx, signData->data, &signLen) != 1) {
+        EVP_MD_CTX_free(mctx);
+        EVP_PKEY_free(pkey);
+        return RSA_FAILED;
+    }
+
+    signData->size = signLen;
+
+    EVP_MD_CTX_free(mctx);
+    EVP_PKEY_free(pkey);
+
+    return RSA_SUCCESS;
+}
+
+int32_t OpensslVerifyRsa(const struct HksBlob *plainText, struct HksBlob *signData, struct HksBlob *key, int padding,
+    enum HksKeyDigest digestType)
+{
+    RSA *rsa = InitRsa(key, false);
+    if (rsa == NULL) {
+        return RSA_FAILED;
+    }
+    EVP_PKEY *pkey = EVP_PKEY_new();
+    if (pkey == NULL) {
+        EVP_PKEY_free(pkey);
+        return RSA_FAILED;
+    }
+    EVP_PKEY_assign_RSA(pkey, rsa);
+    EVP_MD_CTX *mctx = EVP_MD_CTX_new();
+    if (mctx == NULL) {
+        EVP_MD_CTX_free(mctx);
+        return RSA_FAILED;
+    }
+
+    const EVP_MD *md = GetOpensslDigestType(digestType);
+    if (EVP_DigestVerifyInit(mctx, NULL, md, NULL, pkey) != 1) {
+        EVP_MD_CTX_free(mctx);
+        EVP_PKEY_free(pkey);
+        return RSA_FAILED;
+    }
+
+    if (padding == RSA_PKCS1_PSS_PADDING) {
+        if (EVP_PKEY_CTX_set_rsa_padding(EVP_MD_CTX_pkey_ctx(mctx), padding) != 1 &&
+            EVP_PKEY_CTX_set_rsa_pss_saltlen(EVP_MD_CTX_pkey_ctx(mctx), EVP_MD_size(md))) {
+            EVP_MD_CTX_free(mctx);
+            return RSA_FAILED;
+        }
+    }
+
+    if (EVP_DigestVerifyUpdate(mctx, plainText->data, plainText->size) != 1) {
+        EVP_MD_CTX_free(mctx);
+        EVP_PKEY_free(pkey);
+        return RSA_FAILED;
+    }
+    if (EVP_DigestVerifyFinal(mctx, signData->data, signData->size) != 1) {
+        EVP_MD_CTX_free(mctx);
+        EVP_PKEY_free(pkey);
+        return RSA_FAILED;
+    }
+
+    EVP_MD_CTX_free(mctx);
     EVP_PKEY_free(pkey);
 
     return RSA_SUCCESS;

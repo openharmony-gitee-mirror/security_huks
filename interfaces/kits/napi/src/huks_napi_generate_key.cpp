@@ -30,7 +30,7 @@ constexpr int HUKS_NAPI_GETNRATEKEY_MIN_ARGS = 2;
 constexpr int HUKS_NAPI_GENERATEKEY_MAX_ARGS = 3;
 }  // namespace
 
-struct GenerateKeyAsyncContext {
+struct GenerateKeyAsyncContext_t {
     napi_async_work asyncWork = nullptr;
     napi_deferred deferred = nullptr;
     napi_ref callback = nullptr;
@@ -40,17 +40,18 @@ struct GenerateKeyAsyncContext {
     struct HksParamSet *paramSetIn = nullptr;
     struct HksParamSet *paramSetOut = nullptr;
 };
+using GenerateKeyAsyncContext = GenerateKeyAsyncContext_t *;
 
-static GenerateKeyAsyncContext *CreateGenerateKeyAsyncContext()
+static GenerateKeyAsyncContext CreateGenerateKeyAsyncContext()
 {
-    GenerateKeyAsyncContext *context = (GenerateKeyAsyncContext *)HksMalloc(sizeof(GenerateKeyAsyncContext));
+    GenerateKeyAsyncContext context = (GenerateKeyAsyncContext)HksMalloc(sizeof(GenerateKeyAsyncContext_t));
     if (context != nullptr) {
-        (void)memset_s(context, sizeof(GenerateKeyAsyncContext), 0, sizeof(GenerateKeyAsyncContext));
+        (void)memset_s(context, sizeof(GenerateKeyAsyncContext_t), 0, sizeof(GenerateKeyAsyncContext_t));
     }
     return context;
 }
 
-static void DeleteGenerateKeyAsyncContext(napi_env env, GenerateKeyAsyncContext *context)
+static void DeleteGenerateKeyAsyncContext(napi_env env, GenerateKeyAsyncContext context)
 {
     if (context == nullptr) {
         return;
@@ -81,7 +82,7 @@ static void DeleteGenerateKeyAsyncContext(napi_env env, GenerateKeyAsyncContext 
     HksFree(context);
 }
 
-static napi_value GenerateKeyParseParams(napi_env env, napi_callback_info info, GenerateKeyAsyncContext *context)
+static napi_value GenerateKeyParseParams(napi_env env, napi_callback_info info, GenerateKeyAsyncContext context)
 {
     size_t argc = HUKS_NAPI_GENERATEKEY_MAX_ARGS;
     napi_value argv[HUKS_NAPI_GENERATEKEY_MAX_ARGS] = {0};
@@ -123,12 +124,12 @@ static napi_value GenerateKeyParseParams(napi_env env, napi_callback_info info, 
     return GetInt32(env, 0);
 }
 
-static napi_value GenerateKeyWriteResult(napi_env env, GenerateKeyAsyncContext *context)
+static napi_value GenerateKeyWriteResult(napi_env env, GenerateKeyAsyncContext context)
 {
     return GenerateHksResult(env, context->result, nullptr, 0);
 }
 
-static napi_value GenerateKeyAsyncWork(napi_env env, GenerateKeyAsyncContext *context)
+static napi_value GenerateKeyAsyncWork(napi_env env, GenerateKeyAsyncContext context)
 {
     napi_value promise = nullptr;
     if (context->callback == nullptr) {
@@ -143,12 +144,12 @@ static napi_value GenerateKeyAsyncWork(napi_env env, GenerateKeyAsyncContext *co
         nullptr,
         resourceName,
         [](napi_env env, void *data) {
-            GenerateKeyAsyncContext *context = static_cast<GenerateKeyAsyncContext *>(data);
+            GenerateKeyAsyncContext context = static_cast<GenerateKeyAsyncContext>(data);
 
             context->result = HksGenerateKey(context->keyAlias, context->paramSetIn, context->paramSetOut);
         },
         [](napi_env env, napi_status status, void *data) {
-            GenerateKeyAsyncContext *context = static_cast<GenerateKeyAsyncContext *>(data);
+            GenerateKeyAsyncContext context = static_cast<GenerateKeyAsyncContext>(data);
             napi_value result = GenerateKeyWriteResult(env, context);
             if (result == nullptr) {
                 return;
@@ -180,8 +181,7 @@ static napi_value GenerateKeyAsyncWork(napi_env env, GenerateKeyAsyncContext *co
 
 napi_value HuksNapiGenerateKey(napi_env env, napi_callback_info info)
 {
-    GenerateKeyAsyncContext *context = CreateGenerateKeyAsyncContext();
-
+    GenerateKeyAsyncContext context = CreateGenerateKeyAsyncContext();
     if (context == nullptr) {
         HKS_LOG_E("could not create context");
         return nullptr;

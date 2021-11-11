@@ -235,9 +235,14 @@ HKS_API_EXPORT int32_t HksSign(const struct HksBlob *key, const struct HksParamS
     if ((key == NULL) || (paramSet == NULL) || (srcData == NULL) || (signature == NULL)) {
         return HKS_ERROR_NULL_POINTER;
     }
-    int32_t ret = HksClientSign(key, paramSet, srcData, signature);
-    HKS_LOG_I("leave sign, result = %d", ret);
-    return ret;
+
+    struct HksParam *isKeyAlias = NULL;
+    int32_t ret = HksGetParam(paramSet, HKS_TAG_IS_KEY_ALIAS, &isKeyAlias);
+    if ((ret == HKS_SUCCESS) && (!isKeyAlias->boolParam)) {
+        return HksLocalSign(key, paramSet, srcData, signature);
+    }
+
+    return HksClientSign(key, paramSet, srcData, signature);
 #else
     (void)key;
     (void)paramSet;

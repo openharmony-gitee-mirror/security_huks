@@ -36,14 +36,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_001, Function | SmallTes
 
     const char *keyData = "933c213c1f8c844ffcc03f5f7e146a88";
     uint32_t keyLen = strlen(keyData) / 2;
-    HksBlob key = {.size = keyLen, .data = (uint8_t *)HksMalloc(keyLen)};
+    HksBlob key = { .size = keyLen, .data = (uint8_t *)HksMalloc(keyLen) };
     for (uint32_t ii = 0; ii < keyLen; ii++) {
         key.data[ii] = ReadHex((const uint8_t *)&keyData[2 * ii]);
     }
 
-    uint8_t iv[16] = {'0'};
+    uint8_t iv[16] = {0};
     struct HksCipherParam tagIv;
-    tagIv.iv = {.size = 16, .data = iv};
+    tagIv.iv = { .size = 16, .data = iv };
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_AES,
         .mode = HKS_MODE_CBC,
@@ -59,14 +59,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_001, Function | SmallTes
     uint32_t inLen = dataLen;
     uint32_t outLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
@@ -86,14 +86,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_002, Function | SmallTes
 
     const char *keyData = "933c213c1f8c844ffcc03f5f7e146a88";
     uint32_t keyLen = strlen(keyData) / 2;
-    HksBlob key = {.size = keyLen, .data = (uint8_t *)HksMalloc(keyLen)};
+    HksBlob key = { .size = keyLen, .data = (uint8_t *)HksMalloc(keyLen) };
     for (uint32_t ii = 0; ii < keyLen; ii++) {
         key.data[ii] = ReadHex((const uint8_t *)&keyData[2 * ii]);
     }
 
-    uint8_t iv[16] = {'0'};
+    uint8_t iv[16] = {0};
     struct HksCipherParam tagIv;
-    tagIv.iv = {.size = 16, .data = iv};
+    tagIv.iv = { .size = 16, .data = iv };
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_AES,
         .mode = HKS_MODE_CBC,
@@ -109,14 +109,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_002, Function | SmallTes
     uint32_t inLen = dataLen;
     uint32_t outLen = (dataLen + HKS_PADDING_SUPPLENMENT) / HKS_PADDING_SUPPLENMENT * HKS_PADDING_SUPPLENMENT;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
@@ -136,14 +136,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_003, Function | SmallTes
 
     const char *keyData = "933c213c1f8c844ffcc03f5f7e146a88";
     uint32_t keyLen = strlen(keyData) / 2;
-    HksBlob key = {.size = keyLen, .data = (uint8_t *)HksMalloc(keyLen)};
+    HksBlob key = { .size = keyLen, .data = (uint8_t *)HksMalloc(keyLen) };
     for (uint32_t ii = 0; ii < keyLen; ii++) {
         key.data[ii] = ReadHex((const uint8_t *)&keyData[2 * ii]);
     }
 
-    uint8_t iv[16] = {'0'};
+    uint8_t iv[16] = {0};
     struct HksCipherParam tagIv;
-    tagIv.iv = {.size = 16, .data = iv};
+    tagIv.iv = { .size = 16, .data = iv };
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_AES,
         .mode = HKS_MODE_CTR,
@@ -159,14 +159,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_003, Function | SmallTes
     uint32_t inLen = dataLen;
     uint32_t outLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
@@ -186,7 +186,7 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_004, Function | SmallTes
 
     const char *keyData = "933c213c1f8c844ffcc03f5f7e146a88";
     uint32_t keyLen = strlen(keyData) / 2;
-    HksBlob key = {.size = keyLen, .data = (uint8_t *)HksMalloc(keyLen)};
+    HksBlob key = { .size = keyLen, .data = (uint8_t *)HksMalloc(keyLen) };
     for (uint32_t ii = 0; ii < keyLen; ii++) {
         key.data[ii] = ReadHex((const uint8_t *)&keyData[2 * ii]);
     }
@@ -206,14 +206,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_004, Function | SmallTes
     uint32_t inLen = dataLen;
     uint32_t outLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
@@ -233,7 +233,7 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_005, Function | SmallTes
 
     const char *keyData = "933c213c1f8c844ffcc03f5f7e146a88";
     uint32_t keyLen = strlen(keyData) / 2;
-    HksBlob key = {.size = keyLen, .data = (uint8_t *)HksMalloc(keyLen)};
+    HksBlob key = { .size = keyLen, .data = (uint8_t *)HksMalloc(keyLen) };
     for (uint32_t ii = 0; ii < keyLen; ii++) {
         key.data[ii] = ReadHex((const uint8_t *)&keyData[2 * ii]);
     }
@@ -253,14 +253,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_005, Function | SmallTes
     uint32_t inLen = dataLen;
     uint32_t outLen = (dataLen + HKS_PADDING_SUPPLENMENT) / HKS_PADDING_SUPPLENMENT * HKS_PADDING_SUPPLENMENT;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
 #if defined(_USE_OPENSSL_)
@@ -288,17 +288,17 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_006, Function | SmallTes
 
     const char *keyData = "933c213c1f8c844ffcc03f5f7e146a88";
     uint32_t keyLen = strlen(keyData) / 2;
-    HksBlob key = {.size = keyLen, .data = (uint8_t *)HksMalloc(keyLen)};
+    HksBlob key = { .size = keyLen, .data = (uint8_t *)HksMalloc(keyLen) };
     for (uint32_t ii = 0; ii < keyLen; ii++) {
         key.data[ii] = ReadHex((const uint8_t *)&keyData[2 * ii]);
     }
 
-    uint8_t iv[16] = {'0'};
+    uint8_t iv[16] = {0};
     struct HksCipherParam tagIv;
-    tagIv.iv = {.size = 16, .data = iv};
+    tagIv.iv = { .size = 16, .data = iv };
     struct HksAeadParam aeadParam;
     aeadParam.nonce = tagIv.iv;
-    aeadParam.aad = {.size = 0, .data = nullptr};
+    aeadParam.aad = { .size = 0, .data = nullptr };
     aeadParam.payloadLen = 0;
     aeadParam.tagLenEnc = 16;
 
@@ -317,14 +317,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_006, Function | SmallTes
     uint32_t inLen = dataLen;
     uint32_t outLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 16, .data = (uint8_t *)HksMalloc(16)};
+    HksBlob tagAead = { .size = 16, .data = (uint8_t *)HksMalloc(16) };
 
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
@@ -345,14 +345,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_007, Function | SmallTes
 
     const char *keyData = "7be3cb2c4c900fb318e9c89f828baf9b91783f47c6e8d088";
     uint32_t keyLen = strlen(keyData) / 2;
-    HksBlob key = {.size = keyLen, .data = (uint8_t *)HksMalloc(keyLen)};
+    HksBlob key = { .size = keyLen, .data = (uint8_t *)HksMalloc(keyLen) };
     for (uint32_t ii = 0; ii < keyLen; ii++) {
         key.data[ii] = ReadHex((const uint8_t *)&keyData[2 * ii]);
     }
 
-    uint8_t iv[16] = {'0'};
+    uint8_t iv[16] = {0};
     struct HksCipherParam tagIv;
-    tagIv.iv = {.size = 16, .data = iv};
+    tagIv.iv = { .size = 16, .data = iv };
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_AES,
         .mode = HKS_MODE_CBC,
@@ -368,14 +368,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_007, Function | SmallTes
     uint32_t inLen = dataLen;
     uint32_t outLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
@@ -395,14 +395,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_008, Function | SmallTes
 
     const char *keyData = "7be3cb2c4c900fb318e9c89f828baf9b91783f47c6e8d088";
     uint32_t keyLen = strlen(keyData) / 2;
-    HksBlob key = {.size = keyLen, .data = (uint8_t *)HksMalloc(keyLen)};
+    HksBlob key = { .size = keyLen, .data = (uint8_t *)HksMalloc(keyLen) };
     for (uint32_t ii = 0; ii < keyLen; ii++) {
         key.data[ii] = ReadHex((const uint8_t *)&keyData[2 * ii]);
     }
 
-    uint8_t iv[16] = {'0'};
+    uint8_t iv[16] = {0};
     struct HksCipherParam tagIv;
-    tagIv.iv = {.size = 16, .data = iv};
+    tagIv.iv = { .size = 16, .data = iv };
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_AES,
         .mode = HKS_MODE_CBC,
@@ -418,14 +418,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_008, Function | SmallTes
     uint32_t inLen = dataLen;
     uint32_t outLen = (dataLen + HKS_PADDING_SUPPLENMENT) / HKS_PADDING_SUPPLENMENT * HKS_PADDING_SUPPLENMENT;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
@@ -445,14 +445,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_009, Function | SmallTes
 
     const char *keyData = "7be3cb2c4c900fb318e9c89f828baf9b91783f47c6e8d088";
     uint32_t keyLen = strlen(keyData) / 2;
-    HksBlob key = {.size = keyLen, .data = (uint8_t *)HksMalloc(keyLen)};
+    HksBlob key = { .size = keyLen, .data = (uint8_t *)HksMalloc(keyLen) };
     for (uint32_t ii = 0; ii < keyLen; ii++) {
         key.data[ii] = ReadHex((const uint8_t *)&keyData[2 * ii]);
     }
 
-    uint8_t iv[16] = {'0'};
+    uint8_t iv[16] = {0};
     struct HksCipherParam tagIv;
-    tagIv.iv = {.size = 16, .data = iv};
+    tagIv.iv = { .size = 16, .data = iv };
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_AES,
         .mode = HKS_MODE_CTR,
@@ -468,14 +468,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_009, Function | SmallTes
     uint32_t inLen = dataLen;
     uint32_t outLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
@@ -495,7 +495,7 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_010, Function | SmallTes
 
     const char *keyData = "7be3cb2c4c900fb318e9c89f828baf9b91783f47c6e8d088";
     uint32_t keyLen = strlen(keyData) / 2;
-    HksBlob key = {.size = keyLen, .data = (uint8_t *)HksMalloc(keyLen)};
+    HksBlob key = { .size = keyLen, .data = (uint8_t *)HksMalloc(keyLen) };
     for (uint32_t ii = 0; ii < keyLen; ii++) {
         key.data[ii] = ReadHex((const uint8_t *)&keyData[2 * ii]);
     }
@@ -515,14 +515,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_010, Function | SmallTes
     uint32_t inLen = dataLen;
     uint32_t outLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
@@ -542,7 +542,7 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_011, Function | SmallTes
 
     const char *keyData = "7be3cb2c4c900fb318e9c89f828baf9b91783f47c6e8d088";
     uint32_t keyLen = strlen(keyData) / 2;
-    HksBlob key = {.size = keyLen, .data = (uint8_t *)HksMalloc(keyLen)};
+    HksBlob key = { .size = keyLen, .data = (uint8_t *)HksMalloc(keyLen) };
     for (uint32_t ii = 0; ii < keyLen; ii++) {
         key.data[ii] = ReadHex((const uint8_t *)&keyData[2 * ii]);
     }
@@ -562,14 +562,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_011, Function | SmallTes
     uint32_t inLen = dataLen;
     uint32_t outLen = (dataLen + HKS_PADDING_SUPPLENMENT) / HKS_PADDING_SUPPLENMENT * HKS_PADDING_SUPPLENMENT;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
 #if defined(_USE_OPENSSL_)
@@ -597,17 +597,17 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_012, Function | SmallTes
 
     const char *keyData = "7be3cb2c4c900fb318e9c89f828baf9b91783f47c6e8d088";
     uint32_t keyLen = strlen(keyData) / 2;
-    HksBlob key = {.size = keyLen, .data = (uint8_t *)HksMalloc(keyLen)};
+    HksBlob key = { .size = keyLen, .data = (uint8_t *)HksMalloc(keyLen) };
     for (uint32_t ii = 0; ii < keyLen; ii++) {
         key.data[ii] = ReadHex((const uint8_t *)&keyData[2 * ii]);
     }
 
-    uint8_t iv[16] = {'0'};
+    uint8_t iv[16] = {0};
     struct HksCipherParam tagIv;
-    tagIv.iv = {.size = 16, .data = iv};
+    tagIv.iv = { .size = 16, .data = iv };
     struct HksAeadParam aeadParam;
     aeadParam.nonce = tagIv.iv;
-    aeadParam.aad = {.size = 0, .data = nullptr};
+    aeadParam.aad = { .size = 0, .data = nullptr };
     aeadParam.payloadLen = 0;
     aeadParam.tagLenEnc = 16;
 
@@ -626,14 +626,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_012, Function | SmallTes
     uint32_t inLen = dataLen;
     uint32_t outLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 16, .data = (uint8_t *)HksMalloc(16)};
+    HksBlob tagAead = { .size = 16, .data = (uint8_t *)HksMalloc(16) };
 
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
@@ -654,14 +654,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_013, Function | SmallTes
 
     const char *keyData = "57095bd2ba60c34eaafaa77d694eb809af366810fba500ea660a5048b14b212f";
     uint32_t keyLen = strlen(keyData) / 2;
-    HksBlob key = {.size = keyLen, .data = (uint8_t *)HksMalloc(keyLen)};
+    HksBlob key = { .size = keyLen, .data = (uint8_t *)HksMalloc(keyLen) };
     for (uint32_t ii = 0; ii < keyLen; ii++) {
         key.data[ii] = ReadHex((const uint8_t *)&keyData[2 * ii]);
     }
 
-    uint8_t iv[16] = {'0'};
+    uint8_t iv[16] = {0};
     struct HksCipherParam tagIv;
-    tagIv.iv = {.size = 16, .data = iv};
+    tagIv.iv = { .size = 16, .data = iv };
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_AES,
         .mode = HKS_MODE_CBC,
@@ -677,14 +677,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_013, Function | SmallTes
     uint32_t inLen = dataLen;
     uint32_t outLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
@@ -704,14 +704,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_014, Function | SmallTes
 
     const char *keyData = "57095bd2ba60c34eaafaa77d694eb809af366810fba500ea660a5048b14b212f";
     uint32_t keyLen = strlen(keyData) / 2;
-    HksBlob key = {.size = keyLen, .data = (uint8_t *)HksMalloc(keyLen)};
+    HksBlob key = { .size = keyLen, .data = (uint8_t *)HksMalloc(keyLen) };
     for (uint32_t ii = 0; ii < keyLen; ii++) {
         key.data[ii] = ReadHex((const uint8_t *)&keyData[2 * ii]);
     }
 
-    uint8_t iv[16] = {'0'};
+    uint8_t iv[16] = {0};
     struct HksCipherParam tagIv;
-    tagIv.iv = {.size = 16, .data = iv};
+    tagIv.iv = { .size = 16, .data = iv };
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_AES,
         .mode = HKS_MODE_CBC,
@@ -727,14 +727,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_014, Function | SmallTes
     uint32_t inLen = dataLen;
     uint32_t outLen = (dataLen + HKS_PADDING_SUPPLENMENT) / HKS_PADDING_SUPPLENMENT * HKS_PADDING_SUPPLENMENT;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
@@ -754,14 +754,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_015, Function | SmallTes
 
     const char *keyData = "57095bd2ba60c34eaafaa77d694eb809af366810fba500ea660a5048b14b212f";
     uint32_t keyLen = strlen(keyData) / 2;
-    HksBlob key = {.size = keyLen, .data = (uint8_t *)HksMalloc(keyLen)};
+    HksBlob key = { .size = keyLen, .data = (uint8_t *)HksMalloc(keyLen) };
     for (uint32_t ii = 0; ii < keyLen; ii++) {
         key.data[ii] = ReadHex((const uint8_t *)&keyData[2 * ii]);
     }
 
-    uint8_t iv[16] = {'0'};
+    uint8_t iv[16] = {0};
     struct HksCipherParam tagIv;
-    tagIv.iv = {.size = 16, .data = iv};
+    tagIv.iv = { .size = 16, .data = iv };
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_AES,
         .mode = HKS_MODE_CTR,
@@ -777,14 +777,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_015, Function | SmallTes
     uint32_t inLen = dataLen;
     uint32_t outLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
@@ -804,7 +804,7 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_016, Function | SmallTes
 
     const char *keyData = "57095bd2ba60c34eaafaa77d694eb809af366810fba500ea660a5048b14b212f";
     uint32_t keyLen = strlen(keyData) / 2;
-    HksBlob key = {.size = keyLen, .data = (uint8_t *)HksMalloc(keyLen)};
+    HksBlob key = { .size = keyLen, .data = (uint8_t *)HksMalloc(keyLen) };
     for (uint32_t ii = 0; ii < keyLen; ii++) {
         key.data[ii] = ReadHex((const uint8_t *)&keyData[2 * ii]);
     }
@@ -824,14 +824,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_016, Function | SmallTes
     uint32_t inLen = dataLen;
     uint32_t outLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
@@ -851,7 +851,7 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_017, Function | SmallTes
 
     const char *keyData = "57095bd2ba60c34eaafaa77d694eb809af366810fba500ea660a5048b14b212f";
     uint32_t keyLen = strlen(keyData) / 2;
-    HksBlob key = {.size = keyLen, .data = (uint8_t *)HksMalloc(keyLen)};
+    HksBlob key = { .size = keyLen, .data = (uint8_t *)HksMalloc(keyLen) };
     for (uint32_t ii = 0; ii < keyLen; ii++) {
         key.data[ii] = ReadHex((const uint8_t *)&keyData[2 * ii]);
     }
@@ -871,14 +871,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_017, Function | SmallTes
     uint32_t inLen = dataLen;
     uint32_t outLen = (dataLen + HKS_PADDING_SUPPLENMENT) / HKS_PADDING_SUPPLENMENT * HKS_PADDING_SUPPLENMENT;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
 #if defined(_USE_OPENSSL_)
@@ -906,17 +906,17 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_018, Function | SmallTes
 
     const char *keyData = "57095bd2ba60c34eaafaa77d694eb809af366810fba500ea660a5048b14b212f";
     uint32_t keyLen = strlen(keyData) / 2;
-    HksBlob key = {.size = keyLen, .data = (uint8_t *)HksMalloc(keyLen)};
+    HksBlob key = { .size = keyLen, .data = (uint8_t *)HksMalloc(keyLen) };
     for (uint32_t ii = 0; ii < keyLen; ii++) {
         key.data[ii] = ReadHex((const uint8_t *)&keyData[2 * ii]);
     }
 
-    uint8_t iv[16] = {'0'};
+    uint8_t iv[16] = {0};
     struct HksCipherParam tagIv;
-    tagIv.iv = {.size = 16, .data = iv};
+    tagIv.iv = { .size = 16, .data = iv };
     struct HksAeadParam aeadParam;
     aeadParam.nonce = tagIv.iv;
-    aeadParam.aad = {.size = 0, .data = nullptr};
+    aeadParam.aad = { .size = 0, .data = nullptr };
     aeadParam.payloadLen = 0;
     aeadParam.tagLenEnc = 16;
 
@@ -935,14 +935,14 @@ HWTEST_F(HksCryptoHalAesEncrypt, HksCryptoHalAesEncrypt_018, Function | SmallTes
     uint32_t inLen = dataLen;
     uint32_t outLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 16, .data = (uint8_t *)HksMalloc(16)};
+    HksBlob tagAead = { .size = 16, .data = (uint8_t *)HksMalloc(16) };
 
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);

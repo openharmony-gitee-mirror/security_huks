@@ -305,6 +305,8 @@ static int32_t SignVerifyAuth(const struct HksKeyNode *keyNode, const struct Hks
         return HksAuth(HKS_AUTH_ID_SIGN_VERIFY_RSA, keyNode, paramSet);
     } else if (algParam->uint32Param == HKS_ALG_ECC) {
         return HksAuth(HKS_AUTH_ID_SIGN_VERIFY_ECC, keyNode, paramSet);
+    } else if (algParam->uint32Param == HKS_ALG_DSA) {
+        return HKS_SUCCESS;
     } else if (algParam->uint32Param == HKS_ALG_ED25519) {
         return HKS_SUCCESS;
     } else {
@@ -313,7 +315,7 @@ static int32_t SignVerifyAuth(const struct HksKeyNode *keyNode, const struct Hks
 }
 
 static int32_t GetSignVerifyMessage(const struct HksParamSet *paramSet, const struct HksBlob *srcData,
-    struct HksBlob *message, bool *isEd25519)
+    struct HksBlob *message, bool *needFree)
 {
     struct HksParam *algParam = NULL;
     int32_t ret = HksGetParam(paramSet, HKS_TAG_ALGORITHM, &algParam);
@@ -322,7 +324,8 @@ static int32_t GetSignVerifyMessage(const struct HksParamSet *paramSet, const st
         return HKS_ERROR_CHECK_GET_ALG_FAIL;
     }
 
-    if (algParam->uint32Param != HKS_ALG_ED25519) {
+    if (algParam->uint32Param != HKS_ALG_ED25519 && algParam->uint32Param != HKS_ALG_RSA &&
+        algParam->uint32Param != HKS_ALG_DSA && algParam->uint32Param != HKS_ALG_ECC) {
         struct HksParam *digestParam = NULL;
         ret = HksGetParam(paramSet, HKS_TAG_DIGEST, &digestParam);
         if (ret != HKS_SUCCESS) {
@@ -344,11 +347,11 @@ static int32_t GetSignVerifyMessage(const struct HksParamSet *paramSet, const st
             return ret;
         }
 
-        *isEd25519 = false;
+        *needFree = true;
     } else {
         message->size = srcData->size;
         message->data = srcData->data;
-        *isEd25519 = true;
+        *needFree = false;
     }
 
     return HKS_SUCCESS;
@@ -369,7 +372,7 @@ static int32_t SignVerify(uint32_t cmdId, const struct HksBlob *key, const struc
         return HKS_ERROR_BAD_STATE;
     }
 
-    bool isEd25519 = true;
+    bool needFree = true;
     struct HksBlob message = { 0, NULL };
     do {
         ret = SignVerifyAuth(keyNode, paramSet);
@@ -377,7 +380,7 @@ static int32_t SignVerify(uint32_t cmdId, const struct HksBlob *key, const struc
             break;
         }
 
-        ret = GetSignVerifyMessage(keyNode->paramSet, srcData, &message, &isEd25519);
+        ret = GetSignVerifyMessage(keyNode->paramSet, srcData, &message, &needFree);
         if (ret != HKS_SUCCESS) {
             HKS_LOG_E("SignVerify calc hash failed!");
             break;
@@ -402,7 +405,7 @@ static int32_t SignVerify(uint32_t cmdId, const struct HksBlob *key, const struc
     }while (0);
 
     HksFreeKeyNode(&keyNode);
-    if (!isEd25519) {
+    if (needFree) {
         HKS_FREE_PTR(message.data);
     }
     return ret;

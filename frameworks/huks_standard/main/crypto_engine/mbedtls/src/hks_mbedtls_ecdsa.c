@@ -32,12 +32,16 @@
 #include <mbedtls/ecp.h>
 #include <mbedtls/entropy.h>
 
+#include "hks_common_check.h"
 #include "hks_log.h"
+#include "hks_mem.h"
 #include "hks_mbedtls_common.h"
 #include "hks_mbedtls_ecc.h"
+#include "hks_mbedtls_hash.h"
 
+#ifdef HKS_SUPPORT_ECDSA_SIGN_VERIFY
 /* users must ensure the input params not null */
-int32_t HksMbedtlsEcdsaSign(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
+static int32_t HksMbedtlsEcdsaSign(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
     const struct HksBlob *message, struct HksBlob *signature)
 {
     int32_t ret = EccKeyCheck(key);
@@ -74,7 +78,8 @@ int32_t HksMbedtlsEcdsaSign(const struct HksBlob *key, const struct HksUsageSpec
         }
 
         uint32_t mbedtlsAlg;
-        ret = HksToMbedtlsDigestAlg(usageSpec->digest, &mbedtlsAlg);
+        uint32_t digest = (usageSpec->digest == HKS_DIGEST_NONE) ? HKS_DIGEST_SHA256 : usageSpec->digest;
+        ret = HksToMbedtlsDigestAlg(digest, &mbedtlsAlg);
         if (ret != HKS_SUCCESS) {
             break;
         }
@@ -84,6 +89,7 @@ int32_t HksMbedtlsEcdsaSign(const struct HksBlob *key, const struct HksUsageSpec
         if (ret != HKS_MBEDTLS_SUCCESS) {
             HKS_LOG_E("Ecc mbedtls sign fail! mbedtls ret = 0x%X", ret);
             (void)memset_s(signature->data, signature->size, 0, signature->size);
+            ret = HKS_ERROR_CRYPTO_ENGINE_ERROR;
         }
     } while (0);
 
@@ -94,7 +100,7 @@ int32_t HksMbedtlsEcdsaSign(const struct HksBlob *key, const struct HksUsageSpec
 }
 
 /* users must ensure the input params not null */
-int32_t HksMbedtlsEcdsaVerify(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
+static int32_t HksMbedtlsEcdsaVerify(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
     const struct HksBlob *message, const struct HksBlob *signature)
 {
     (void)usageSpec;
@@ -129,10 +135,42 @@ int32_t HksMbedtlsEcdsaVerify(const struct HksBlob *key, const struct HksUsageSp
             message->data, message->size, signature->data, signature->size);
         if (ret != HKS_MBEDTLS_SUCCESS) {
             HKS_LOG_E("Ecc mbedtls verify fail! mbedtls ret = 0x%X", ret);
+            ret = HKS_ERROR_CRYPTO_ENGINE_ERROR;
         }
-    }while (0);
+    } while (0);
 
     mbedtls_ecdsa_free(&ctx);
     return ret;
 }
+
+int32_t HksMbedtlsEcdsaSignVerify(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
+    const struct HksBlob *message, const struct HksBlob *signature, bool isVerify)
+{
+    uint32_t digest = (usageSpec->digest == HKS_DIGEST_NONE) ? HKS_DIGEST_SHA256 : usageSpec->digest;
+    uint32_t digestLen;
+    int32_t ret = HksGetDigestLen(digest, &digestLen);
+    if (ret != HKS_SUCCESS) {
+        return ret;
+    }
+    struct HksBlob hash = { .size = digestLen, .data = HksMalloc(digestLen) };
+    if (hash.data == NULL) {
+        return HKS_ERROR_MALLOC_FAIL;
+    }
+
+    ret = HksMbedtlsHash(digest, message, &hash);
+    if (ret != HKS_SUCCESS) {
+        HKS_FREE_BLOB(hash);
+        return ret;
+    }
+
+    if (isVerify) {
+        ret = HksMbedtlsEcdsaVerify(key, usageSpec, &hash, signature);
+    } else {
+        ret = HksMbedtlsEcdsaSign(key, usageSpec, &hash, (struct HksBlob *)signature);
+    }
+    HKS_FREE_BLOB(hash);
+
+    return ret;
+}
+#endif /* HKS_SUPPORT_ECDSA_SIGN_VERIFY */
 #endif /* HKS_SUPPORT_ECDSA_C */
