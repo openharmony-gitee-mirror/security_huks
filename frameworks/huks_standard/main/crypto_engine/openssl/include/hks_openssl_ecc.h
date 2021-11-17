@@ -33,14 +33,18 @@ int32_t HksOpensslEccGenerateKey(const struct HksKeySpec *spec, struct HksBlob *
 int32_t HksOpensslGetEccPubKey(const struct HksBlob *input, struct HksBlob *output);
 #endif
 
+#ifdef HKS_SUPPORT_ECDH_AGREE_KEY
 int32_t HksOpensslEcdhAgreeKey(const struct HksBlob *nativeKey, const struct HksBlob *pubKey,
     const struct HksKeySpec *spec, struct HksBlob *sharedKey);
+#endif /* HKS_SUPPORT_ECDH_AGREE_KEY */
 
+#ifdef HKS_SUPPORT_ECDSA_SIGN_VERIFY
 int32_t HksOpensslEcdsaSign(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
     const struct HksBlob *message, struct HksBlob *signature);
 
-int32_t HksOpensslEcdsaVerify(
-    const struct HksBlob *key, const struct HksBlob *message, const struct HksBlob *signature);
+int32_t HksOpensslEcdsaVerify(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
+    const struct HksBlob *message, const struct HksBlob *signature);
+#endif /* HKS_SUPPORT_ECDSA_SIGN_VERIFY */
 
 #ifdef __cplusplus
 }

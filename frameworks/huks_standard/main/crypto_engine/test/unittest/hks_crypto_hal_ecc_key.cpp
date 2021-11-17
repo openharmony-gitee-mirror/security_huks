@@ -40,7 +40,7 @@ HWTEST_F(HksCryptoHalEccKey, HksCryptoHalEccKey_001, Function | SmallTest | Leve
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalGenerateKey(&spec, &key);
 #if defined(HKS_SUPPORT_ECC_C) && defined(HKS_SUPPORT_ECC_GENERATE_KEY)
@@ -68,7 +68,7 @@ HWTEST_F(HksCryptoHalEccKey, HksCryptoHalEccKey_002, Function | SmallTest | Leve
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalGenerateKey(&spec, &key);
 #if defined(HKS_SUPPORT_ECC_C) && defined(HKS_SUPPORT_ECC_GENERATE_KEY)
@@ -96,7 +96,7 @@ HWTEST_F(HksCryptoHalEccKey, HksCryptoHalEccKey_003, Function | SmallTest | Leve
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalGenerateKey(&spec, &key);
 #if defined(HKS_SUPPORT_ECC_C) && defined(HKS_SUPPORT_ECC_GENERATE_KEY)
@@ -124,7 +124,7 @@ HWTEST_F(HksCryptoHalEccKey, HksCryptoHalEccKey_004, Function | SmallTest | Leve
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalGenerateKey(&spec, &key);
 #if defined(HKS_SUPPORT_ECC_C) && defined(HKS_SUPPORT_ECC_GENERATE_KEY)
@@ -151,7 +151,7 @@ HWTEST_F(HksCryptoHalEccKey, HksCryptoHalEccKey_005, Function | SmallTest | Leve
         .keyLen = HKS_ECC_KEY_SIZE_384,
     };
 
-    HksBlob key = {.size = 0, .data = NULL};
+    HksBlob key = { .size = 0, .data = NULL };
 
     ret = HksCryptoHalGenerateKey(&spec, &key);
     ASSERT_EQ(ret, HKS_SUCCESS);
@@ -159,9 +159,11 @@ HWTEST_F(HksCryptoHalEccKey, HksCryptoHalEccKey_005, Function | SmallTest | Leve
     KeyMaterialEcc *keyMaterial = (KeyMaterialEcc *)key.data;
 
     uint32_t keyOutLen = sizeof(KeyMaterialEcc) + keyMaterial->xSize + keyMaterial->ySize;
-    HksBlob keyOut = {.size = keyOutLen, .data = (uint8_t *)HksMalloc(keyOutLen)};
+    HksBlob keyOut = { .size = keyOutLen, .data = (uint8_t *)HksMalloc(keyOutLen) };
 
     ret = HksCryptoHalGetPubKey(&key, &keyOut);
     ASSERT_EQ(ret, HKS_SUCCESS);
+    HKS_FREE_BLOB(key);
+    HKS_FREE_BLOB(keyOut);
 }
 }  // namespace

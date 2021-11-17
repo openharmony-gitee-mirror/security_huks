@@ -16,16 +16,13 @@
 #ifndef HKS_OPENSSL_RSA_TEST_MT_H
 #define HKS_OPENSSL_RSA_TEST_MT_H
 
-#include <stdbool.h>
+#include <securec.h>
 
-#include <openssl/aes.h>
-#include <openssl/bio.h>
 #include <openssl/evp.h>
-#include <openssl/ossl_typ.h>
-#include <openssl/rand.h>
 #include <openssl/rsa.h>
 
 #include "hks_type.h"
+#include "hks_param.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,6 +44,12 @@ int32_t EncryptRSA(const struct HksBlob *inData, struct HksBlob *outData, struct
     enum HksKeyDigest digestType);
 
 int32_t DecryptRSA(const struct HksBlob *inData, struct HksBlob *outData, struct HksBlob *key, int padding,
+    enum HksKeyDigest digestType);
+
+int32_t OpensslSignRsa(const struct HksBlob *plainText, struct HksBlob *signData, struct HksBlob *key, int padding,
+    enum HksKeyDigest digestType);
+
+int32_t OpensslVerifyRsa(const struct HksBlob *plainText, struct HksBlob *signData, struct HksBlob *key, int padding,
     enum HksKeyDigest digestType);
 
 #ifdef __cplusplus

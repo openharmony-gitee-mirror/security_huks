@@ -75,8 +75,13 @@ napi_value GetUint8Array(napi_env env, napi_value object, HksBlob &arrayBlob)
         HKS_LOG_E("data len is too large, len = %x", length);
         return nullptr;
     }
+
+    arrayBlob.data = (uint8_t *)HksMalloc(length);
+    if (arrayBlob.data == nullptr) {
+        return nullptr;
+    }
+    (void)memcpy_s(arrayBlob.data, length, rawData, length);
     arrayBlob.size = (uint32_t)length;
-    arrayBlob.data = (uint8_t *)rawData;
 
     return GetInt32(env, 0);
 }
@@ -208,31 +213,31 @@ static napi_value GenerateAarrayBuffer(napi_env env, uint8_t *data, uint32_t siz
     return outBuffer;
 }
 
-static napi_value GenerateHksParam(napi_env env, const HksParam *param)
+static napi_value GenerateHksParam(napi_env env, const HksParam &param)
 {
     napi_value hksParam = nullptr;
     NAPI_CALL(env, napi_create_object(env, &hksParam));
 
     napi_value tag = nullptr;
-    NAPI_CALL(env, napi_create_uint32(env, param->tag, &tag));
+    NAPI_CALL(env, napi_create_uint32(env, param.tag, &tag));
     NAPI_CALL(env, napi_set_named_property(env, hksParam, HKS_PARAM_PROPERTY_TAG.c_str(), tag));
 
     napi_value value = nullptr;
-    switch (param->tag & HKS_TAG_TYPE_MASK) {
+    switch (param.tag & HKS_TAG_TYPE_MASK) {
         case HKS_TAG_TYPE_INT:
-            NAPI_CALL(env, napi_create_int32(env, param->int32Param, &value));
+            NAPI_CALL(env, napi_create_int32(env, param.int32Param, &value));
             break;
         case HKS_TAG_TYPE_UINT:
-            NAPI_CALL(env, napi_create_uint32(env, param->uint32Param, &value));
+            NAPI_CALL(env, napi_create_uint32(env, param.uint32Param, &value));
             break;
         case HKS_TAG_TYPE_ULONG:
-            NAPI_CALL(env, napi_create_int64(env, param->uint64Param, &value));
+            NAPI_CALL(env, napi_create_int64(env, param.uint64Param, &value));
             break;
         case HKS_TAG_TYPE_BOOL:
-            NAPI_CALL(env, napi_get_boolean(env, param->boolParam, &value));
+            NAPI_CALL(env, napi_get_boolean(env, param.boolParam, &value));
             break;
         case HKS_TAG_TYPE_BYTES:
-            value = GenerateAarrayBuffer(env, param->blob.data, param->blob.size);
+            value = GenerateAarrayBuffer(env, param.blob.data, param.blob.size);
             break;
         default:
             value = GetNull(env);
@@ -243,21 +248,39 @@ static napi_value GenerateHksParam(napi_env env, const HksParam *param)
     return hksParam;
 }
 
-static napi_value GenerateHksParamArray(napi_env env, const HksParamSet *paramSet)
+static napi_value GenerateHksParamArray(napi_env env, const HksParamSet &paramSet)
 {
     napi_value paramArray = nullptr;
     NAPI_CALL(env, napi_create_array(env, &paramArray));
 
-    for (uint32_t i = 0; i < paramSet->paramsCnt; i++) {
+    for (uint32_t i = 0; i < paramSet.paramsCnt; i++) {
         napi_value element = nullptr;
-        element = GenerateHksParam(env, &paramSet->params[i]);
+        element = GenerateHksParam(env, paramSet.params[i]);
         napi_set_element(env, paramArray, i, element);
     }
 
     return paramArray;
 }
 
-napi_value GenerateHksResult(napi_env env, int32_t error, uint8_t *data, uint32_t size, const HksParamSet *paramSet)
+napi_value GenerateHksResult(napi_env env, int32_t error)
+{
+    napi_value result = nullptr;
+    NAPI_CALL(env, napi_create_object(env, &result));
+
+    napi_value errorCode = nullptr;
+    NAPI_CALL(env, napi_create_int32(env, error, &errorCode));
+    NAPI_CALL(env, napi_set_named_property(env, result, HKS_RESULT_PROPERTY_ERRORCODE.c_str(), errorCode));
+
+    napi_value outData = GetNull(env);
+    NAPI_CALL(env, napi_set_named_property(env, result, HKS_RESULT_PROPERTY_OUTDATA.c_str(), outData));
+
+    napi_value properties = GetNull(env);
+    NAPI_CALL(env, napi_set_named_property(env, result, HKS_RESULT_PRPPERTY_PROPERTIES.c_str(), properties));
+
+    return result;
+}
+
+napi_value GenerateHksResult(napi_env env, int32_t error, uint8_t *data, uint32_t size)
 {
     napi_value result = nullptr;
     NAPI_CALL(env, napi_create_object(env, &result));
@@ -277,12 +300,33 @@ napi_value GenerateHksResult(napi_env env, int32_t error, uint8_t *data, uint32_
     }
     NAPI_CALL(env, napi_set_named_property(env, result, HKS_RESULT_PROPERTY_OUTDATA.c_str(), outData));
 
-    napi_value properties = nullptr;
-    if (paramSet != nullptr) {
-        properties = GenerateHksParamArray(env, paramSet);
+    napi_value properties = GetNull(env);
+    NAPI_CALL(env, napi_set_named_property(env, result, HKS_RESULT_PRPPERTY_PROPERTIES.c_str(), properties));
+
+    return result;
+}
+
+napi_value GenerateHksResult(napi_env env, int32_t error, uint8_t *data, uint32_t size, const HksParamSet &paramSet)
+{
+    napi_value result = nullptr;
+    NAPI_CALL(env, napi_create_object(env, &result));
+
+    napi_value errorCode = nullptr;
+    NAPI_CALL(env, napi_create_int32(env, error, &errorCode));
+    NAPI_CALL(env, napi_set_named_property(env, result, HKS_RESULT_PROPERTY_ERRORCODE.c_str(), errorCode));
+
+    napi_value outData = nullptr;
+    if (data != nullptr && size != 0) {
+        napi_value outBuffer = GenerateAarrayBuffer(env, data, size);
+        if (outBuffer != nullptr) {
+            NAPI_CALL(env, napi_create_typedarray(env, napi_uint8_array, size, outBuffer, 0, &outData));
+        }
     } else {
-        properties = GetNull(env);
+        outData = GetNull(env);
     }
+    NAPI_CALL(env, napi_set_named_property(env, result, HKS_RESULT_PROPERTY_OUTDATA.c_str(), outData));
+
+    napi_value properties = GenerateHksParamArray(env, paramSet);
     NAPI_CALL(env, napi_set_named_property(env, result, HKS_RESULT_PRPPERTY_PROPERTIES.c_str(), properties));
 
     return result;
@@ -304,11 +348,47 @@ void CallAsyncCallback(napi_env env, napi_ref callback, int32_t error, napi_valu
 {
     napi_value businessError = GenerateBusinessError(env, error);
 
-    napi_value params[ASYNCCALLBACK_ARGC] = {businessError, data};
+    napi_value params[ASYNCCALLBACK_ARGC] = { businessError, data };
 
     napi_value func = nullptr;
     NAPI_CALL_RETURN_VOID(env, napi_get_reference_value(env, callback, &func));
 
-    NAPI_CALL_RETURN_VOID(env, napi_call_function(env, nullptr, func, ASYNCCALLBACK_ARGC, params, nullptr));
+    napi_value recv = nullptr;
+    napi_value result = nullptr;
+    NAPI_CALL_RETURN_VOID(env, napi_get_undefined(env, &recv));
+    NAPI_CALL_RETURN_VOID(env, napi_call_function(env, recv, func, ASYNCCALLBACK_ARGC, params, &result));
+}
+
+napi_value GenerateStringArray(napi_env env, const struct HksBlob *blob, const uint32_t blobCount)
+{
+    if (blobCount == 0 || blob == nullptr) {
+        return nullptr;
+    }
+    napi_value array = nullptr;
+    NAPI_CALL(env, napi_create_array(env, &array));
+    for (uint32_t i = 0; i < blobCount; i++) {
+        napi_value element = nullptr;
+        napi_create_string_latin1(env, (const char *)blob[i].data, blob[i].size, &element);
+        napi_set_element(env, array, i, element);
+    }
+    return array;
+}
+
+void FreeHksCertChain(HksCertChain *&certChain)
+{
+    if (certChain == nullptr) {
+        return;
+    }
+
+    if (certChain->certsCount > 0 && certChain->certs != nullptr) {
+        for (uint32_t i = 0; i < certChain->certsCount; i++) {
+            if (certChain->certs[i].data != nullptr) {
+                HksFree(certChain->certs[i].data);
+            }
+        }
+    }
+
+    HksFree(certChain);
+    certChain = nullptr;
 }
 }  // namespace HuksNapi

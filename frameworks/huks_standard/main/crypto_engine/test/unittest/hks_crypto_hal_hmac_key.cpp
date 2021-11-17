@@ -40,7 +40,7 @@ HWTEST_F(HksCryptoHalHmacKey, HksCryptoHalHmacKey_001, Function | SmallTest | Le
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalGenerateKey(&spec, &key);
 #if defined(HKS_SUPPORT_HMAC_C) && defined(HKS_SUPPORT_HMAC_GENERATE_KEY)

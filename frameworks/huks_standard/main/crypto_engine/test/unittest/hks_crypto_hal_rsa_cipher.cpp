@@ -65,7 +65,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_001, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -84,16 +84,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_001, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_512);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -101,7 +101,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_001, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, HksCryptoHalGenerateKey(&spec, &key));
 #if defined(_USE_OPENSSL_)
     EXPECT_EQ(HKS_SUCCESS, HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead));
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     EXPECT_EQ(HKS_SUCCESS, HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message));
     EXPECT_EQ(inscription.size, message.size);
     EXPECT_EQ(0, HksMemCmp(inscription.data, message.data, message.size));
@@ -128,7 +129,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_002, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -148,16 +149,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_002, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_768);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -165,7 +166,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_002, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, HksCryptoHalGenerateKey(&spec, &key));
 #if defined(_USE_OPENSSL_)
     EXPECT_EQ(HKS_SUCCESS, HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead));
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     EXPECT_EQ(HKS_SUCCESS, HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message));
     EXPECT_EQ(inscription.size, message.size);
     EXPECT_EQ(0, HksMemCmp(inscription.data, message.data, message.size));
@@ -192,7 +194,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_003, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -212,16 +214,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_003, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_1024);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -229,7 +231,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_003, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, HksCryptoHalGenerateKey(&spec, &key));
 #if defined(_USE_OPENSSL_)
     EXPECT_EQ(HKS_SUCCESS, HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead));
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     EXPECT_EQ(HKS_SUCCESS, HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message));
     EXPECT_EQ(inscription.size, message.size);
     EXPECT_EQ(0, HksMemCmp(inscription.data, message.data, message.size));
@@ -256,7 +259,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_004, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -273,16 +276,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_004, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_2048);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&RSA_2048_NOPADDING_KEY[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&RSA_2048_NOPADDING_KEY[2 * ii]);
     }
@@ -290,7 +293,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_004, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, HksCryptoHalGenerateKey(&spec, &key));
 #if defined(_USE_OPENSSL_)
     EXPECT_EQ(HKS_SUCCESS, HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead));
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     EXPECT_EQ(HKS_SUCCESS, HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message));
     EXPECT_EQ(inscription.size, message.size);
     EXPECT_EQ(0, HksMemCmp(inscription.data, message.data, message.size));
@@ -317,7 +321,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_005, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -334,16 +338,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_005, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_3072);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&RSA_3072_NOPADDING_KEY[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&RSA_3072_NOPADDING_KEY[2 * ii]);
     }
@@ -351,7 +355,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_005, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, HksCryptoHalGenerateKey(&spec, &key));
 #if defined(_USE_OPENSSL_)
     EXPECT_EQ(HKS_SUCCESS, HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead));
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     EXPECT_EQ(HKS_SUCCESS, HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message));
     EXPECT_EQ(inscription.size, message.size);
     EXPECT_EQ(0, HksMemCmp(inscription.data, message.data, message.size));
@@ -378,7 +383,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_006, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -395,16 +400,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_006, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_4096);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&RSA_4096_NOPADDING_KEY[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&RSA_4096_NOPADDING_KEY[2 * ii]);
     }
@@ -412,7 +417,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_006, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, HksCryptoHalGenerateKey(&spec, &key));
 #if defined(_USE_OPENSSL_)
     EXPECT_EQ(HKS_SUCCESS, HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead));
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     EXPECT_EQ(HKS_SUCCESS, HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message));
     EXPECT_EQ(inscription.size, message.size);
     EXPECT_EQ(0, HksMemCmp(inscription.data, message.data, message.size));
@@ -441,7 +447,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_007, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -459,16 +465,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_007, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_512);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -477,7 +483,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_007, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -504,7 +511,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_008, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -522,16 +529,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_008, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_768);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -540,7 +547,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_008, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -567,7 +575,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_009, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -585,16 +593,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_009, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_1024);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -603,7 +611,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_009, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -630,7 +639,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_010, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -648,16 +657,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_010, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_2048);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -666,7 +675,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_010, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -693,7 +703,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_011, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -711,16 +721,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_011, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_3072);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -729,7 +739,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_011, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -756,7 +767,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_012, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -774,16 +785,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_012, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_4096);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -792,7 +803,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_012, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -819,7 +831,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_013, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -837,16 +849,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_013, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_512);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -855,7 +867,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_013, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -882,7 +895,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_014, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -900,16 +913,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_014, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_768);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -918,7 +931,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_014, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -945,7 +959,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_015, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -963,16 +977,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_015, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_1024);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -981,7 +995,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_015, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -1008,7 +1023,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_016, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -1026,16 +1041,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_016, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_2048);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -1044,7 +1059,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_016, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -1071,7 +1087,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_017, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -1089,16 +1105,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_017, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_3072);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -1107,7 +1123,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_017, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -1134,7 +1151,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_018, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -1152,16 +1169,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_018, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_4096);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -1170,7 +1187,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_018, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -1197,7 +1215,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_019, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -1215,16 +1233,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_019, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_512);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -1233,7 +1251,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_019, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -1260,7 +1279,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_020, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -1278,16 +1297,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_020, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_768);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -1296,7 +1315,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_020, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -1323,7 +1343,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_021, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -1341,16 +1361,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_021, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_1024);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -1359,7 +1379,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_021, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -1386,7 +1407,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_022, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -1404,16 +1425,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_022, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_2048);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -1422,7 +1443,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_022, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -1449,7 +1471,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_023, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -1467,16 +1489,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_023, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_3072);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -1485,7 +1507,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_023, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -1512,7 +1535,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_024, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -1530,16 +1553,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_024, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_4096);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -1548,7 +1571,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_024, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -1575,7 +1599,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_025, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -1593,16 +1617,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_025, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_768);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -1611,7 +1635,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_025, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -1638,7 +1663,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_026, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -1656,16 +1681,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_026, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_1024);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -1674,7 +1699,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_026, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -1701,7 +1727,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_027, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -1719,16 +1745,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_027, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_2048);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -1737,7 +1763,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_027, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -1764,7 +1791,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_028, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -1782,16 +1809,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_028, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_3072);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -1800,7 +1827,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_028, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -1827,7 +1855,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_029, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -1845,16 +1873,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_029, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_4096);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -1863,7 +1891,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_029, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -1890,7 +1919,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_030, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -1908,16 +1937,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_030, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_1024);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -1926,7 +1955,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_030, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -1953,7 +1983,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_031, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -1971,16 +2001,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_031, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_2048);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -1989,7 +2019,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_031, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -2016,7 +2047,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_032, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -2034,16 +2065,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_032, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_3072);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -2052,7 +2083,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_032, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -2079,7 +2111,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_033, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -2097,16 +2129,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_033, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_4096);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -2115,7 +2147,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_033, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -2142,7 +2175,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_034, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -2160,16 +2193,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_034, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_2048);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -2178,7 +2211,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_034, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -2205,7 +2239,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_035, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -2223,16 +2257,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_035, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_3072);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -2241,7 +2275,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_035, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);
@@ -2268,7 +2303,7 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_036, Function | SmallTest 
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     HksUsageSpec usageSpec = {
         .algType = HKS_ALG_RSA,
@@ -2286,16 +2321,16 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_036, Function | SmallTest 
     uint32_t outLen = HKS_KEY_BYTES(HKS_RSA_KEY_SIZE_4096);
     uint32_t inscriptionLen = dataLen;
 
-    HksBlob message = {.size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT)};
+    HksBlob message = { .size = inLen, .data = (uint8_t *)HksMalloc(inLen + HKS_PADDING_SUPPLENMENT) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         message.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
 
-    HksBlob cipherText = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksBlob cipherText = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
 
-    HksBlob tagAead = {.size = 0, .data = nullptr};
+    HksBlob tagAead = { .size = 0, .data = nullptr };
 
-    HksBlob inscription = {.size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen)};
+    HksBlob inscription = { .size = inscriptionLen, .data = (uint8_t *)HksMalloc(inscriptionLen) };
     for (uint32_t ii = 0; ii < dataLen; ii++) {
         inscription.data[ii] = ReadHex((const uint8_t *)&hexData[2 * ii]);
     }
@@ -2304,7 +2339,8 @@ HWTEST_F(HksCryptoHalRsaCipher, HksCryptoHalRsaCipher_036, Function | SmallTest 
     EXPECT_EQ(HKS_SUCCESS, ret);
     ret = HksCryptoHalEncrypt(&key, &usageSpec, &message, &cipherText, &tagAead);
     EXPECT_EQ(HKS_SUCCESS, ret);
-    message = {.size = outLen, .data = (uint8_t *)HksMalloc(outLen)};
+    HksFree(message.data);
+    message = { .size = outLen, .data = (uint8_t *)HksMalloc(outLen) };
     ret = HksCryptoHalDecrypt(&key, &usageSpec, &cipherText, &message);
     EXPECT_EQ(HKS_SUCCESS, ret);
     EXPECT_EQ(inscription.size, message.size);

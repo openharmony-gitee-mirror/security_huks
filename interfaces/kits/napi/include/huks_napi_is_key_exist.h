@@ -23,4 +23,4 @@ namespace HuksNapi {
 napi_value HuksNapiIsKeyExist(napi_env env, napi_callback_info info);
 }  // namespace HuksNapi
 
-#endif // HUKS_NAPI_IS_KEY_EXIST_H
+#endif  // HUKS_NAPI_IS_KEY_EXIST_H

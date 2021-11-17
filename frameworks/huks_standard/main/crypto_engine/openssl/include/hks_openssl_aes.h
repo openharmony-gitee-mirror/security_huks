@@ -22,15 +22,21 @@
 extern "C" {
 #endif
 
+#ifdef HKS_SUPPORT_AES_C
 #ifdef HKS_SUPPORT_AES_GENERATE_KEY
 int32_t HksOpensslAesGenerateKey(const struct HksKeySpec *spec, struct HksBlob *key);
-#endif
+#endif /* HKS_SUPPORT_AES_GENERATE_KEY */
 
+#if defined(HKS_SUPPORT_AES_CBC_NOPADDING) || defined(HKS_SUPPORT_AES_CBC_PKCS7) ||        \
+    defined(HKS_SUPPORT_AES_ECB_PKCS7PADDING) || defined(HKS_SUPPORT_AES_CTR_NOPADDING) || \
+    defined(HKS_SUPPORT_AES_ECB_NOPADDING) || defined(HKS_SUPPORT_AES_GCM)
 int32_t HksOpensslAesEncrypt(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
     const struct HksBlob *message, struct HksBlob *cipherText, struct HksBlob *tagAead);
 
 int32_t HksOpensslAesDecrypt(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
     const struct HksBlob *message, struct HksBlob *cipherText);
+#endif /* HKS_SUPPORT_AES_CBC_NOPADDING */
+#endif /* HKS_SUPPORT_AES_C */
 
 #ifdef __cplusplus
 }

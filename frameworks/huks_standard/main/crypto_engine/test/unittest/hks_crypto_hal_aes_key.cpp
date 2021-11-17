@@ -40,7 +40,7 @@ HWTEST_F(HksCryptoHalAesKey, HksCryptoHalAesKey_001, Function | SmallTest | Leve
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalGenerateKey(&spec, &key);
 #if defined(HKS_SUPPORT_AES_C) && defined(HKS_SUPPORT_AES_GENERATE_KEY)
@@ -68,7 +68,7 @@ HWTEST_F(HksCryptoHalAesKey, HksCryptoHalAesKey_002, Function | SmallTest | Leve
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalGenerateKey(&spec, &key);
 #if defined(HKS_SUPPORT_AES_C) && defined(HKS_SUPPORT_AES_GENERATE_KEY)
@@ -96,7 +96,7 @@ HWTEST_F(HksCryptoHalAesKey, HksCryptoHalAesKey_003, Function | SmallTest | Leve
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalGenerateKey(&spec, &key);
 #if defined(HKS_SUPPORT_AES_C) && defined(HKS_SUPPORT_AES_GENERATE_KEY)

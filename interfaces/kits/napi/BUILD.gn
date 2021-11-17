@@ -31,16 +31,25 @@ ohos_shared_library("huks") {
 
   sources = [
     "src/huks_napi.cpp",
+    "src/huks_napi_agree_key.cpp",
+    "src/huks_napi_attest_key.cpp",
     "src/huks_napi_common.cpp",
     "src/huks_napi_decrypt.cpp",
     "src/huks_napi_delete_key.cpp",
+    "src/huks_napi_derive_key.cpp",
     "src/huks_napi_encrypt.cpp",
     "src/huks_napi_export_key.cpp",
     "src/huks_napi_generate_key.cpp",
+    "src/huks_napi_get_certificate_chain.cpp",
     "src/huks_napi_get_key_properties.cpp",
     "src/huks_napi_get_sdk_version.cpp",
     "src/huks_napi_import_key.cpp",
     "src/huks_napi_is_key_exist.cpp",
+    "src/huks_napi_mac.cpp",
+    "src/huks_napi_sign.cpp",
+    "src/huks_napi_unwrap_key.cpp",
+    "src/huks_napi_verify.cpp",
+    "src/huks_napi_wrap_key.cpp",
   ]
 
   deps = [ "//foundation/ace/napi:ace_napi" ]

@@ -39,6 +39,7 @@ ohos_static_library("libhuks_mbedtls_standard_static") {
     "src/hks_mbedtls_aes.c",
     "src/hks_mbedtls_bn.c",
     "src/hks_mbedtls_common.c",
+    "src/hks_mbedtls_dh.c",
     "src/hks_mbedtls_dsa.c",
     "src/hks_mbedtls_ecc.c",
     "src/hks_mbedtls_ecdh.c",

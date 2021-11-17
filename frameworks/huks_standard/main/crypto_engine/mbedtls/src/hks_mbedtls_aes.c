@@ -344,6 +344,7 @@ static int32_t AesDecryptCcm(const struct HksBlob *key, const struct HksUsageSpe
 }
 #endif /* HKS_SUPPORT_AES_CCM */
 
+#ifdef HKS_SUPPORT_AES_CTR_NOPADDING
 static int32_t AesCtrCrypt(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
     const struct HksBlob *message, const bool encrypt, struct HksBlob *cipherText)
 {
@@ -378,12 +379,16 @@ static int32_t AesCtrCrypt(const struct HksBlob *key, const struct HksUsageSpec 
         }
         cipherText->size = olen;
 
+        mbedtls_cipher_free(&ctx);
         return HKS_SUCCESS;
     } while (0);
 
+    mbedtls_cipher_free(&ctx);
     return HKS_ERROR_CRYPTO_ENGINE_ERROR;
 }
+#endif
 
+#ifdef HKS_SUPPORT_AES_ECB_NOPADDING
 static int32_t AesEcbNoPaddingCrypt(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
     const struct HksBlob *message, const bool encrypt, struct HksBlob *cipherText)
 {
@@ -416,18 +421,23 @@ static int32_t AesEcbNoPaddingCrypt(const struct HksBlob *key, const struct HksU
         }
         cipherText->size = olen;
 
+        mbedtls_cipher_free(&ctx);
         return HKS_SUCCESS;
     } while (0);
 
+    mbedtls_cipher_free(&ctx);
     return HKS_ERROR_CRYPTO_ENGINE_ERROR;
 }
+#endif
 
 static int32_t AesEcbCrypt(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
     const struct HksBlob *message, const bool encrypt, struct HksBlob *cipherText)
 {
     switch (usageSpec->padding) {
+#ifdef HKS_SUPPORT_AES_ECB_NOPADDING
         case HKS_PADDING_NONE:
             return AesEcbNoPaddingCrypt(key, usageSpec, message, encrypt, cipherText);
+#endif
         case HKS_PADDING_PKCS7:
             return HKS_ERROR_NOT_SUPPORTED;
         default:
@@ -467,10 +477,14 @@ int32_t HksMbedtlsAesEncrypt(const struct HksBlob *key, const struct HksUsageSpe
         case HKS_MODE_CCM:
             return AesEncryptCcm(key, usageSpec, message, cipherText, tagAead);
 #endif
+#ifdef HKS_SUPPORT_AES_CTR_NOPADDING
         case HKS_MODE_CTR:
             return AesCtrCrypt(key, usageSpec, message, true, cipherText);
+#endif
+#if defined(HKS_SUPPORT_AES_ECB_NOPADDING) || defined(HKS_SUPPORT_AES_ECB_PKCS7PADDING)
         case HKS_MODE_ECB:
             return AesEcbCrypt(key, usageSpec, message, true, cipherText);
+#endif
         default:
             HKS_LOG_E("Unsupport key alg! mode = 0x%X", usageSpec->mode);
             return HKS_ERROR_INVALID_ARGUMENT;
@@ -498,10 +512,14 @@ int32_t HksMbedtlsAesDecrypt(const struct HksBlob *key, const struct HksUsageSpe
         case HKS_MODE_CCM:
             return AesDecryptCcm(key, usageSpec, message, cipherText);
 #endif
+#ifdef HKS_SUPPORT_AES_CTR_NOPADDING
         case HKS_MODE_CTR:
             return AesCtrCrypt(key, usageSpec, message, false, cipherText);
+#endif
+#if defined(HKS_SUPPORT_AES_ECB_NOPADDING) || defined(HKS_SUPPORT_AES_ECB_PKCS7PADDING)
         case HKS_MODE_ECB:
             return AesEcbCrypt(key, usageSpec, message, false, cipherText);
+#endif
         default:
             HKS_LOG_E("Unsupport key alg! mode = 0x%X", usageSpec->mode);
             return HKS_ERROR_INVALID_ARGUMENT;

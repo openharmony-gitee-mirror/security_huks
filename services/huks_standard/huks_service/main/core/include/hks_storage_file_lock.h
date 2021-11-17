@@ -22,7 +22,6 @@
 extern "C" {
 #endif
 
-
 typedef struct HksStorageFileLock HksStorageFileLock;
 
 HksStorageFileLock *HksStorageFileLockCreate(char *path);

@@ -30,7 +30,7 @@ constexpr int HUKS_NAPI_IS_KEY_EXIST_MIN_ARGS = 2;
 constexpr int HUKS_NAPI_IS_KEY_EXIST_MAX_ARGS = 3;
 }  // namespace
 
-struct IsKeyExistAsyncContext {
+struct IsKeyExistAsyncContext_t {
     napi_async_work asyncWork = nullptr;
     napi_deferred deferred = nullptr;
     napi_ref callback = nullptr;
@@ -39,17 +39,18 @@ struct IsKeyExistAsyncContext {
     struct HksBlob *keyAlias = nullptr;
     struct HksParamSet *paramSet = nullptr;
 };
+using IsKeyExistAsyncContext = IsKeyExistAsyncContext_t *;
 
-static IsKeyExistAsyncContext *CreateIsKeyExistAsyncContext()
+static IsKeyExistAsyncContext CreateIsKeyExistAsyncContext()
 {
-    IsKeyExistAsyncContext *context = (IsKeyExistAsyncContext *)HksMalloc(sizeof(IsKeyExistAsyncContext));
+    IsKeyExistAsyncContext context = (IsKeyExistAsyncContext)HksMalloc(sizeof(IsKeyExistAsyncContext_t));
     if (context != nullptr) {
-        (void)memset_s(context, sizeof(IsKeyExistAsyncContext), 0, sizeof(IsKeyExistAsyncContext));
+        (void)memset_s(context, sizeof(IsKeyExistAsyncContext_t), 0, sizeof(IsKeyExistAsyncContext_t));
     }
     return context;
 }
 
-static void DeleteIsKeyExistAsyncContext(napi_env env, IsKeyExistAsyncContext *context)
+static void DeleteIsKeyExistAsyncContext(napi_env env, IsKeyExistAsyncContext context)
 {
     if (context == nullptr) {
         return;
@@ -76,7 +77,7 @@ static void DeleteIsKeyExistAsyncContext(napi_env env, IsKeyExistAsyncContext *c
     HksFree(context);
 }
 
-static napi_value IsKeyExistParseParams(napi_env env, napi_callback_info info, IsKeyExistAsyncContext *context)
+static napi_value IsKeyExistParseParams(napi_env env, napi_callback_info info, IsKeyExistAsyncContext context)
 {
     size_t argc = HUKS_NAPI_IS_KEY_EXIST_MAX_ARGS;
     napi_value argv[HUKS_NAPI_IS_KEY_EXIST_MAX_ARGS] = {0};
@@ -118,7 +119,7 @@ static napi_value IsKeyExistParseParams(napi_env env, napi_callback_info info, I
     return GetInt32(env, 0);
 }
 
-static napi_value IsKeyExistWriteResult(napi_env env, IsKeyExistAsyncContext *context)
+static napi_value IsKeyExistWriteResult(napi_env env, IsKeyExistAsyncContext context)
 {
     napi_value isKeyExist = nullptr;
     if (context->result == HKS_SUCCESS) {
@@ -129,7 +130,7 @@ static napi_value IsKeyExistWriteResult(napi_env env, IsKeyExistAsyncContext *co
     return isKeyExist;
 }
 
-static napi_value IsKeyExistAsyncWork(napi_env env, IsKeyExistAsyncContext *context)
+static napi_value IsKeyExistAsyncWork(napi_env env, IsKeyExistAsyncContext context)
 {
     napi_value promise = nullptr;
     if (context->callback == nullptr) {
@@ -144,12 +145,12 @@ static napi_value IsKeyExistAsyncWork(napi_env env, IsKeyExistAsyncContext *cont
         nullptr,
         resourceName,
         [](napi_env env, void *data) {
-            IsKeyExistAsyncContext *context = static_cast<IsKeyExistAsyncContext *>(data);
+            IsKeyExistAsyncContext context = static_cast<IsKeyExistAsyncContext>(data);
 
             context->result = HksKeyExist(context->keyAlias, context->paramSet);
         },
         [](napi_env env, napi_status status, void *data) {
-            IsKeyExistAsyncContext *context = static_cast<IsKeyExistAsyncContext *>(data);
+            IsKeyExistAsyncContext context = static_cast<IsKeyExistAsyncContext>(data);
             napi_value result = IsKeyExistWriteResult(env, context);
             if (result == nullptr) {
                 return;
@@ -181,8 +182,7 @@ static napi_value IsKeyExistAsyncWork(napi_env env, IsKeyExistAsyncContext *cont
 
 napi_value HuksNapiIsKeyExist(napi_env env, napi_callback_info info)
 {
-    IsKeyExistAsyncContext *context = CreateIsKeyExistAsyncContext();
-
+    IsKeyExistAsyncContext context = CreateIsKeyExistAsyncContext();
     if (context == nullptr) {
         HKS_LOG_E("could not create context");
         return nullptr;

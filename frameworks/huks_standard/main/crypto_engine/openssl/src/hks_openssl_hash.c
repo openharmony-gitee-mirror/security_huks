@@ -24,6 +24,8 @@
 static int32_t CheckDigestAlg(uint32_t alg)
 {
     switch (alg) {
+        case HKS_DIGEST_SHA1:
+        case HKS_DIGEST_SHA224:
         case HKS_DIGEST_SHA256:
         case HKS_DIGEST_SHA384:
         case HKS_DIGEST_SHA512:

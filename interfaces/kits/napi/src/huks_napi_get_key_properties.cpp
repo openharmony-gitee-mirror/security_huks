@@ -32,7 +32,7 @@ constexpr int HUKS_NAPI_GET_KEY_PROPERTIES_MAX_ARGS = 3;
 constexpr int HKS_DEFAULT_OUTPARAMSET_SIZE = 2048;
 }  // namespace
 
-struct GetKeyPropertiesAsyncContext {
+struct GetKeyPropertiesAsyncContext_t {
     napi_async_work asyncWork = nullptr;
     napi_deferred deferred = nullptr;
     napi_ref callback = nullptr;
@@ -42,18 +42,19 @@ struct GetKeyPropertiesAsyncContext {
     struct HksParamSet *paramSetIn = nullptr;
     struct HksParamSet *paramSetOut = nullptr;
 };
+using GetKeyPropertiesAsyncContext = GetKeyPropertiesAsyncContext_t *;
 
-static GetKeyPropertiesAsyncContext *CreateGetKeyPropertiesAsyncContext()
+static GetKeyPropertiesAsyncContext CreateGetKeyPropertiesAsyncContext()
 {
-    GetKeyPropertiesAsyncContext *context =
-        (GetKeyPropertiesAsyncContext *)HksMalloc(sizeof(GetKeyPropertiesAsyncContext));
+    GetKeyPropertiesAsyncContext context =
+        (GetKeyPropertiesAsyncContext)HksMalloc(sizeof(GetKeyPropertiesAsyncContext_t));
     if (context != nullptr) {
-        (void)memset_s(context, sizeof(GetKeyPropertiesAsyncContext), 0, sizeof(GetKeyPropertiesAsyncContext));
+        (void)memset_s(context, sizeof(GetKeyPropertiesAsyncContext_t), 0, sizeof(GetKeyPropertiesAsyncContext_t));
     }
     return context;
 }
 
-static void DeleteGetKeyPropertiesAsyncContext(napi_env env, GetKeyPropertiesAsyncContext *context)
+static void DeleteGetKeyPropertiesAsyncContext(napi_env env, GetKeyPropertiesAsyncContext context)
 {
     if (context == nullptr) {
         return;
@@ -85,7 +86,7 @@ static void DeleteGetKeyPropertiesAsyncContext(napi_env env, GetKeyPropertiesAsy
 }
 
 static napi_value GetKeyPropertiesParseParams(
-    napi_env env, napi_callback_info info, GetKeyPropertiesAsyncContext *context)
+    napi_env env, napi_callback_info info, GetKeyPropertiesAsyncContext context)
 {
     size_t argc = HUKS_NAPI_GET_KEY_PROPERTIES_MAX_ARGS;
     napi_value argv[HUKS_NAPI_GET_KEY_PROPERTIES_MAX_ARGS] = {0};
@@ -127,12 +128,12 @@ static napi_value GetKeyPropertiesParseParams(
     return GetInt32(env, 0);
 }
 
-static napi_value GetKeyPropertiesWriteResult(napi_env env, GetKeyPropertiesAsyncContext *context)
+static napi_value GetKeyPropertiesWriteResult(napi_env env, GetKeyPropertiesAsyncContext context)
 {
-    return GenerateHksResult(env, context->result, nullptr, 0, context->paramSetOut);
+    return GenerateHksResult(env, context->result, nullptr, 0, *context->paramSetOut);
 }
 
-static napi_value GetKeyPropertiesAsyncWork(napi_env env, GetKeyPropertiesAsyncContext *context)
+static napi_value GetKeyPropertiesAsyncWork(napi_env env, GetKeyPropertiesAsyncContext context)
 {
     napi_value promise = nullptr;
     if (context->callback == nullptr) {
@@ -147,17 +148,17 @@ static napi_value GetKeyPropertiesAsyncWork(napi_env env, GetKeyPropertiesAsyncC
         nullptr,
         resourceName,
         [](napi_env env, void *data) {
-            GetKeyPropertiesAsyncContext *context = static_cast<GetKeyPropertiesAsyncContext *>(data);
+            GetKeyPropertiesAsyncContext context = static_cast<GetKeyPropertiesAsyncContext>(data);
 
             context->paramSetOut = (struct HksParamSet *)HksMalloc(HKS_DEFAULT_OUTPARAMSET_SIZE);
             if (context->paramSetOut) {
                 context->paramSetOut->paramSetSize = HKS_DEFAULT_OUTPARAMSET_SIZE;
             }
 
-            context->result = HksGenerateKey(context->keyAlias, context->paramSetIn, context->paramSetOut);
+            context->result = HksGetKeyParamSet(context->keyAlias, context->paramSetIn, context->paramSetOut);
         },
         [](napi_env env, napi_status status, void *data) {
-            GetKeyPropertiesAsyncContext *context = static_cast<GetKeyPropertiesAsyncContext *>(data);
+            GetKeyPropertiesAsyncContext context = static_cast<GetKeyPropertiesAsyncContext>(data);
             napi_value result = GetKeyPropertiesWriteResult(env, context);
             if (result == nullptr) {
                 return;
@@ -189,8 +190,7 @@ static napi_value GetKeyPropertiesAsyncWork(napi_env env, GetKeyPropertiesAsyncC
 
 napi_value HuksNapiGetKeyProperties(napi_env env, napi_callback_info info)
 {
-    GetKeyPropertiesAsyncContext *context = CreateGetKeyPropertiesAsyncContext();
-
+    GetKeyPropertiesAsyncContext context = CreateGetKeyPropertiesAsyncContext();
     if (context == nullptr) {
         HKS_LOG_E("could not create context");
         return nullptr;

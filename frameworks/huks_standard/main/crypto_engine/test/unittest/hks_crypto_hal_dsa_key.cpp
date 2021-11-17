@@ -40,7 +40,7 @@ HWTEST_F(HksCryptoHalDsaKey, HksCryptoHalDsaKey_001, Function | SmallTest | Leve
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalGenerateKey(&spec, &key);
 #if defined(HKS_SUPPORT_DSA_C) && defined(HKS_SUPPORT_DSA_GENERATE_KEY)
@@ -73,7 +73,7 @@ HWTEST_F(HksCryptoHalDsaKey, HksCryptoHalDsaKey_002, Function | SmallTest | Leve
         .keyLen = 512,
     };
 
-    HksBlob key = {.size = 0, .data = NULL};
+    HksBlob key = { .size = 0, .data = NULL };
 
     ret = HksCryptoHalGenerateKey(&spec, &key);
 #ifdef _USE_OPENSSL_
@@ -88,7 +88,7 @@ HWTEST_F(HksCryptoHalDsaKey, HksCryptoHalDsaKey_002, Function | SmallTest | Leve
 
     uint32_t keyOutLen =
         sizeof(KeyMaterialDsa) + keyMaterial->ySize + keyMaterial->pSize + keyMaterial->qSize + keyMaterial->gSize;
-    HksBlob keyOut = {.size = keyOutLen, .data = (uint8_t *)HksMalloc(keyOutLen)};
+    HksBlob keyOut = { .size = keyOutLen, .data = (uint8_t *)HksMalloc(keyOutLen) };
 
     ret = HksCryptoHalGetPubKey(&key, &keyOut);
 #ifdef _USE_OPENSSL_
@@ -97,5 +97,7 @@ HWTEST_F(HksCryptoHalDsaKey, HksCryptoHalDsaKey_002, Function | SmallTest | Leve
 #ifdef _USE_MBEDTLS_
     ASSERT_EQ(ret, HKS_ERROR_NOT_SUPPORTED);
 #endif
+    HKS_FREE_BLOB(key);
+    HKS_FREE_BLOB(keyOut);
 }
 }  // namespace

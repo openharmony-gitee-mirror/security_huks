@@ -40,7 +40,7 @@ HWTEST_F(HksCryptoHalRsaKey, HksCryptoHalRsaKey_001, Function | SmallTest | Leve
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalGenerateKey(&spec, &key);
 #if defined(HKS_SUPPORT_RSA_C) && defined(HKS_SUPPORT_RSA_GENERATE_KEY)
@@ -68,7 +68,7 @@ HWTEST_F(HksCryptoHalRsaKey, HksCryptoHalRsaKey_002, Function | SmallTest | Leve
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalGenerateKey(&spec, &key);
 #if defined(HKS_SUPPORT_RSA_C) && defined(HKS_SUPPORT_RSA_GENERATE_KEY)
@@ -96,7 +96,7 @@ HWTEST_F(HksCryptoHalRsaKey, HksCryptoHalRsaKey_003, Function | SmallTest | Leve
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalGenerateKey(&spec, &key);
 #if defined(HKS_SUPPORT_RSA_C) && defined(HKS_SUPPORT_RSA_GENERATE_KEY)
@@ -124,7 +124,7 @@ HWTEST_F(HksCryptoHalRsaKey, HksCryptoHalRsaKey_004, Function | SmallTest | Leve
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalGenerateKey(&spec, &key);
 #if defined(HKS_SUPPORT_RSA_C) && defined(HKS_SUPPORT_RSA_GENERATE_KEY)
@@ -152,7 +152,7 @@ HWTEST_F(HksCryptoHalRsaKey, HksCryptoHalRsaKey_005, Function | SmallTest | Leve
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalGenerateKey(&spec, &key);
 #if defined(HKS_SUPPORT_RSA_C) && defined(HKS_SUPPORT_RSA_GENERATE_KEY)
@@ -180,7 +180,7 @@ HWTEST_F(HksCryptoHalRsaKey, HksCryptoHalRsaKey_006, Function | SmallTest | Leve
         .algParam = nullptr,
     };
 
-    HksBlob key = {.size = 0, .data = nullptr};
+    HksBlob key = { .size = 0, .data = nullptr };
 
     ret = HksCryptoHalGenerateKey(&spec, &key);
 #if defined(HKS_SUPPORT_RSA_C) && defined(HKS_SUPPORT_RSA_GENERATE_KEY)
@@ -207,7 +207,7 @@ HWTEST_F(HksCryptoHalRsaKey, HksCryptoHalRsaKey_007, Function | SmallTest | Leve
         .keyLen = HKS_RSA_KEY_SIZE_2048,
     };
 
-    HksBlob key = {.size = 0, .data = NULL};
+    HksBlob key = { .size = 0, .data = NULL };
 
     ret = HksCryptoHalGenerateKey(&spec, &key);
     ASSERT_EQ(ret, HKS_SUCCESS);
@@ -215,9 +215,11 @@ HWTEST_F(HksCryptoHalRsaKey, HksCryptoHalRsaKey_007, Function | SmallTest | Leve
     KeyMaterialRsa *keyMaterial = (KeyMaterialRsa *)key.data;
 
     uint32_t keyOutLen = sizeof(KeyMaterialRsa) + keyMaterial->nSize + keyMaterial->eSize;
-    HksBlob keyOut = {.size = keyOutLen, .data = (uint8_t *)HksMalloc(keyOutLen)};
+    HksBlob keyOut = { .size = keyOutLen, .data = (uint8_t *)HksMalloc(keyOutLen) };
 
     ret = HksCryptoHalGetPubKey(&key, &keyOut);
     ASSERT_EQ(ret, HKS_SUCCESS);
+    HKS_FREE_BLOB(key);
+    HKS_FREE_BLOB(keyOut);
 }
 }  // namespace

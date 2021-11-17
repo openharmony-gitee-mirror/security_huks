@@ -23,4 +23,4 @@ namespace HuksNapi {
 napi_value HuksNapiImportKey(napi_env env, napi_callback_info info);
 }  // namespace HuksNapi
 
-#endif // HUKS_NAPI_IMPORT_KEY_H
+#endif  // HUKS_NAPI_IMPORT_KEY_H

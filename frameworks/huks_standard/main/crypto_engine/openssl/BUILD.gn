@@ -35,6 +35,7 @@ ohos_static_library("libhuks_openssl_standard_static") {
   sources = [
     "src/hks_openssl_aes.c",
     "src/hks_openssl_curve25519.c",
+    "src/hks_openssl_dh.c",
     "src/hks_openssl_dsa.c",
     "src/hks_openssl_ecc.c",
     "src/hks_openssl_ed25519tox25519.c",

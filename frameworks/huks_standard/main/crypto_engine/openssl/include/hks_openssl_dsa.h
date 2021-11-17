@@ -22,11 +22,25 @@
 extern "C" {
 #endif
 
-#define DSA_KEYPAIR_CNT  5
+#define DSA_KEYPAIR_CNT 5
 
+#ifdef HKS_SUPPORT_DSA_C
+#ifdef HKS_SUPPORT_DSA_GENERATE_KEY
 int32_t HksOpensslDsaGenerateKey(const struct HksKeySpec *spec, struct HksBlob *key);
+#endif /* HKS_SUPPORT_DSA_GENERATE_KEY */
 
+#ifdef HKS_SUPPORT_DSA_GET_PUBLIC_KEY
 int32_t HksOpensslGetDsaPubKey(const struct HksBlob *input, struct HksBlob *output);
+#endif /* HKS_SUPPORT_DSA_GET_PUBLIC_KEY */
+
+#ifdef HKS_SUPPORT_DSA_SIGN_VERIFY
+int32_t HksOpensslDsaSign(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
+    const struct HksBlob *message, struct HksBlob *signature);
+
+int32_t HksOpensslDsaVerify(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
+    const struct HksBlob *message, const struct HksBlob *signature);
+#endif /* HKS_SUPPORT_DSA_SIGN_VERIFY */
+#endif /* HKS_SUPPORT_DSA_C */
 
 #ifdef __cplusplus
 }

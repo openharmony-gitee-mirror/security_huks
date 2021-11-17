@@ -13,6 +13,14 @@
  * limitations under the License.
  */
 
+#ifdef HKS_CONFIG_FILE
+#include HKS_CONFIG_FILE
+#else
+#include "hks_config.h"
+#endif
+
+#ifdef HKS_SUPPORT_HMAC_C
+
 #include "hks_openssl_hmac.h"
 
 #include <openssl/evp.h>
@@ -45,6 +53,10 @@ static int32_t HmacCheckBuffer(const struct HksBlob *key, const struct HksBlob *
 static uint32_t HmacGetDigestLen(uint32_t alg)
 {
     switch (alg) {
+        case HKS_DIGEST_SHA1:
+            return HKS_DIGEST_SHA1_LEN;
+        case HKS_DIGEST_SHA224:
+            return HKS_DIGEST_SHA224_LEN;
         case HKS_DIGEST_SHA256:
             return HKS_DIGEST_SHA256_LEN;
         case HKS_DIGEST_SHA384:
@@ -62,6 +74,7 @@ static int32_t HmacGenKeyCheckParam(const struct HksKeySpec *spec)
     return HKS_SUCCESS;
 }
 
+#ifdef HKS_SUPPORT_HMAC_GENERATE_KEY
 int32_t HksOpensslHmacGenerateKey(const struct HksKeySpec *spec, struct HksBlob *key)
 {
     if (HmacGenKeyCheckParam(spec) != HKS_SUCCESS) {
@@ -95,15 +108,18 @@ int32_t HksOpensslHmacGenerateKey(const struct HksKeySpec *spec, struct HksBlob 
     }
     return ret;
 }
+#endif /* HKS_SUPPORT_HMAC_GENERATE_KEY */
 
-static int32_t HmacCheckParam(const struct HksBlob *key, uint32_t alg,
-    const struct HksBlob *msg, const struct HksBlob *mac)
+static int32_t HmacCheckParam(
+    const struct HksBlob *key, uint32_t alg, const struct HksBlob *msg, const struct HksBlob *mac)
 {
     if (HmacCheckBuffer(key, msg, mac) != HKS_SUCCESS) {
         HKS_LOG_E("Invalid Buffer Info");
         return HKS_ERROR_INVALID_ARGUMENT;
     }
-    if ((alg != HKS_DIGEST_SHA256) && (alg != HKS_DIGEST_SHA384) && (alg != HKS_DIGEST_SHA512)) {
+
+    if ((alg != HKS_DIGEST_SHA1) && (alg != HKS_DIGEST_SHA224) && (alg != HKS_DIGEST_SHA256) &&
+        (alg != HKS_DIGEST_SHA384) && (alg != HKS_DIGEST_SHA512)) {
         HKS_LOG_E("Invalid alg(0x%x)", alg);
         return HKS_ERROR_INVALID_ARGUMENT;
     }
@@ -116,8 +132,9 @@ static int32_t HmacCheckParam(const struct HksBlob *key, uint32_t alg,
     return HKS_SUCCESS;
 }
 
-int32_t HksOpensslHmac(const struct HksBlob *key, uint32_t digestAlg, const struct HksBlob *msg,
-    struct HksBlob *mac)
+#if defined(HKS_SUPPORT_HMAC_SHA1) || defined(HKS_SUPPORT_HMAC_SHA224) || defined(HKS_SUPPORT_HMAC_SHA256) || \
+    defined(HKS_SUPPORT_HMAC_SHA384) || defined(HKS_SUPPORT_HMAC_SHA512)
+int32_t HksOpensslHmac(const struct HksBlob *key, uint32_t digestAlg, const struct HksBlob *msg, struct HksBlob *mac)
 {
     if (HmacCheckParam(key, digestAlg, msg, mac) != HKS_SUCCESS) {
         return HKS_ERROR_INVALID_ARGUMENT;
@@ -136,3 +153,5 @@ int32_t HksOpensslHmac(const struct HksBlob *key, uint32_t digestAlg, const stru
     }
     return HKS_SUCCESS;
 }
+#endif /* HKS_SUPPORT_HMAC_SHA1 */
+#endif /* HKS_SUPPORT_HMAC_C */

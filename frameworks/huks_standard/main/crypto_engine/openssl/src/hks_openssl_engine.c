@@ -32,6 +32,7 @@
 #include "hks_mem.h"
 #include "hks_openssl_aes.h"
 #include "hks_openssl_curve25519.h"
+#include "hks_openssl_dh.h"
 #include "hks_openssl_dsa.h"
 #include "hks_openssl_ecc.h"
 #include "hks_openssl_ed25519tox25519.h"
@@ -163,6 +164,8 @@ static int32_t DecryptCheckParam(const struct HksBlob *key, const struct HksUsag
 const EVP_MD *GetOpensslAlg(uint32_t alg)
 {
     switch (alg) {
+        case HKS_DIGEST_MD5:
+            return EVP_md5();
         case HKS_DIGEST_SHA1:
             return EVP_sha1();
         case HKS_DIGEST_SHA224:
@@ -226,6 +229,10 @@ int32_t HksCryptoHalGetPubKey(const struct HksBlob *keyIn, struct HksBlob *keyOu
         case HKS_ALG_ECC:
             return HksOpensslGetEccPubKey(keyIn, keyOut);
 #endif
+#if defined(HKS_SUPPORT_DH_C) && defined(HKS_SUPPORT_DH_GET_PUBLIC_KEY)
+        case HKS_ALG_DH:
+            return HksOpensslGetDhPubKey(keyIn, keyOut);
+#endif
         case HKS_ALG_ED25519:
             return HksOpensslGetEd25519PubKey(keyIn, keyOut);
         default:
@@ -242,7 +249,16 @@ int32_t HksCryptoHalGetMainKey(const struct HksBlob *message, struct HksBlob *ma
 
 int32_t HksCryptoHalHmac(const struct HksBlob *key, uint32_t digestAlg, const struct HksBlob *msg, struct HksBlob *mac)
 {
+#if defined(HKS_SUPPORT_HMAC_C)
+#if defined(HKS_SUPPORT_HMAC_SHA1) || defined(HKS_SUPPORT_HMAC_SHA224) || defined(HKS_SUPPORT_HMAC_SHA256) || \
+    defined(HKS_SUPPORT_HMAC_SHA384) || defined(HKS_SUPPORT_HMAC_SHA512)
     return HksOpensslHmac(key, digestAlg, msg, mac);
+#else
+    return HKS_ERROR_INVALID_ARGUMENT;
+#endif
+#else
+    return HKS_ERROR_NOT_SUPPORTED;
+#endif /* HKS_SUPPORT_HMAC_C */
 }
 
 int32_t HksCryptoHalHash(uint32_t alg, const struct HksBlob *msg, struct HksBlob *hash)
@@ -362,28 +378,33 @@ int32_t HksCryptoHalGenerateKey(const struct HksKeySpec *spec, struct HksBlob *k
     switch (spec->algType) {
 #if defined(HKS_SUPPORT_ECC_C) && defined(HKS_SUPPORT_ECC_GENERATE_KEY)
         case HKS_ALG_ECC:
+        case HKS_ALG_ECDH:
             return HksOpensslEccGenerateKey(spec, key);
 #endif
 #if defined(HKS_SUPPORT_AES_C) && defined(HKS_SUPPORT_AES_GENERATE_KEY)
         case HKS_ALG_AES:
             return HksOpensslAesGenerateKey(spec, key);
 #endif
-#if defined(HKS_SUPPORT_ED25519_GENERATE_KEY) || defined (HKS_SUPPORT_X25519_GENERATE_KEY)
+#if defined(HKS_SUPPORT_ED25519_GENERATE_KEY) || defined(HKS_SUPPORT_X25519_GENERATE_KEY)
         case HKS_ALG_X25519:
         case HKS_ALG_ED25519:
             return HksOpensslCurve25519GenerateKey(spec, key);
 #endif
-#if defined (HKS_SUPPORT_RSA_C) && defined(HKS_SUPPORT_RSA_GENERATE_KEY)
+#if defined(HKS_SUPPORT_RSA_C) && defined(HKS_SUPPORT_RSA_GENERATE_KEY)
         case HKS_ALG_RSA:
             return HksOpensslRsaGenerateKey(spec, key);
 #endif
-#if defined (HKS_SUPPORT_HMAC_C) && defined(HKS_SUPPORT_HMAC_GENERATE_KEY)
+#if defined(HKS_SUPPORT_HMAC_C) && defined(HKS_SUPPORT_HMAC_GENERATE_KEY)
         case HKS_ALG_HMAC:
             return HksOpensslHmacGenerateKey(spec, key);
 #endif
-#if defined (HKS_SUPPORT_DSA_C) && defined(HKS_SUPPORT_DSA_GENERATE_KEY)
+#if defined(HKS_SUPPORT_DSA_C) && defined(HKS_SUPPORT_DSA_GENERATE_KEY)
         case HKS_ALG_DSA:
             return HksOpensslDsaGenerateKey(spec, key);
+#endif
+#if defined(HKS_SUPPORT_DH_C) && defined(HKS_SUPPORT_DH_GENERATE_KEY)
+        case HKS_ALG_DH:
+            return HksOpensslDhGenerateKey(spec, key);
 #endif
         default:
             HKS_LOG_E("Unsupport algType now!");
@@ -404,6 +425,10 @@ int32_t HksCryptoHalAgreeKey(const struct HksBlob *nativeKey, const struct HksBl
 #if defined(HKS_SUPPORT_ECC_C) && defined(HKS_SUPPORT_ECDH_C) && defined(HKS_SUPPORT_ECDH_AGREE_KEY)
         case HKS_ALG_ECDH:
             return HksOpensslEcdhAgreeKey(nativeKey, pubKey, spec, sharedKey);
+#endif
+#if defined(HKS_SUPPORT_DH_C) && defined(HKS_SUPPORT_DH_AGREE_KEY)
+        case HKS_ALG_DH:
+            return HksOpensslDhAgreeKey(nativeKey, pubKey, spec, sharedKey);
 #endif
         case HKS_ALG_X25519:
             return HksOpensslX25519AgreeKey(nativeKey, pubKey, sharedKey);
@@ -429,6 +454,14 @@ int32_t HksCryptoHalSign(const struct HksBlob *key, const struct HksUsageSpec *u
         case HKS_ALG_ECC:
             return HksOpensslEcdsaSign(key, usageSpec, message, signature);
 #endif
+#if defined(HKS_SUPPORT_RSA_C) && defined(HKS_SUPPORT_RSA_SIGN_VERIFY)
+        case HKS_ALG_RSA:
+            return HksOpensslRsaSign(key, usageSpec, message, signature);
+#endif
+#if defined(HKS_SUPPORT_DSA_C) && defined(HKS_SUPPORT_DSA_SIGN_VERIFY)
+        case HKS_ALG_DSA:
+            return HksOpensslDsaSign(key, usageSpec, message, signature);
+#endif
         case HKS_ALG_ED25519:
             return HksOpensslEd25519Sign(key, message, signature);
         default:
@@ -449,7 +482,15 @@ int32_t HksCryptoHalVerify(const struct HksBlob *key, const struct HksUsageSpec 
     switch (usageSpec->algType) {
 #if defined(HKS_SUPPORT_ECC_C) && defined(HKS_SUPPORT_ECDSA_C) && defined(HKS_SUPPORT_ECDSA_SIGN_VERIFY)
         case HKS_ALG_ECC:
-            return HksOpensslEcdsaVerify(key, message, signature);
+            return HksOpensslEcdsaVerify(key, usageSpec, message, signature);
+#endif
+#if defined(HKS_SUPPORT_RSA_C) && defined(HKS_SUPPORT_RSA_SIGN_VERIFY)
+        case HKS_ALG_RSA:
+            return HksOpensslRsaVerify(key, usageSpec, message, signature);
+#endif
+#if defined(HKS_SUPPORT_DSA_C) && defined(HKS_SUPPORT_DSA_SIGN_VERIFY)
+        case HKS_ALG_DSA:
+            return HksOpensslDsaVerify(key, usageSpec, message, signature);
 #endif
         case HKS_ALG_ED25519:
             return HksOpensslEd25519Verify(key, message, signature);

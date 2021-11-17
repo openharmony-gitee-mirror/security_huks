@@ -23,4 +23,4 @@ namespace HuksNapi {
 napi_value HuksNapiDeleteKey(napi_env env, napi_callback_info info);
 }  // namespace HuksNapi
 
-#endif // HUKS_NAPI_DELETE_KEY_H
+#endif  // HUKS_NAPI_DELETE_KEY_H

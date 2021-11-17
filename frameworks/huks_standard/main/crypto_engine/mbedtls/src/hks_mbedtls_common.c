@@ -35,6 +35,9 @@ const unsigned char g_hksRandomSeedCustom[] = {
 int32_t HksToMbedtlsDigestAlg(const uint32_t hksAlg, uint32_t *mbedtlsAlg)
 {
     switch (hksAlg) {
+        case HKS_DIGEST_MD5:
+            *mbedtlsAlg = MBEDTLS_MD_MD5;
+            break;
         case HKS_DIGEST_SHA1:
             *mbedtlsAlg = MBEDTLS_MD_SHA1;
             break;

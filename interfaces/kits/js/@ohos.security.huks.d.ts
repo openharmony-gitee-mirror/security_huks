@@ -46,8 +46,9 @@ declare namespace huks {
     function sign(keyAlias: string, options: HksOptions, callback: AsyncCallback<HksResult>) : void;
     function sign(keyAlias: string, options: HksOptions) : Promise<HksResult>;
 
-    function verify(keyAlias: string, options: HksOptions, callback: AsyncCallback<HksResult>) : void;
-    function verify(keyAlias: string, options: HksOptions) : Promise<HksResult>;
+    function verify(
+        keyAlias: string, options: HksOptions, signature: Uint8Array, callback: AsyncCallback<HksResult>) : void;
+    function verify(keyAlias: string, options: HksOptions, signature: Uint8Array) : Promise<HksResult>;
 
     function agreeKey(keyAlias: string, options: HksOptions, callback: AsyncCallback<HksResult>) : void;
     function agreeKey(keyAlias: string, options: HksOptions) : Promise<HksResult>;
@@ -84,6 +85,7 @@ declare namespace huks {
         errorCode: number;
         outData?: Uint8Array;
         properties?: Array<HksParam>;
+        certChains?: Array<string>;
     }
 
     export enum HksErrorCode {
@@ -191,6 +193,7 @@ declare namespace huks {
         HKS_KEY_PURPOSE_WRAP = 32,                     /* Usable with wrap key. */
         HKS_KEY_PURPOSE_UNWRAP = 64,                   /* Usable with unwrap key. */
         HKS_KEY_PURPOSE_MAC = 128,                     /* Usable with mac. */
+        HKS_KEY_PURPOSE_AGREE = 256,                   /* Usable with agree. */
     }
 
     export enum HksKeyDigest {
@@ -240,6 +243,10 @@ declare namespace huks {
         HKS_AES_KEY_SIZE_512 = 512,
 
         HKS_CURVE25519_KEY_SIZE_256 = 256,
+
+        HKS_DH_KEY_SIZE_2048 = 2048,
+        HKS_DH_KEY_SIZE_3072 = 3072,
+        HKS_DH_KEY_SIZE_4096 = 4096,
     }
 
     export enum HksKeyAlg {

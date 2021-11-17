@@ -32,8 +32,10 @@
 #include <mbedtls/entropy.h>
 #include <mbedtls/rsa.h>
 
+#include "hks_common_check.h"
 #include "hks_log.h"
 #include "hks_mbedtls_common.h"
+#include "hks_mbedtls_hash.h"
 #include "hks_mem.h"
 
 #define HKS_RSA_PUBLIC_EXPONENT 65537
@@ -143,6 +145,7 @@ static int32_t RsaSaveKeyMaterial(const mbedtls_rsa_context *ctx, const uint32_t
     if (ret != HKS_MBEDTLS_SUCCESS) {
         (void)memset_s(rawMaterial, rawMaterialLen, 0, rawMaterialLen);
         HKS_FREE_PTR(rawMaterial);
+        ret = HKS_ERROR_CRYPTO_ENGINE_ERROR;
     }
 
     return ret;
@@ -159,6 +162,7 @@ int32_t HksMbedtlsRsaGenerateKey(const struct HksKeySpec *spec, struct HksBlob *
     mbedtls_entropy_context entropy;
     int32_t ret = HksCtrDrbgSeed(&ctrDrbg, &entropy);
     if (ret != HKS_SUCCESS) {
+        mbedtls_rsa_free(&ctx);
         return ret;
     }
 
@@ -166,6 +170,7 @@ int32_t HksMbedtlsRsaGenerateKey(const struct HksKeySpec *spec, struct HksBlob *
         ret = mbedtls_rsa_gen_key(&ctx, mbedtls_ctr_drbg_random, &ctrDrbg, spec->keyLen, HKS_RSA_PUBLIC_EXPONENT);
         if (ret != HKS_MBEDTLS_SUCCESS) {
             HKS_LOG_E("Mbedtls rsa generate key failed! mbedtls ret = 0x%X", ret);
+            ret = HKS_ERROR_CRYPTO_ENGINE_ERROR;
             break;
         }
 
@@ -232,6 +237,10 @@ static int32_t RsaKeyMaterialToCtx(const struct HksBlob *key, const bool needPri
     mbedtls_mpi_free(&n);
     mbedtls_mpi_free(&e);
     mbedtls_mpi_free(&d);
+
+    if (ret != HKS_MBEDTLS_SUCCESS) {
+        ret = HKS_ERROR_CRYPTO_ENGINE_ERROR;
+    }
     return ret;
 }
 #endif /* HKS_SUPPORT_RSA_CRYPT or HKS_SUPPORT_RSA_SIGN_VERIFY */
@@ -302,6 +311,7 @@ int32_t HksMbedtlsRsaCrypt(const struct HksBlob *key, const struct HksUsageSpec 
         if (ret != HKS_SUCCESS) {
             HKS_LOG_E("Mbedtls rsa crypt failed! mbedtls ret = 0x%X", ret);
             (void)memset_s(cipherText->data, cipherText->size, 0, cipherText->size);
+            ret = HKS_ERROR_CRYPTO_ENGINE_ERROR;
             break;
         }
         cipherText->size = (uint32_t)outlen;
@@ -315,11 +325,31 @@ int32_t HksMbedtlsRsaCrypt(const struct HksBlob *key, const struct HksUsageSpec 
 #endif /* HKS_SUPPORT_RSA_CRYPT */
 
 #ifdef HKS_SUPPORT_RSA_SIGN_VERIFY
+int32_t HksToMbedtlsSignPadding(uint32_t hksPadding, int32_t *padding)
+{
+    switch (hksPadding) {
+        case HKS_PADDING_PKCS1_V1_5:
+            *padding = MBEDTLS_RSA_PKCS_V15;
+            break;
+        case HKS_PADDING_PSS:
+            *padding = MBEDTLS_RSA_PKCS_V21;
+            break;
+        default:
+            return HKS_ERROR_NOT_SUPPORTED;
+    }
+    return HKS_SUCCESS;
+}
 static int32_t HksMbedtlsRsaSignVerify(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
     const struct HksBlob *message, const bool sign, struct HksBlob *signature)
 {
     uint32_t mbedtlsAlg;
-    int32_t ret = HksToMbedtlsDigestAlg(usageSpec->digest, &mbedtlsAlg);
+    uint32_t digest = (usageSpec->digest == HKS_DIGEST_NONE) ? HKS_DIGEST_SHA256 : usageSpec->digest;
+    int32_t ret = HksToMbedtlsDigestAlg(digest, &mbedtlsAlg);
+    if (ret != HKS_SUCCESS) {
+        return ret;
+    }
+    int32_t padding;
+    ret = HksToMbedtlsSignPadding(usageSpec->padding, &padding);
     if (ret != HKS_SUCCESS) {
         return ret;
     }
@@ -332,7 +362,7 @@ static int32_t HksMbedtlsRsaSignVerify(const struct HksBlob *key, const struct H
     }
 
     mbedtls_rsa_context ctx;
-    mbedtls_rsa_init(&ctx, MBEDTLS_RSA_PKCS_V21, mbedtlsAlg); /* only support pss padding */
+    mbedtls_rsa_init(&ctx, padding, mbedtlsAlg);
 
     do {
         ret = RsaKeyMaterialToCtx(key, sign, &ctx); /* sign need private exponent (d) */
@@ -341,26 +371,15 @@ static int32_t HksMbedtlsRsaSignVerify(const struct HksBlob *key, const struct H
         }
 
         if (sign) {
-            ret = mbedtls_rsa_pkcs1_sign(&ctx,
-                mbedtls_ctr_drbg_random,
-                &ctrDrbg,
-                MBEDTLS_RSA_PRIVATE,
-                mbedtlsAlg,
-                message->size,
-                message->data,
-                signature->data);
+            ret = mbedtls_rsa_pkcs1_sign(&ctx, mbedtls_ctr_drbg_random, &ctrDrbg, MBEDTLS_RSA_PRIVATE,
+                mbedtlsAlg, message->size, message->data, signature->data);
         } else {
-            ret = mbedtls_rsa_pkcs1_verify(&ctx,
-                mbedtls_ctr_drbg_random,
-                &ctrDrbg,
-                MBEDTLS_RSA_PUBLIC,
-                mbedtlsAlg,
-                message->size,
-                message->data,
-                signature->data);
+            ret = mbedtls_rsa_pkcs1_verify(&ctx, mbedtls_ctr_drbg_random, &ctrDrbg, MBEDTLS_RSA_PUBLIC,
+                mbedtlsAlg, message->size, message->data, signature->data);
         }
-        if (ret != HKS_SUCCESS) {
+        if (ret != HKS_MBEDTLS_SUCCESS) {
             HKS_LOG_E("Mbedtls rsa sign/verify failed! mbedtls ret = 0x%X", ret);
+            ret = HKS_ERROR_CRYPTO_ENGINE_ERROR;
             (void)memset_s(signature->data, signature->size, 0, signature->size);
         }
     } while (0);
@@ -383,7 +402,26 @@ int32_t HksMbedtlsRsaSign(const struct HksBlob *key, const struct HksUsageSpec *
         return ret;
     }
 
-    return HksMbedtlsRsaSignVerify(key, usageSpec, message, true, signature); /* true: is sign */
+    uint32_t digest = (usageSpec->digest == HKS_DIGEST_NONE) ? HKS_DIGEST_SHA256 : usageSpec->digest;
+    uint32_t digestLen;
+    ret = HksGetDigestLen(digest, &digestLen);
+    if (ret != HKS_SUCCESS) {
+        return ret;
+    }
+    struct HksBlob hash = { .size = digestLen, .data = HksMalloc(digestLen) };
+    if (hash.data == NULL) {
+        return HKS_ERROR_MALLOC_FAIL;
+    }
+
+    ret = HksMbedtlsHash(digest, message, &hash);
+    if (ret != HKS_SUCCESS) {
+        HKS_FREE_BLOB(hash);
+        return ret;
+    }
+
+    ret = HksMbedtlsRsaSignVerify(key, usageSpec, &hash, true, signature); /* true: is sign */
+    HKS_FREE_BLOB(hash);
+    return ret;
 }
 
 int32_t HksMbedtlsRsaVerify(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
@@ -394,7 +432,26 @@ int32_t HksMbedtlsRsaVerify(const struct HksBlob *key, const struct HksUsageSpec
         return ret;
     }
 
-    return HksMbedtlsRsaSignVerify(key, usageSpec, message, false, (struct HksBlob *)signature); /* false: is verify */
+    uint32_t digest = (usageSpec->digest == HKS_DIGEST_NONE) ? HKS_DIGEST_SHA256 : usageSpec->digest;
+    uint32_t digestLen;
+    ret = HksGetDigestLen(digest, &digestLen);
+    if (ret != HKS_SUCCESS) {
+        return ret;
+    }
+    struct HksBlob hash = { .size = digestLen, .data = HksMalloc(digestLen) };
+    if (hash.data == NULL) {
+        return HKS_ERROR_MALLOC_FAIL;
+    }
+
+    ret = HksMbedtlsHash(digest, message, &hash);
+    if (ret != HKS_SUCCESS) {
+        HKS_FREE_BLOB(hash);
+        return ret;
+    }
+
+    ret = HksMbedtlsRsaSignVerify(key, usageSpec, &hash, false, (struct HksBlob *)signature); /* false: is verify */
+    HKS_FREE_BLOB(hash);
+    return ret;
 }
 #endif /* HKS_SUPPORT_RSA_SIGN_VERIFY */
 

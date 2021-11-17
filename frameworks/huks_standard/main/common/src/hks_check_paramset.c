@@ -60,6 +60,12 @@ static uint32_t g_genKeyAlg[] = {
 #ifdef HKS_SUPPORT_DSA_C
     HKS_ALG_DSA,
 #endif
+#ifdef HKS_SUPPORT_DH_C
+    HKS_ALG_DH,
+#endif
+#ifdef HKS_SUPPORT_ECDH_C
+    HKS_ALG_ECDH,
+#endif
 };
 
 static uint32_t g_importKeyAlg[] = {
@@ -96,6 +102,9 @@ static uint32_t g_signAlg[] = {
 #ifdef HKS_SUPPORT_RSA_C
     HKS_ALG_RSA,
 #endif
+#ifdef HKS_SUPPORT_DSA_C
+    HKS_ALG_DSA,
+#endif
 #ifdef HKS_SUPPORT_ECC_C
     HKS_ALG_ECC,
 #endif
@@ -112,11 +121,20 @@ static uint32_t g_agreeAlg[] = {
 #ifdef HKS_SUPPORT_X25519_C
     HKS_ALG_X25519,
 #endif
+#ifdef HKS_SUPPORT_DH_C
+    HKS_ALG_DH,
+#endif
 };
 
 static uint32_t g_agreeAlgLocal[] = {
+#ifdef HKS_SUPPORT_ECDH_C
+    HKS_ALG_ECDH,
+#endif
 #ifdef HKS_SUPPORT_X25519_C
     HKS_ALG_X25519,
+#endif
+#ifdef HKS_SUPPORT_DH_C
+    HKS_ALG_DH,
 #endif
 };
 #endif /* _CUT_AUTHENTICATE_ */
@@ -137,12 +155,18 @@ static uint32_t g_deriveAlgLocal[] = {
 };
 
 static uint32_t g_digest[] = {
+    HKS_DIGEST_SHA1,
+    HKS_DIGEST_SHA224,
     HKS_DIGEST_SHA256,
     HKS_DIGEST_SHA384,
     HKS_DIGEST_SHA512
 };
 static uint32_t g_macDigest[] = {
-    HKS_DIGEST_SHA256
+    HKS_DIGEST_SHA1,
+    HKS_DIGEST_SHA224,
+    HKS_DIGEST_SHA256,
+    HKS_DIGEST_SHA384,
+    HKS_DIGEST_SHA512,
 };
 #ifdef HKS_SUPPORT_AES_C
 static uint32_t g_aesKeySizeLocal[] = {
@@ -457,7 +481,14 @@ int32_t HksCoreCheckSignVerifyParams(uint32_t cmdId, const struct HksBlob *key, 
         return ret;
     }
 
-    ret = HksCheckSignature(cmdId, alg, key, signature);
+    uint32_t keySize = 0;
+    ret = HksGetKeySize(alg, key, &keySize);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("get keySize failed!");
+        return ret;
+    }
+
+    ret = HksCheckSignature(cmdId, alg, keySize, signature);
     if (ret != HKS_SUCCESS) {
         HKS_LOG_E("check signature failed, ret = %d", ret);
     }
@@ -466,6 +497,49 @@ int32_t HksCoreCheckSignVerifyParams(uint32_t cmdId, const struct HksBlob *key, 
 #else
     (void)cmdId;
     (void)key;
+    (void)paramSet;
+    (void)srcData;
+    (void)signature;
+    return HKS_ERROR_NOT_SUPPORTED;
+#endif
+}
+
+int32_t HksLocalCheckSignVerifyParams(uint32_t cmdId, uint32_t keySize, const struct HksParamSet *paramSet,
+    const struct HksBlob *srcData, const struct HksBlob *signature)
+{
+#ifdef HKS_SUPPORT_API_SIGN_VERIFY
+    (void)srcData;
+    uint32_t alg;
+    int32_t ret = CheckAndGetAlgorithm(paramSet, g_signAlg, HKS_ARRAY_SIZE(g_signAlg), &alg);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("check and get alg failed");
+        return ret;
+    }
+
+    struct ParamsValues params;
+    (void)memset_s(&params, sizeof(params), 0, sizeof(params));
+
+    ret = HksGetInputParmasByAlg(alg, HKS_CHECK_TYPE_USE_KEY, paramSet, &params);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("sign or verify get input params failed, ret = %d", ret);
+        return ret;
+    }
+
+    ret = CheckSignVerifyParamsByAlg(cmdId, alg, &params);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("sign or verify check params failed, ret = %d", ret);
+        return ret;
+    }
+
+    ret = HksCheckSignature(cmdId, alg, keySize, signature);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("check signature failed, ret = %d", ret);
+    }
+
+    return ret;
+#else
+    (void)cmdId;
+    (void)keySize;
     (void)paramSet;
     (void)srcData;
     (void)signature;
@@ -491,11 +565,18 @@ int32_t HksCoreCheckAgreeKeyParams(const struct HksParamSet *paramSet, const str
 
     uint32_t keySize = 0;
     if (isLocalCheck) {
-        if ((privateKey->size != HKS_KEY_BYTES(HKS_CURVE25519_KEY_SIZE_256)) ||
-            (peerPublicKey->size != HKS_KEY_BYTES(HKS_CURVE25519_KEY_SIZE_256))) {
-            return HKS_ERROR_INVALID_KEY_SIZE;
+        if (alg == HKS_ALG_ED25519) {
+            if ((privateKey->size != HKS_KEY_BYTES(HKS_CURVE25519_KEY_SIZE_256)) ||
+                (peerPublicKey->size != HKS_KEY_BYTES(HKS_CURVE25519_KEY_SIZE_256))) {
+                return HKS_ERROR_INVALID_KEY_SIZE;
+            }
         }
-        keySize = privateKey->size * HKS_BITS_PER_BYTE;
+
+        if (alg == HKS_ALG_DH || alg == HKS_ALG_ECC || alg == HKS_ALG_ECDH) {
+            keySize = ((struct HksKeyMaterialHeader *)privateKey->data)->keySize;
+        } else if (alg == HKS_ALG_ED25519) {
+            keySize = privateKey->size * HKS_BITS_PER_BYTE;
+        }
     } else {
         ret = HksGetKeySize(alg, privateKey, &keySize);
         if (ret != HKS_SUCCESS) {

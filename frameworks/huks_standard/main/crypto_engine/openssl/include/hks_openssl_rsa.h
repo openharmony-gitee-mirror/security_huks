@@ -24,16 +24,28 @@ extern "C" {
 
 #define HKS_RSA_KEYPAIR_CNT 3
 
+#ifdef HKS_SUPPORT_RSA_C
 #ifdef HKS_SUPPORT_RSA_GENERATE_KEY
 int32_t HksOpensslRsaGenerateKey(const struct HksKeySpec *spec, struct HksBlob *key);
-#endif
+#endif /* HKS_SUPPORT_RSA_GENERATE_KEY */
+
 #ifdef HKS_SUPPORT_RSA_GET_PUBLIC_KEY
 int32_t HksOpensslGetRsaPubKey(const struct HksBlob *input, struct HksBlob *output);
-#endif
+#endif /* HKS_SUPPORT_RSA_GET_PUBLIC_KEY */
+
 #ifdef HKS_SUPPORT_RSA_CRYPT
 int32_t HksOpensslRsaCrypt(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
     const struct HksBlob *message, const bool encrypt, struct HksBlob *cipherText);
-#endif
+#endif /* HKS_SUPPORT_RSA_CRYPT */
+
+#ifdef HKS_SUPPORT_RSA_SIGN_VERIFY
+int32_t HksOpensslRsaSign(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
+    const struct HksBlob *message, struct HksBlob *signature);
+
+int32_t HksOpensslRsaVerify(const struct HksBlob *key, const struct HksUsageSpec *usageSpec,
+    const struct HksBlob *message, const struct HksBlob *signature);
+#endif /* HKS_SUPPORT_RSA_SIGN_VERIFY */
+#endif /* HKS_SUPPORT_RSA_C */
 
 #ifdef __cplusplus
 }

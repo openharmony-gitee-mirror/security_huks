@@ -29,7 +29,9 @@
 extern "C" {
 #endif
 
+#ifdef HKS_SUPPORT_HMAC_GENERATE_KEY
 int32_t HksMbedtlsHmacGenerateKey(const struct HksKeySpec *spec, struct HksBlob *key);
+#endif
 
 int32_t HksMbedtlsHmac(const struct HksBlob *key,
     uint32_t digestAlg, const struct HksBlob *msg, struct HksBlob *mac);

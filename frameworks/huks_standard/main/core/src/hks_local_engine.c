@@ -281,41 +281,83 @@ int32_t HksLocalDeriveKey(const struct HksParamSet *paramSet, const struct HksBl
 }
 
 #ifndef _CUT_AUTHENTICATE_
-static int32_t CheckLocalVerifyParams(const struct HksBlob *key, const struct HksParamSet *paramSet,
+static int32_t CheckLocalSignVerifyParams(uint32_t cmdId, const struct HksBlob *key, const struct HksParamSet *paramSet,
     const struct HksBlob *srcData, const struct HksBlob *signature)
 {
     if (HksCheckBlob3AndParamSet(key, srcData, signature, paramSet) != HKS_SUCCESS) {
         return HKS_ERROR_INVALID_ARGUMENT;
     }
 
-    if (key->size != (HKS_CURVE25519_KEY_SIZE_256 / HKS_BITS_PER_BYTE)) {
-        HKS_LOG_E("invalid key size: %u", key->size);
-        return HKS_ERROR_INVALID_KEY_SIZE;
-    }
-
-    if (signature->size < HKS_SIGNATURE_MIN_SIZE) {
-        HKS_LOG_E("signature size too small, size: %u", signature->size);
-        return HKS_ERROR_INVALID_SIGNATURE_SIZE;
-    }
-
-    struct HksParam *purposeParam = NULL;
-    int32_t ret = HksGetParam(paramSet, HKS_TAG_PURPOSE, &purposeParam);
+    struct HksParam *algParam = NULL;
+    int32_t ret = HksGetParam(paramSet, HKS_TAG_ALGORITHM, &algParam);
     if (ret != HKS_SUCCESS) {
-        HKS_LOG_E("get param purpose failed");
-        return HKS_ERROR_CHECK_GET_PURPOSE_FAIL;
+        HKS_LOG_E("get param algorithm failed");
+        return HKS_ERROR_CHECK_GET_ALG_FAIL;
     }
-    if ((purposeParam->uint32Param & HKS_KEY_PURPOSE_VERIFY) == 0) {
-        HKS_LOG_E("invalid purpose: 0x%x", purposeParam->uint32Param);
-        return HKS_ERROR_INVALID_PURPOSE;
+
+    uint32_t keySize = 0;
+    if (algParam->uint32Param == HKS_ALG_RSA) {
+        keySize = ((struct KeyMaterialRsa *)key->data)->keySize;
+    } else if (algParam->uint32Param == HKS_ALG_DSA) {
+        keySize = ((struct KeyMaterialDsa *)key->data)->keySize;
+    } else if (algParam->uint32Param == HKS_ALG_ECC) {
+        keySize = ((struct KeyMaterialEcc *)key->data)->keySize;
+    } else if (algParam->uint32Param == HKS_ALG_ED25519) {
+        keySize = key->size * HKS_BITS_PER_BYTE;
+    }
+
+    ret = HksLocalCheckSignVerifyParams(cmdId, keySize, paramSet, srcData, signature);
+    if (ret != HKS_SUCCESS) {
+        return ret;
+    }
+
+    if (algParam->uint32Param == HKS_ALG_ED25519) {
+        if (key->size != (HKS_CURVE25519_KEY_SIZE_256 / HKS_BITS_PER_BYTE)) {
+            HKS_LOG_E("invalid key size: %u", key->size);
+            return HKS_ERROR_INVALID_KEY_SIZE;
+        }
+
+        if (signature->size < HKS_SIGNATURE_MIN_SIZE) {
+            HKS_LOG_E("signature size too small, size: %u", signature->size);
+            return HKS_ERROR_INVALID_SIGNATURE_SIZE;
+        }
     }
 
     return HKS_SUCCESS;
 }
 
-int32_t HksLocalVerify(const struct HksBlob *key, const struct HksParamSet *paramSet,
-    const struct HksBlob *srcData, const struct HksBlob *signature)
+int32_t HksLocalSign(const struct HksBlob *key, const struct HksParamSet *paramSet, const struct HksBlob *srcData,
+    struct HksBlob *signature)
 {
-    int32_t ret = CheckLocalVerifyParams(key, paramSet, srcData, signature);
+    int32_t ret = CheckLocalSignVerifyParams(HKS_CMD_ID_SIGN, key, paramSet, srcData, signature);
+    if (ret != HKS_SUCCESS) {
+        return ret;
+    }
+
+    struct HksUsageSpec usageSpec = {0};
+    HksFillUsageSpec(paramSet, &usageSpec);
+
+    struct HksBlob keyMaterial = { 0, NULL };
+    ret = HksSetKeyToMaterial(usageSpec.algType, false, key, &keyMaterial);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("set key to material failed, ret:%x!", ret);
+        return ret;
+    }
+
+    ret = HksCryptoHalSign(&keyMaterial, &usageSpec, srcData, signature);
+    if (ret != HKS_SUCCESS) {
+        HKS_LOG_E("local engine verify failed, ret:%x!", ret);
+    }
+
+    (void)memset_s(keyMaterial.data, keyMaterial.size, 0, keyMaterial.size);
+    HKS_FREE_PTR(keyMaterial.data);
+    return ret;
+}
+
+int32_t HksLocalVerify(const struct HksBlob *key, const struct HksParamSet *paramSet, const struct HksBlob *srcData,
+    const struct HksBlob *signature)
+{
+    int32_t ret = CheckLocalSignVerifyParams(HKS_CMD_ID_VERIFY, key, paramSet, srcData, signature);
     if (ret != HKS_SUCCESS) {
         return ret;
     }
@@ -330,7 +372,6 @@ int32_t HksLocalVerify(const struct HksBlob *key, const struct HksParamSet *para
         return ret;
     }
 
-    /* Only ed25519 is allowed here */
     ret = HksCryptoHalVerify(&keyMaterial, &usageSpec, srcData, signature);
     if (ret != HKS_SUCCESS) {
         HKS_LOG_E("local engine verify failed, ret:%x!", ret);

@@ -40,7 +40,8 @@
 
 static int32_t HksMbedtlsEccCheckKeySize(const uint32_t keySize)
 {
-    if ((keySize != HKS_ECC_KEY_SIZE_256) && (keySize != HKS_ECC_KEY_SIZE_384)) {
+    if ((keySize != HKS_ECC_KEY_SIZE_224) && (keySize != HKS_ECC_KEY_SIZE_256) && (keySize != HKS_ECC_KEY_SIZE_384) &&
+        (keySize != HKS_ECC_KEY_SIZE_521)) {
         HKS_LOG_E("Invalid ecc keySize! keySize = 0x%X", keySize);
         return HKS_ERROR_INVALID_KEY_SIZE;
     }
@@ -72,7 +73,7 @@ int32_t GetEccGroupId(const uint32_t keyLen, mbedtls_ecp_group_id *grpId)
 
 static int32_t EccKeyMaterialXyzSizeCheck(const struct KeyMaterialEcc *keyMaterial)
 {
-    const uint32_t maxKeyByteLen = HKS_ECC_KEY_SIZE_384 / HKS_BITS_PER_BYTE;
+    const uint32_t maxKeyByteLen = HKS_KEY_BYTES(HKS_ECC_KEY_SIZE_521);
     if ((keyMaterial->xSize > maxKeyByteLen) ||
         (keyMaterial->ySize > maxKeyByteLen) || (keyMaterial->zSize > maxKeyByteLen)) {
         HKS_LOG_E("Invalid ecc keyMaterial! xSize = 0x%X, ySize = 0x%X, zSize = 0x%X",

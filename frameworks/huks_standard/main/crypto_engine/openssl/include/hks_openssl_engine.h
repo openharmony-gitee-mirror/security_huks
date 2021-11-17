@@ -36,7 +36,7 @@ extern "C" {
 #define HKS_OPENSSL_ERROR_LEN 128
 #define BIT_NUM_OF_UINT8 8
 
-void HksLogOpensslError();
+void HksLogOpensslError(void);
 
 int32_t HksOpensslCheckBlob(const struct HksBlob *blob);
 

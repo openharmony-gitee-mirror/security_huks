@@ -15,16 +15,7 @@
 
 #include "hks_openssl_aes_test_mt.h"
 
-#include <string.h>
-
-#include <openssl/err.h>
 #include <openssl/evp.h>
-#include <openssl/ossl_typ.h>
-
-#include "hks_crypto_hal.h"
-#include "hks_log.h"
-#include "hks_param.h"
-#include "hks_type.h"
 
 #define BIT_NUM_OF_UINT8 8
 #define HKS_AE_TAG_LEN 16

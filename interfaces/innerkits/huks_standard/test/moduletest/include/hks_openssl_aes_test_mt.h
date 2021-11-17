@@ -17,13 +17,10 @@
 #ifndef HKS_OPENSSL_RSA_TEST_MT_H
 #define HKS_OPENSSL_RSA_TEST_MT_H
 
-#include <stdbool.h>
+#include <securec.h>
 
+#include "hks_param.h"
 #include "hks_type.h"
-#include "openssl/aes.h"
-#include "openssl/bio.h"
-#include "openssl/evp.h"
-#include "openssl/ossl_typ.h"
 #include "openssl/rand.h"
 
 #ifdef __cplusplus
